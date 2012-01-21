@@ -37,7 +37,7 @@ GPUs nowdays are capable of performing teraflops of computations. The GPGPU comp
 	\coordinate [label=above:CPU] (CPU) at (1.05cm,0.2cm);
 	\coordinate [label=below:CPU with multiple cores] (Multi Core CPU) at (1.05cm,-0.2cm);
 	
-	\draw[very thick, <->] (2.5cm, 1cm) -- (3.1cm, 1cm);
+	\draw[very thick, <->, >=stealth] (2.5cm, 1cm) -- (3.1cm, 1cm);
 	
 	\draw[very thick] (3.5cm, -1cm) rectangle (7.6cm, 3cm);
 		\foreach \x in {3.6cm,4cm,4.4cm,4.8cm,5.2cm,5.6cm,6cm,6.4cm,6.8cm,7.2cm}
@@ -50,13 +50,68 @@ GPUs nowdays are capable of performing teraflops of computations. The GPGPU comp
 \label{nVidiaGPGPUfig}
 \end{figure}
 
+\section{Project Overview}
+A central server will be connected to multiple computers (hosts) with GPUs (devices). Clients will connect to the server through a secure channel. Clients will request computational resource(s) and upload their code. The server will look for any free devices and make allocation as necessary. Client code will compile and run on a free device and output will be returned. In case of compilation errors client will be notified.
+
+\begin{figure}[here]
+%\centerline{\includegraphics[]{GPGPU}}
+\centering
+\begin{tikzpicture}
+	\draw[very thick] (6cm, 4cm) rectangle (8cm, 5cm);
+	\coordinate [label=above:{\bfseries Server}] (Server) at (7cm,4.25cm);
+	
+	\draw[thick,<->, >=stealth] (8.1cm,4.5cm) -- (10.8cm, 5.8cm);
+	\draw[very thick] (11cm, 5.3cm) rectangle (13cm, 6.3cm);
+	\coordinate [label=above:{\bfseries GPU}] (GPU) at (12cm,5.55cm);
+	
+	\draw[thick,<->, >=stealth] (8.1cm,4.5cm) -- (10.8cm, 4.5cm);
+	\draw[very thick] (11cm, 4cm) rectangle (13cm, 5cm);
+	\coordinate [label=above:{\bfseries GPU}] (GPU) at (12cm,4.25cm);
+	
+	\draw[thick,<->, >=stealth] (5.9cm,4.5cm) -- (3.2cm, 5.8cm);
+	\draw[very thick] (1cm, 4cm) rectangle (3cm, 5cm);
+	\coordinate [label=above:{\bfseries Client}] (Client) at (2cm,4.25cm);
+	
+	\draw[thick,<->, >=stealth] (5.9cm,4.5cm) -- (3.2cm, 4.5cm);
+	\draw[very thick] (1cm, 5.3cm) rectangle (3cm, 6.3cm);
+	\coordinate [label=above:{\bfseries Client}] (Client) at (2cm,5.55cm);
+	
+	\draw[very thick,dotted] (2cm, 2.7cm) -- (2cm, 3.8cm);
+	
+	\draw[thick,<->, >=stealth] (5.9cm,4.5cm) -- (3.2cm, 2cm);
+	\draw[very thick] (1cm, 1.5cm) rectangle (3cm, 2.5cm);
+	\coordinate [label=above:{\bfseries Client}] (Client) at (2cm,1.75cm);
+
+\end{tikzpicture}
+\caption{Project Overview.}
+\label{ProjectOverview}
+\end{figure}
+
+\section{Project Phases}
+
+This project is divided into three phases:
+
+\subsection{Phase I: Network Programming}
+The first phase is to implement the client--server at application layer. Server should be able to handle multiple clients at a time. It should also be able to support multiple simulataneous connections both to clients and GPU hosts. Server will maintain a dynamic list of computational resources free and those which are in use.
+
+\subsection{Phase II: GPU Programming}
+The hosts with GPUs should be able to receive client code and compile it on the fly. In case of errors, appropriate error messages must be relayed to client through server. A mini--compiler might need to be implemented at the host which can convert loops into appropriate kernel code to be run on GPU.
+
+\subsection{Phase III: Security}
+All communication from clients to server to GPU hosts must be secure. Network traffic must be encrypted to keep out eavesdropping. PGP can be a good choice of security. Clients can be assigned usernames/passwords beforehand to only allow trusted access. PGP on top of it can provide additional layer of security if any password(s) are compromised.
+
+\section{Project Timeline}
+
 \begin{thebibliography}{2}
+
+\bibitem{GPGPUwiki}
+http://en.wikipedia.org/wiki/GPGPU
 
 \bibitem{nVidiaGPGPU}
 http://www.nvidia.com/object/GPU\_Computing.html
 
-\bibitem{GPGPUwiki}
-http://en.wikipedia.org/wiki/GPGPU
+\bibitem{AMDATiGPGPU}
+http://www.amd.com/us/products/technologies/stream-technology/opencl/pages/gpgpu-history.aspx
 
 \end{thebibliography}
 
