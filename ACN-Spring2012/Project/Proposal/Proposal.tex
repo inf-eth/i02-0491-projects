@@ -1,7 +1,10 @@
-% Proposal template by Chuck Anderson
+% template by Chuck Anderson
 % www.cs.colostate.edu/~anderson/cs410/proposal.tex
 
 \documentclass{article}
+\usepackage{pgf}
+\usepackage{tikz}
+
 % Set margins to 1 inch
 \setlength{\oddsidemargin}{0in}
 \setlength{\evensidemargin}{0in}
@@ -14,70 +17,48 @@
 
 \begin{document}
 
-\title{Distrubuted GPU Computing Over LAN}
-\author{Attique}
+\title{Secure GPU Computing Over LAN}
+\author{Attique Dawood}
 \maketitle
 
-\section{Introduction}
+\section{GPU Computing}
 
-Explain what you are going to be reading about or implementing for
-your semester project.  Say why this topic interests you.  Convince me
-that this topic is exciting to you and that you will learn a lot from
-working on it.  Specify exactly what your goal is for the project, in
-terms of what you want to learn from doing this.
+Graphics processing units (GPU) have evolved over the last half a decade from a graphics--only processor to a general purpose computing device. General purpose GPU (GPGPU) computing is the use of GPUs for engineering and scientific computations. The two major manufacturers of GPUs are nVidia and AMD/ATi. Both offer tools and APIs to program their GPUs.
 
-Your proposal should be at least three pages long.  You may use LaTex
-or another formatter like MS Word or WordPerfect.
+GPUs nowdays are capable of performing teraflops of computations. The GPGPU computing model is to have CPU work in conjunction with GPU. The computationally intensive part is run on GPU while the rest of the program executes on CPU. Figure~\ref{nVidiaGPGPUfig} illustrates this.
 
-Just as an example, here is a figure that I refer to as
-Figure~\ref{figlabel}.
+\begin{figure}[here]
+%\centerline{\includegraphics[]{GPGPU}}
+\centering
+\begin{tikzpicture}
+	\draw[very thick] (0cm, 0cm) rectangle (2.1cm, 2cm);
+	\foreach \x in {0.1cm,0.6cm,1.1cm, 1.6cm}
+		\filldraw[gray, thick] (\x, 0.9cm) rectangle (\x+0.4cm, 1.9cm);
+	\coordinate [label=above:CPU] (CPU) at (1.05cm,0.2cm);
+	\coordinate [label=below:CPU with multiple cores] (Multi Core CPU) at (1.05cm,-0.2cm);
+	
+	\draw[very thick, <->] (2.5cm, 1cm) -- (3.1cm, 1cm);
+	
+	\draw[very thick] (3.5cm, -1cm) rectangle (7.6cm, 3cm);
+		\foreach \x in {3.6cm,4cm,4.4cm,4.8cm,5.2cm,5.6cm,6cm,6.4cm,6.8cm,7.2cm}
+			\foreach \y in {0.2cm,0.6cm,1cm,1.4cm,1.8cm,2.2cm,2.6cm}
+				\filldraw (\x, \y) rectangle (\x+0.3cm, \y+.3cm);
+	\coordinate [label=above:GPU] (GPU) at (5.55cm,-0.7cm);
+	\coordinate [label=below:GPU with lots of cores] (Multi Core GPU) at (5.55cm,-1.3cm);		
+\end{tikzpicture}
+\caption{GPGPU Computing.}
+\label{nVidiaGPGPUfig}
+\end{figure}
 
-%\begin{figure}
-%\centerline{\includegraphics[height=4in,angle=90]{proposal-pic}}
-%\caption{Silly example of including a graphic file.}
-%\label{figlabel}
-%\end{figure}
+\begin{thebibliography}{2}
 
+\bibitem{nVidiaGPGPU}
+http://www.nvidia.com/object/GPU\_Computing.html
 
-\section{How and When}
+\bibitem{GPGPUwiki}
+http://en.wikipedia.org/wiki/GPGPU
 
-Detail the  steps you plan  to take to  accomplish your goal  and what
-resources you  will use.   Include a tentative  timeline.  Here  is an
-example:
-
-\begin{center}
-\begin{tabular}{rrl}
-1.  & March 5 & Read first paper\\
-2.  & March 10 & Read second paper\\
-3.  & end of March & Summarize both papers in about 5 pages\\
-4.  & April 15 & Implement technique in first paper in Java\\
-5.  & April 20 & Test the implementation with one example\\
-6.  & April 30 & Write up my results in about 5 pages\\
-7. & May 2 & Prepare oral report
-\end{tabular}
-\end{center}
-
-
-
-\section{Grading}
-
-I will evaluate your projects on how much effort I judge you have put
-into it and how much you have learned.  Your grade will also depend on
-the quality of your written report and of your oral presentation.  
-
-It isn't required, but I strongly encourage you to hand in a draft of
-your report a couple of weeks before it is due.  I will read them and
-make written suggestions on how to improve it.  I also recommend you
-discuss with me what you plan to present orally.  You will have 10 to
-15 minutes only, and it is very difficult to put together an
-understandable and interesting talk that is that short.
-
-\begin{bibliography}
-
-\bititem{first refrence}
-abcd
-
-\end{bibliography}
+\end{thebibliography}
 
 \end{document}
 
