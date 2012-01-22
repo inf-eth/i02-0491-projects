@@ -4,6 +4,7 @@
 \documentclass{article}
 \usepackage{pgf}
 \usepackage{tikz}
+\usepackage{multirow}
 
 % Set margins to 1 inch
 \setlength{\oddsidemargin}{0in}
@@ -92,15 +93,42 @@ A central server will be connected to multiple computers (hosts) with GPUs (devi
 This project is divided into three phases:
 
 \subsection{Phase I: Network Programming}
-The first phase is to implement the client--server at application layer. Server should be able to handle multiple clients at a time. It should also be able to support multiple simulataneous connections both to clients and GPU hosts. Server will maintain a dynamic list of computational resources free and those which are in use.
+The first phase is to implement the client--server at application layer. Server should be able to handle multiple clients at a time. It should also be able to support multiple simulataneous connections both to clients and GPU hosts. Server will maintain a dynamic list of computational resources available and those which are in use.
 
 \subsection{Phase II: GPU Programming}
-The hosts with GPUs should be able to receive client code and compile it on the fly. In case of errors, appropriate error messages must be relayed to client through server. A mini--compiler might need to be implemented at the host which can convert loops into appropriate kernel code to be run on GPU.
+The hosts with GPUs should be able to receive client code and compile it on the fly. In case of errors, appropriate error messages must be relayed to client through server. A mini--compiler can be implemented at the host which can convert conventional loop--based code into appropriate kernel code to be run on GPU. 
+
+Another aspect is multi--GPU computing where a number of GPUs are available to the client. Client can request multiple GPUs in order to speed up the computation. In hybrid multi--GPU context, multiple GPUs running different APIs such as CUDA and OPENCL can be combined to work on a single problem. Synchronization is an important issue in such a scenario.
 
 \subsection{Phase III: Security}
 All communication from clients to server to GPU hosts must be secure. Network traffic must be encrypted to keep out eavesdropping. PGP can be a good choice of security. Clients can be assigned usernames/passwords beforehand to only allow trusted access. PGP on top of it can provide additional layer of security if any password(s) are compromised.
 
 \section{Project Timeline}
+
+Major focus will be on the network programming part. Rest of the functionality will depend on robustness and features of client--server application.
+
+Following table provides a tentative timeline for this project:
+
+\begin{table}[h]
+\begin{center}
+\vspace{0.3cm}
+	\begin{tabular}{llp{10cm}}
+	\hline \hline
+		\textbf{Week} \rule{0pt}{2.6ex} & \textbf{Duration} & \multicolumn{1}{c}{\textbf{Tasks}}\\
+		\hline
+		2 \rule{0pt}{2.6ex} & 1 week & Set and install network programming APIs on PCs\\
+		3 & 1 week & Implement a simple client--server application for handling multiple clients\\
+		4-6 & 3 weeks & Implement core features of network programming\\
+		7-8 & 2 weeks & Set up GPUs and install GPU programming APIs\\
+		9-10 & 2 weeks & Provide GPU programming interface to clients through server over network\\
+		11-12 & 2 weeks & Refinements\\
+		13-15 & 3 weeks & Encrytion of network traffic and additional security features like PGP\\
+	\hline \hline
+	\end{tabular}
+\end{center}
+\label{TimelineTable}
+\caption{Project timeline.}
+\end{table}
 
 \begin{thebibliography}{2}
 
