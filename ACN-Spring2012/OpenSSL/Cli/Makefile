@@ -26,4 +26,4 @@ $(BINDIR):
 .PHONY: clean
 
 clean:
-	rm -f *.o OpenSSLCli
+	rm -f $(ODIR)/*.o $(BINDIR)/OpenSSLCli
