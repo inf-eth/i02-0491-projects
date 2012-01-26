@@ -1,17 +1,30 @@
-#Makefile for OpenSSL Commandline wrapper in C++
+# Makefile for OpenSSL Commandline wrapper in C++
 CC=g++
-CFLAGS=-I.
-DEPS=OpenSSLCli.h
-ODIR=./obj
-BINDIR=./bin
+DEPS=-I./include
+SRCDIR=./src
+
+ifdef dbg
+CFLAGS:=-g3
+BINDIR:=./bin/debug
+ODIR:=./obj/debug
+else
+CFLAGS:=-O3
+BINDIR:=./bin/release
+ODIR:=./obj/release
+endif
+
 _OBJ=CliMain.o OpenSSLCli.o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(BINDIR)/OpenSSLCli: $(OBJ)
-	$(CC) -o $@ $^ -I.
+	$(CC) -o $@ $^ $(CFLAGS)
 
-$(ODIR)/%.o: %.cpp $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+#$(ODIR)/%.o: $(SRCDIR)/%.cpp
+$(ODIR)/CliMain.o: $(SRCDIR)/CliMain.cpp
+	$(CC) -c -o $@ $< $(DEPS) $(CFLAGS)
+
+$(ODIR)/OpenSSLCli.o: $(SRCDIR)/OpenSSLCli.cpp
+	$(CC) -c -o $@ $< $(DEPS) $(CFLAGS)
 
 # Object and binary files must be placed in obj and bin directories.
 # Create bin and obj directories if they do not exist before compiling.
@@ -22,8 +35,8 @@ $(ODIR):
 	mkdir -p $(ODIR)
 $(BINDIR):
 	mkdir -p $(BINDIR)
-	
+
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o $(BINDIR)/OpenSSLCli
+	rm -f ./obj/debug/*.o ./obj/release/*.o ./bin/debug/OpenSSLCli ./bin/release/OpenSSLCli
