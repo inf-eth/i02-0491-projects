@@ -3,6 +3,8 @@ CC=g++
 DEPS=-I./include
 SRCDIR=./src
 
+# debug or release configuration. Default is release.
+# 'make dbg=1' will use debug configuration.
 ifdef dbg
 CFLAGS:=-g3
 BINDIR:=./bin/debug
