@@ -42,8 +42,7 @@ arg3 = ciphertext output file.
 int OpenSSL_enc (string cipher, string plaintextfilein, string ciphertextfileout)
 {
 	string command = (string)"openssl enc -" + cipher + " -salt -in " + plaintextfilein + " -out " + ciphertextfileout;
-	system (command.c_str());
-	return 0;
+	return system (command.c_str());
 }
 
 /* Symmetric Decryption.
@@ -51,9 +50,26 @@ arg1 = cipher e.g., aes256, des, des3.
 arg2 = ciphertext input file.
 arg3 = plaintext output file.
 */
-int OpenSSL_dec (string cipher, string cipherextfilein, string plaintextfileout)
+int OpenSSL_dec (string cipher, string ciphertextfilein, string plaintextfileout)
 {
-	string command = (string)"openssl enc -" + cipher + " -d -in " + cihpertextfilein + " -out " + plaintextfileout;
-	system (command.c_str());
-	return 0;
+	string command = (string)"openssl enc -" + cipher + " -d -in " + ciphertextfilein + " -out " + plaintextfileout;
+	return system (command.c_str());
+}
+
+/* base64 encode
+Takes input ciphertext in binary mode and outputs text file
+*/
+int OpenSSL_base64encode (string cipherbinfilein, string base64txtfileout)
+{
+	string command = (string)"openssl base64 -in " + cipherbinfilein + " -out " + base64txtfileout;
+	return system (command.c_str());
+}
+
+/* base64 decode
+Takes input base64 encoded file and outputs binary ciphertext file.
+*/
+int OpenSSL_base64decode (string base64txtfilein, string cipherbinfileout)
+{
+	string command = (string)"openssl base64 -d -in " + base64txtfilein + " -out " + cipherbinfileout;
+	return system (command.c_str());
 }

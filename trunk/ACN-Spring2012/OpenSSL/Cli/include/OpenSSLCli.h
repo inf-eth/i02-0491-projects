@@ -40,3 +40,7 @@ Takes input ciphertext in binary mode and outputs text file
 */
 int OpenSSL_base64encode (string, string);
 
+/* base64 decode
+Takes input base64 encoded file and outputs binary ciphertext file.
+*/
+int OpenSSL_base64decode (string, string);
