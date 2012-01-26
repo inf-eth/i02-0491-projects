@@ -33,3 +33,27 @@ int OpenSSL_dgst_sign (string hashtype, string privatekeyfile, string signaturef
 
 	return 0;
 }
+
+/* Symmetric Encryption.
+arg1 = cipher e.g., aes256, des, des3 with modes e.g., des3-ede-ofb (DES3 operating in OFB mode).
+arg2 = plaintext input file.
+arg3 = ciphertext output file.
+*/
+int OpenSSL_enc (string cipher, string plaintextfilein, string ciphertextfileout)
+{
+	string command = (string)"openssl enc -" + cipher + " -salt -in " + plaintextfilein + " -out " + ciphertextfileout;
+	system (command.c_str());
+	return 0;
+}
+
+/* Symmetric Decryption.
+arg1 = cipher e.g., aes256, des, des3.
+arg2 = ciphertext input file.
+arg3 = plaintext output file.
+*/
+int OpenSSL_dec (string cipher, string cipherextfilein, string plaintextfileout)
+{
+	string command = (string)"openssl enc -" + cipher + " -d -in " + cihpertextfilein + " -out " + plaintextfileout;
+	system (command.c_str());
+	return 0;
+}

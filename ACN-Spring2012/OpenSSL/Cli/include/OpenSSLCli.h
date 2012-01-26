@@ -20,3 +20,23 @@ Third argument is the output filename which will contain the signature.
 Fourth argument is the input file whose hash is to be computed and signed.
 */
 int OpenSSL_dgst_sign (string, string, string, string);
+
+/* Symmetric Encryption.
+arg1 = cipher e.g., aes256, des, des3.
+arg2 = plaintext input file.
+arg3 = ciphertext output file.
+*/
+int OpenSSL_enc (string, string, string);
+
+/* Symmetric Decryption.
+arg1 = cipher e.g., aes256, des, des3.
+arg2 = ciphertext input file.
+arg3 = plaintext output file.
+*/
+int OpenSSL_dec (string, string, string);
+
+/* base64 encode
+Takes input ciphertext in binary mode and outputs text file
+*/
+int OpenSSL_base64encode (string, string);
+
