@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include "OpenSSLCli.h"
+#include <OpenSSLCli.h>
 
 /* Compute message digest.
 First argument is hash type, e.g. sha1.
