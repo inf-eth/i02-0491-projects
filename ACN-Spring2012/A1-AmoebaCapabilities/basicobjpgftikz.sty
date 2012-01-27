@@ -1,6 +1,17 @@
 % Basic objects in pgf/tikz style file.
+\newcommand{\DefaultArgs}[6]
+{
+	xshift=#1cm,
+	yshift=#2cm,
+	xscale=#3,
+	yscale=#4,
+	xslant=#5,
+	yslant=#6
+}
 \newcommand{\HardDrive}[6]
 {
+	\draw[line width=1pt, shade=gray, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4, xslant=#5, yslant=#6]
+		(0,0) ellipse (0.4 and 0.2);
 
 	\draw[line width=1pt,
 		shade=gray,
@@ -10,7 +21,7 @@
 		yscale=#4,
 		xslant=#5,
 		yslant=#6]
-		(0,0) ellipse (0.5 and 0.2);
+		(0,0.15) ellipse (0.4 and 0.2);
 
 	\draw[line width=1pt,
 		shade=gray,
@@ -20,17 +31,7 @@
 		yscale=#4,
 		xslant=#5,
 		yslant=#6]
-		(0,0.15) ellipse (0.5 and 0.2);
-
-	\draw[line width=1pt,
-		shade=gray,
-		xshift=#1cm,
-		yshift=#2cm,
-		xscale=#3,
-		yscale=#4,
-		xslant=#5,
-		yslant=#6]
-		(0,0.3) ellipse (0.5 and 0.2);
+		(0,0.3) ellipse (0.4 and 0.2);
 }
 
 \newcommand{\Xterminal}[6]
@@ -82,7 +83,7 @@
 		yslant=#6]
 		(1.0,0.1) rectangle (1.5,0.9);
 	
-	% Diskette door 1.
+	% Diskette doors.
 	\draw[line width=1pt,
 			white,
 			xshift=#1cm,
@@ -91,19 +92,112 @@
 			yscale=#4,
 			xslant=#5,
 			yslant=#6]
-		(1.1,0.5) -- (1.4,0.5);
-
-	% Diskette door 2.
-	\draw[line width=1pt,
-			white,
-			xshift=#1cm,
-			yshift=#2cm,
-			xscale=#3,
-			yscale=#4,
-			xslant=#5,
-			yslant=#6]
+		(1.1,0.3) -- (1.4,0.3)
+		(1.1,0.5) -- (1.4,0.5)
 		(1.1,0.6) -- (1.4,0.6);
 
 	\Xterminal{#1}{#2}{#3}{#4}{#5}{#6}
 
+}
+\newcommand{\Server}[6]
+{
+	% CPU box.
+	\draw[line width=2pt,
+		fill=gray,
+		xshift=#1cm,
+		yshift=#2cm,
+		xscale=#3,
+		yscale=#4,
+		xslant=#5,
+		yslant=#6]
+		(0,0) rectangle (0.6,1.0);
+	
+	% Diskette doors.
+	\draw[line width=1pt,
+			white,
+			xshift=#1cm,
+			yshift=#2cm,
+			xscale=#3,
+			yscale=#4,
+			xslant=#5,
+			yslant=#6]
+		(0.1,0.2) -- (0.5,0.2)
+		(0.1,0.4) -- (0.5,0.4)
+		(0.1,0.5) -- (0.5,0.5);
+}
+
+\newcommand{\FileServer}[6]
+{
+	% CPU box.
+	\draw[line width=2pt,
+		fill=gray,
+		xshift=#1cm,
+		yshift=#2cm,
+		xscale=#3,
+		yscale=#4,
+		xslant=#5,
+		yslant=#6]
+		(0.3,0) rectangle (0.9,1.0);
+	
+	% Diskette doors.
+	\draw[line width=1pt,
+			white,
+			xshift=#1cm,
+			yshift=#2cm,
+			xscale=#3,
+			yscale=#4,
+			xslant=#5,
+			yslant=#6]
+		(0.4,0.2) -- (0.8,0.2)
+		(0.4,0.4) -- (0.8,0.4)
+		(0.4,0.5) -- (0.8,0.5);
+
+	\HardDrive{#1}{#2}{#3}{#4}{#5}{#6}
+}
+
+\newcommand{\ProcessorPool}[6]
+{
+	\draw[line width=2pt,
+			fill=white,
+			xshift=#1cm,
+			yshift=#2cm,
+			xscale=#3,
+			yscale=#4,
+			xslant=#5,
+			yslant=#6]
+		(0,0) rectangle (2.3,3.45);
+
+	\foreach \x in {0.2,0.6,...,1.9}
+		\foreach \y in {0.2,1.0,1.8,2.6}
+			\draw[line width=1pt,
+					fill=gray,
+					xshift=#1cm,
+					yshift=#2cm,
+					xscale=#3,
+					yscale=#4,
+					xslant=#5,
+					yslant=#6]
+				(\x cm,\y cm) rectangle (\x cm+0.3cm,\y cm + 0.6cm);
+
+	\foreach \y in {0.9,1.7,2.5}
+		\draw[line width=1pt,
+				xshift=#1cm,
+				yshift=#2cm,
+				xscale=#3,
+				yscale=#4,
+				xslant=#5,
+				yslant=#6]
+			(0.2, \y) -- (2.1, \y);	
+
+}
+
+\newcommand{\TextCloud}[7]
+{
+	\draw[line width=1.5pt, blue, fill=blue!20, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4, xslant=#5, yslant=#6]
+		(0,0) ellipse (2 and 1);
+		
+	\coordinate [label=above:#7, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4, xslant=#5, yslant=#6] (PatchLabel) at (0,-0.2);
+	
+%	\draw[line width=1pt, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4, xslant=#5, yslant=#6]
+%		(1,0.5) node {#7};
 }
