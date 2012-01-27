@@ -1,0 +1,39 @@
+% Basic objects in pgf/tikz style file.
+\newcommand{\Xterminal}[6]
+{
+	
+	\draw[line width=2pt, 
+		fill=gray,
+		xshift=#1cm,
+		yshift=#2cm,
+		xscale=#3,
+		yscale=#4,
+		xslant=#5,
+		yslant=#6]
+		(0,0) -- (1.2,0) -- (1.0,0.2) -- (0.2,0.2) -- cycle;
+		
+	\draw[line width=2pt,
+		rounded corners,
+		shade=gray,
+		xshift=#1cm,
+		yshift=#2cm,
+		xscale=#3,
+		yscale=#4,
+		xslant=#5,
+		yslant=#6]
+		(0.1,0.2) rectangle (1.1,1.0);
+}
+\newcommand{\WorkStation}[6]
+{
+	\draw[line width=2pt,
+		rounded corners,
+		fill=gray,
+		xshift=#1cm,
+		yshift=#2cm,
+		xscale=#3,
+		yscale=#4,
+		xslant=#5,
+		yslant=#6]
+		
+	\Xterminal{#1}{#2}{#3}{#4}{#5}{#6}
+}
