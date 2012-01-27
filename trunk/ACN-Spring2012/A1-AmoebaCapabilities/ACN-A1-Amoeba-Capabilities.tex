@@ -3,8 +3,9 @@
 \usepackage{tikz}
 \usepackage{multirow}
 \usepackage{url}
-\usepackage{hyperref}
+\usepackage{hyperref}	% Clickable links to figures, references and urls.
 \usepackage{graphicx}
+\usepackage{basicobjpgftikz}	% Custom basic shapes using pgf/tikz.
 
 \setlength{\oddsidemargin}{0in}
 \setlength{\evensidemargin}{0in}
@@ -22,7 +23,17 @@
 
 \section{Introduction to Amoeba Operating System}
 
-Amoeba is a distributed operating system developed at Vrije Universiteit, Amsterdam. The chief designer was Andrew S. Tanenbaum. It was designed to be transparent with user not having to worry about underlying hardware, like number of processors. The user only sees interacting with a single powerful system~\cite{distributed-systems-book}.
+Amoeba is a distributed operating system developed at Vrije Universiteit, Amsterdam. The chief designer was Andrew S. Tanenbaum. The architecture can be described as a composition of workstations, terminals, processor pool and servers connected through LAN (figure~\ref{amoeba-architecture}). Servers are responsible for file management, printers, login authentication and database etc.
+
+It was designed to be transparent with user not having to worry about underlying hardware, like number of processors. The user only sees interacting with a single powerful system~\cite{amoeba-sourceforge}. Another important design goal was to have an \emph{object-based} resource management~\cite{distributed-systems-book} where each resource is regarded as an object.
+
+\begin{figure}[here]
+\centering
+\begin{tikzpicture}
+\Xterminal{1}{4}{1}{1}{0}{0}
+\Xterminal{1}{6}{1}{1}{0}{0}
+\end{tikzpicture}
+\end{figure}
 
 \begin{figure}[here]
 %\centerline{\includegraphics[]{GPGPU}}
@@ -44,7 +55,7 @@ Amoeba is a distributed operating system developed at Vrije Universiteit, Amster
 	\coordinate [label=below:GPU with lots of cores] (Multi Core GPU) at (5.55cm,-1.3cm);		
 \end{tikzpicture}
 \caption{GPGPU Computing.}
-\label{nVidiaGPGPUfig}
+\label{amoeba-architecture}
 \end{figure}
 
 \section{Project Overview}
@@ -126,7 +137,7 @@ Following table provides a tentative timeline for this project:
 \caption{Project timeline.}
 \end{table}
 \nocite{*}
-\bibliographystyle{plain}
+\bibliographystyle{ieeetr} %plain, ieeetr
 \bibliography{Amoebaref}
 
 %\begin{thebibliography}{99}
