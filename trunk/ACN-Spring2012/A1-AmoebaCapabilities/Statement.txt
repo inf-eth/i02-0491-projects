@@ -1,0 +1,8 @@
+ACN-Assignment 1
+Deadline: 5:00 PM Friday, 3rd February 2012.
+
+Write a two-page summary on 'capability' mechanism of Amoeba.
+Reference:
+Henry-Levy, Capability-based Computer Systems
+http://www.washington.edu./homes/levy/capabook
+Tanenbaum, Amoeba papers 
