@@ -17,7 +17,7 @@
 
 \begin{document}
 
-\title{On Capabilities Feature of Amoeba}
+\title{Objects and Capabilities in Amoeba}
 \author{Attique Dawood}
 \maketitle
 
@@ -77,8 +77,8 @@ It was designed to be transparent with user not having to worry about underlying
 \label{amoeba-architecture}
 \end{figure}
 
-\section{Project Overview}
-A central server will be connected to multiple computers (hosts) with GPUs (devices). Clients will connect to the server through a secure channel. Clients will request computational resource(s) and upload their code. The server will look for any free devices and make allocation as necessary. Client code will compile and run on a free device and output will be returned. In case of compilation errors client will be notified.
+\section{Objects and Capabilities}
+An \emph{object} is described by its \emph{data members} and \emph{operations}. In amoeba every resource is treated as an object. Examples of objects are files, processes, terminals, I/O devices etc. All objects are described and protected by \emph{capabilities}. A capability is a token, key or ticket which provides access to a resource.
 
 \begin{figure}[here]
 %\centerline{\includegraphics[]{GPGPU}}
