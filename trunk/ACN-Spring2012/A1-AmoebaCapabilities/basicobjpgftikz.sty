@@ -165,7 +165,7 @@
 			yscale=#4,
 			xslant=#5,
 			yslant=#6]
-		(0,0) rectangle (2.3,3.45);
+		(0,0) rectangle (2.3,3.4);
 
 	\foreach \x in {0.2,0.6,...,1.9}
 		\foreach \y in {0.2,1.0,1.8,2.6}
@@ -195,9 +195,22 @@
 {
 	\draw[line width=1.5pt, blue, fill=blue!20, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4, xslant=#5, yslant=#6]
 		(0,0) ellipse (2 and 1);
-		
+
 	\coordinate [label=above:#7, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4, xslant=#5, yslant=#6] (PatchLabel) at (0,-0.2);
+
+}
+
+\newcommand{\CapabilityDS}[8]
+{
+	\draw[very thick, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (0, 0) rectangle (4.0, 1);
+	\coordinate [label=below:\textsf{#5}, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (ServerPort) at (2.0,0.75);
 	
-%	\draw[line width=1pt, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4, xslant=#5, yslant=#6]
-%		(1,0.5) node {#7};
+	\draw[very thick, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (4.0, 0) rectangle (7, 1);
+	\coordinate [label=below:\textsf{#6}, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (ObjectID) at (5.5,0.75);
+	
+	\draw[very thick, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (7, 0) rectangle (8.8, 1);
+	\coordinate [label=below:\textsf{#7}, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (Permissions) at (7.85,0.75);
+	
+	\draw[very thick, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (8.8, 0) rectangle (12.8, 1);
+	\coordinate [label=below:\textsf{#8}, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (CheckField) at (10.8,0.75);
 }
