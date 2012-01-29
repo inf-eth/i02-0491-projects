@@ -1,25 +1,25 @@
-# Makefile for alarm clock. Portable on windows or linux.
+# Makefile for CStyleFileHandlingandDetermineFileSize. Portable on windows or linux.
 CC=g++
 DEPS=-I./
 SRCDIR=./
-TARGET=alarm
+TARGET=CStyleFileHandlingandDetermineFileSize
 
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
 ifdef dbg
 CFLAGS:=-g3
-BINDIR:=../../bin/debug
+BINDIR:=../../../bin/debug
 ODIR:=./obj/debug
 else
 CFLAGS:=-O3
-BINDIR:=../../bin/release
+BINDIR:=../../../bin/release
 ODIR:=./obj/release
 endif
 
-_OBJ=alarm.o
+_OBJ=CStyleFileHandlingandDetermineFileSize.o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
-$(BINDIR)/alarm: $(OBJ)
+$(BINDIR)/CStyleFileHandlingandDetermineFileSize: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
@@ -38,4 +38,4 @@ $(BINDIR):
 .PHONY: clean
 
 clean:
-	rm -f ./obj/debug/*.o ./obj/release/*.o ../../bin/debug/alarm ../../bin/release/alarm
+	rm -f ./obj/debug/*.o ./obj/release/*.o ../../../bin/debug/CStyleFileHandlingandDetermineFileSize ../../../bin/release/CStyleFileHandlingandDetermineFileSize
