@@ -23,7 +23,7 @@
 #include <Windows.h>
 #else
 #include <sys/time.h>
-//#include <stdint.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <ctime>
 #define __int64 long long

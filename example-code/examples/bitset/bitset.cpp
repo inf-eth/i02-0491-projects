@@ -1,5 +1,6 @@
 #include <iostream>
 #include <bitset>
+#include <cstdio>
 using std::cout;
 using std::endl;
 using std::bitset;
@@ -18,26 +19,26 @@ int main (int argc, char **argv)
 	unsigned char *xp = (unsigned char *)&x;
 
 	// Displaying the int in binary.
-	cout << "x bits = " << bitset<CHAR_BIT*sizeof(int)>(x) << endl;		// Bad way to print x's bits lol1!
+	cout << "x bits = " << bitset<8*sizeof(int)>(x) << endl;		// Bad way to print x's bits lol1!
 
 	// Changing first byte of int to 3.
 	*xp = 3;
 	cout << "x = " << x << endl;
-	cout << bitset<CHAR_BIT>( *xp ) << endl;
+	cout << bitset<8>( *xp ) << endl;
 
 	// Changing second byte of int to 3.
 	*(xp+1) = 3;
 	cout << "x = " << x << endl;
-	cout << bitset<CHAR_BIT>( *xp ) << endl;
+	cout << bitset<8>( *xp ) << endl;
 
 	// Displaying the int in binary
-	cout << "x bits = " << bitset<CHAR_BIT*sizeof(int)>(x) << endl;
+	cout << "x bits = " << bitset<8*sizeof(int)>(x) << endl;
 
 	// We can even do this with the float.
 	xp = (char unsigned *)&y;
 	cout << "y = " << y << endl;
 	// Better ways to display float but well this one works.
-	cout << "y bits = " << bitset<CHAR_BIT>( *xp ) << bitset<CHAR_BIT>( *xp+1 ) << bitset<CHAR_BIT>( *xp+2 ) << bitset<CHAR_BIT>( *xp+3 ) << endl;
+	cout << "y bits = " << bitset<8>( *xp ) << bitset<8>( *xp+1 ) << bitset<8>( *xp+2 ) << bitset<8>( *xp+3 ) << endl;
 	// Another way to display.
 	bitset <32> FloatBits;
 	union stuffk
@@ -62,7 +63,7 @@ int main (int argc, char **argv)
 	DoubleBits |= kkk.DoubleLonglol;		// Copying Double's bits into bitset. Can't use Double directly or it will only copy the decimal part truncating the fractional part. Casting lol!?
 	cout << "3.3 double = " << kkk.AnyDouble << ", bits = " << DoubleBits << endl;
 	xp = (unsigned char *)&kkk.AnyDouble;
-	cout << "Double bits as char = " << bitset<CHAR_BIT>( *xp ) << bitset<CHAR_BIT>( *(xp+1) ) << bitset<CHAR_BIT>( *(xp+2) ) << bitset<CHAR_BIT>( *(xp+3) ) << bitset<CHAR_BIT>( *(xp+4) ) << bitset<CHAR_BIT>( *(xp+5) ) << bitset<CHAR_BIT>( *(xp+6) ) << bitset<CHAR_BIT>( *(xp+7) ) << endl ;
+	cout << "Double bits as char = " << bitset<8>( *xp ) << bitset<8>( *(xp+1) ) << bitset<8>( *(xp+2) ) << bitset<8>( *(xp+3) ) << bitset<8>( *(xp+4) ) << bitset<8>( *(xp+5) ) << bitset<8>( *(xp+6) ) << bitset<8>( *(xp+7) ) << endl ;
 
 	return 0;
 }
