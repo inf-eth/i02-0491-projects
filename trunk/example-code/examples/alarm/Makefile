@@ -1,0 +1,40 @@
+# Makefile for alarm clock. Portable on windows or linux.
+CC=g++
+DEPS=-I./
+SRCDIR=./
+
+# debug or release configuration. Default is release.
+# 'make dbg=1' will use debug configuration.
+ifdef dbg
+CFLAGS:=-g3
+BINDIR:=../../bin/debug
+ODIR:=./obj/debug
+else
+CFLAGS:=-O3
+BINDIR:=../../bin/release
+ODIR:=./obj/release
+endif
+
+_OBJ=alarm.o
+OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
+
+$(BINDIR)/alarm: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
+
+$(ODIR)/alarm.o: $(SRCDIR)/alarm.cpp
+	$(CC) -c -o $@ $< $(DEPS) $(CFLAGS)
+
+# Object and binary files must be placed in obj and bin directories.
+# Create bin and obj directories if they do not exist before compiling.
+
+$(OBJ): | $(ODIR) $(BINDIR)
+
+$(ODIR):
+	mkdir -p $(ODIR)
+$(BINDIR):
+	mkdir -p $(BINDIR)
+
+.PHONY: clean
+
+clean:
+	rm -f ./obj/debug/*.o ./obj/release/*.o ../../bin/debug/alarm ../../bin/release/OpenSSLCli
