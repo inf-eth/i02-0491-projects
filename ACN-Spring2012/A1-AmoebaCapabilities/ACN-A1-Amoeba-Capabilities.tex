@@ -4,7 +4,6 @@
 \usepackage{verbatim}
 \usepackage{url}
 \usepackage{hyperref}	% Clickable links to figures, references and urls.
-\usepackage{graphicx}
 \usepackage{basicobjpgftikz}	% Custom basic shapes using pgf/tikz.
 
 \setlength{\oddsidemargin}{0in}
@@ -23,7 +22,7 @@
 
 \section{Introduction to Amoeba Operating System}
 
-Amoeba is a distributed operating system developed at Vrije Universiteit, Amsterdam in the eighties. Chief designer was Andrew S. Tanenbaum. The architecture can be described as a composition of workstations, terminals, processor pool and servers connected through LAN (figure~\ref{amoeba-architecture}). Servers are responsible for file management, printers, login authentication and database etc.
+Amoeba is a distributed operating system developed at Vrije Universiteit, Amsterdam, in the eighties. Chief designer was Andrew S. Tanenbaum. The architecture can be described as a composition of workstations, terminals, processor pool and servers connected through LAN (figure~\ref{amoeba-architecture}). Servers are responsible for file management, printers, login authentication and database etc.
 
 It was designed to be transparent with user not having to worry about underlying hardware, like number of processors. The user only sees interacting with a single powerful system~\cite{amoeba-sourceforge}. Another important design goal was to have an \emph{object-based} resource management~\cite{distributed-systems-coulouris} where each resource is regarded as an object.
 
@@ -98,10 +97,10 @@ Capabilities are implemented as a data structure having at least two fields, the
 \begin{tikzpicture}
 
 	\CapabilityDS{0}{0}{1}{1}
-	{\textsf{\begin{footnotesize}Server port\end{footnotesize}}}
-	{\textsf{\begin{footnotesize}Object ID\end{footnotesize}}}
-	{\textsf{\begin{footnotesize}Permissions\end{footnotesize}}}
-	{\textsf{\begin{footnotesize}Check field\end{footnotesize}}}
+		{\textsf{\begin{footnotesize}Server port\end{footnotesize}}}
+		{\textsf{\begin{footnotesize}Object ID\end{footnotesize}}}
+		{\textsf{\begin{footnotesize}Permissions\end{footnotesize}}}
+		{\textsf{\begin{footnotesize}Check field\end{footnotesize}}}
 	
 	\coordinate [label=above:bits] (bits) at (-0.5,1.2);
 	\coordinate [label=above:48] (48Bits) at (2.0,1.2);
@@ -142,17 +141,23 @@ Amoeba provides a one--way function $f$ to compute reduced capability $r'$ from 
 \vspace{0.2cm}
 \centering
 \begin{tikzpicture}
+
 	\CapabilityDS{0}{0}{1}{1}{$s$}{$o$}{$r$}{$c$}
 	\draw[very thick, >=stealth, ->] (6.4, -0.2) -- (6.4, -1.8);
 	\CapabilityDS{0}{-3}{1}{1}{$s$}{$o$}{$r'$}{$f(r'~XOR~c)$}
 	
-	\coordinate [label=above:\textsf{Owner's Capability}] (Owner) at (6.4,1.2);
-	\coordinate [label=below:\textsf{Reduced Capability}] (Reduced) at (6.4,-3.3);
+	\coordinate [label=above:\textsf{Owner's capability}] (Owner) at (6.4,1.2);
+	\coordinate [label=below:\textsf{Reduced capability}] (Reduced) at (6.4,-3.3);
 	
 \end{tikzpicture}
 \caption{Deriving reduced capability from owner's capability.}
 \label{reduced-capability}
 \end{figure}
+
+\section{Capabilities and Access Control List (ACL)}
+Capabilities--based systems provide object--oriented abstraction and this approach can be applied to many computer design problems. Object--oriented implementation has the inherent advantages of uniformity, data abstraction and information hiding. Maintainability is also much easier as system becomes more sophisticated and size grows. ACLs require authentication at each access compared to capabilities where only one--time authentication is required.
+
+Despite the advantages there are also disadvantages of capabilities. Capabilities cannot prevent man--in--the--middle attacks like eavesdropping and replaying. Compared to ACLs, capabilities cannot be easily retracted~\cite{distributed-systems-coulouris}. If Alice and Bob have capabilities to access a resource and the owner wants to restrict Bob's access, a new set of capabilities must be issued invalidating the old capabilities. Alice also needs to be issued the new capability. Also, since capabilities work as keys, Alice can simply give her new capability to Bob and allow access against owner's consent.
 
 \nocite{*}
 \bibliographystyle{ieeetr} %plain, ieeetr
