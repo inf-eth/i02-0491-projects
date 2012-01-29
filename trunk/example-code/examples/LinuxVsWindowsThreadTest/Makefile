@@ -3,6 +3,7 @@ CC=g++
 DEPS=-I./
 SRCDIR=./
 TARGET=LinuxVsWindowsThreadTest
+LIBS=-lpthread
 
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
@@ -20,7 +21,7 @@ _OBJ=LinuxVsWindowsThreadTest.o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(BINDIR)/LinuxVsWindowsThreadTest: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
 	$(CC) -c -o $@ $< $(DEPS) $(CFLAGS)
