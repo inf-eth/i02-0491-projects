@@ -122,3 +122,18 @@
 	\draw[very thick, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (8.8, 0) rectangle (12.8, 1);
 	\coordinate [label=below:\textsf{#8}, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (CheckField) at (10.8,0.75);
 }
+
+\newcommand{\CapabilityDSScaled}[8]
+{
+	\draw[very thick, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (0, 0) rectangle (4.0, 1);
+	\coordinate [label=below:\textsf{#5}, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (ServerPort) at (1.0,0.375);
+	
+	\draw[very thick, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (4.0, 0) rectangle (7, 1);
+	\coordinate [label=below:\textsf{#6}, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (ObjectID) at (2.75,0.375);
+	
+	\draw[very thick, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (7, 0) rectangle (8.8, 1);
+	\coordinate [label=above:\textsf{#7}, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (Permissions) at (3.925,-0.025);
+	
+	\draw[very thick, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (8.8, 0) rectangle (12.8, 1);
+	\coordinate [label=above:\textsf{#8}, xshift=#1cm, yshift=#2cm, xscale=#3, yscale=#4] (CheckField) at (5.4,-0.09);
+}
