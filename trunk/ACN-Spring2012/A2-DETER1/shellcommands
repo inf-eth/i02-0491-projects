@@ -1,0 +1,15 @@
+# Display cpu information
+cat /proc/cpuinfo
+
+# Workstation info
+uname -a
+
+# Find jpg files with 'intro' in them.
+sudo find / -iname "*intro*jp*"
+
+# Find and move jpg files into top_secret directory
+sudo mv `find / -iname "*intro*jp*"` ~/top_secret
+
+# Disk info and free space
+sudo fdisk -l
+df -H
