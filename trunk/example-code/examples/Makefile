@@ -8,6 +8,7 @@ SUBDIR:= 	alarm\
 			LinuxVsWindowsThreadTest\
 			MallocFree\
 			ProgramExecutionTime\
-			StringStream
+			StringStream\
+			LinuxFileSize
 
 include rules.mk
