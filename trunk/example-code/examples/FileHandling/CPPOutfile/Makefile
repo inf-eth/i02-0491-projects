@@ -16,10 +16,10 @@ BINDIR:=../../../bin/release
 ODIR:=./obj/release
 endif
 
-_OBJ=CPPOutfile.o
+_OBJ=$(TARGET).o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
-$(BINDIR)/CPPOutfile: $(OBJ)
+$(BINDIR)/$(TARGET): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
@@ -35,7 +35,10 @@ $(ODIR):
 $(BINDIR):
 	mkdir -p $(BINDIR)
 
+run: $(BINDIR)/$(TARGET)
+	./$(BINDIR)/$(TARGET)
+
 .PHONY: clean
 
 clean:
-	rm -f ./obj/debug/*.o ./obj/release/*.o ../../../bin/debug/CPPOutfile ../../../bin/release/CPPOutfile
+	rm -f test1.txt ./obj/debug/*.o ./obj/release/*.o ../../../bin/debug/$(TARGET) ../../../bin/release/$(TARGET)

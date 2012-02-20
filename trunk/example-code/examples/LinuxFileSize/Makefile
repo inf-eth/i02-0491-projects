@@ -16,10 +16,10 @@ BINDIR:=../../bin/release
 ODIR:=./obj/release
 endif
 
-_OBJ=FileSize.o
+_OBJ=$(TARGET).o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
-$(BINDIR)/FileSize: $(OBJ)
+$(BINDIR)/$(TARGET): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
@@ -35,10 +35,10 @@ $(ODIR):
 $(BINDIR):
 	mkdir -p $(BINDIR)
 
-run: $(BINDIR)/FileSize
-	./$(BINDIR)/FileSize
-	
+run: $(BINDIR)/$(TARGET)
+	./$(BINDIR)/$(TARGET)
+
 .PHONY: clean
 
 clean:
-	rm -f ./obj/debug/*.o ./obj/release/*.o ../../bin/debug/FileSize ../../bin/release/FileSize
+	rm -f ./obj/debug/*.o ./obj/release/*.o ../../bin/debug/$(TARGET) ../../bin/release/$(TARGET)

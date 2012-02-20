@@ -24,7 +24,7 @@ int main( void )
    // Determine file size.
    result = fseek( stream, 0L, SEEK_END);		// Position the pointer at end of file.
    result = ftell (stream);						// Tell the location of pointer.
-   printf ("File size = %d", result);
+   printf ("File size = %d\n", result);
 
    fclose( stream );
 }

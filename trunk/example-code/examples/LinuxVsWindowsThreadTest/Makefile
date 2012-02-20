@@ -17,10 +17,10 @@ BINDIR:=../../bin/release
 ODIR:=./obj/release
 endif
 
-_OBJ=LinuxVsWindowsThreadTest.o
+_OBJ=$(TARGET).o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
-$(BINDIR)/LinuxVsWindowsThreadTest: $(OBJ)
+$(BINDIR)/$(TARGET): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
@@ -36,7 +36,10 @@ $(ODIR):
 $(BINDIR):
 	mkdir -p $(BINDIR)
 
+run: $(BINDIR)/$(TARGET)
+	./$(BINDIR)/$(TARGET)
+
 .PHONY: clean
 
 clean:
-	rm -f ./obj/debug/*.o ./obj/release/*.o ../../bin/debug/LinuxVsWindowsThreadTest ../../bin/release/LinuxVsWindowsThreadTest
+	rm -f ./obj/debug/*.o ./obj/release/*.o ../../bin/debug/$(TARGET) ../../bin/release/$(TARGET)

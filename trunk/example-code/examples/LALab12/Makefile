@@ -16,10 +16,10 @@ BINDIR:=../../bin/release
 ODIR:=./obj/release
 endif
 
-_OBJ=LALab12.o
+_OBJ=$(TARGET).o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
-$(BINDIR)/LALab12: $(OBJ)
+$(BINDIR)/$(TARGET): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
@@ -35,7 +35,10 @@ $(ODIR):
 $(BINDIR):
 	mkdir -p $(BINDIR)
 
+run: $(BINDIR)/$(TARGET)
+	./$(BINDIR)/$(TARGET)
+
 .PHONY: clean
 
 clean:
-	rm -f ./obj/debug/*.o ./obj/release/*.o ../../bin/debug/LALab12 ../../bin/release/LALab12
+	rm -f ./obj/debug/*.o ./obj/release/*.o ../../bin/debug/$(TARGET) ../../bin/release/$(TARGET)
