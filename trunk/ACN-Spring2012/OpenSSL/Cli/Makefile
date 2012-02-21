@@ -38,7 +38,12 @@ $(ODIR):
 $(BINDIR):
 	mkdir -p $(BINDIR)
 
+all: $(BINDIR)/OpenSSLCli
+
 .PHONY: clean
+
+run: $(BINDIR)/OpenSSLCli
+	./$(BINDIR)/OpenSSLCli
 
 clean:
 	rm -f ./obj/debug/*.o ./obj/release/*.o ./bin/debug/OpenSSLCli ./bin/release/OpenSSLCli
