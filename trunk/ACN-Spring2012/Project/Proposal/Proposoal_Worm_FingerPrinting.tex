@@ -7,28 +7,25 @@
 
 \begin{document}
 
-\title{IDS Based on Automated Worm Fingerprinting}
+\title{IDS Based on Automated Fingerprinting}
 \author{Awais Aslam \and Attique Dawood}
 \maketitle
 
 \section{Network Intrusion Detection Systems}
 
-Amoeba is a distributed operating system developed at Vrije Universiteit, Amsterdam, in the eighties. Chief designer was Andrew S. Tanenbaum. The architecture can be described as a composition of workstations, terminals, processor pool and servers connected through LAN (figure~\ref{amoeba-architecture}). Servers are responsible for file management, printers, login authentication and database etc.
+Intrusion detection systems monitor network traffic to detect malicious activities. Malicious activities can be an outside attempt to gain control of a host, a worm spreading across the internet or suspicious traffic from a local host etc.
 
-It was designed to be transparent with user not having to worry about underlying hardware, like number of processors. The user only sees interacting with a single powerful system~\cite{amoeba-sourceforge}. Another important design goal was to have an \emph{object-based} resource management~\cite{distributed-systems-coulouris} where each resource is regarded as an object.
+\section{Types of IDS}
 
-\begin{figure*}[here, trim axis left]
-\centering
-\begin{tikzpicture}
+IDS are basically either signature--based or anomaly--based. Signature--based IDS need to know specific signatures of malicious content (specific strings or code) beforehand. Anomaly--based IDS identify abnormal patterns in network traffic for detecting suspicious activities.
 
-	\draw[line width=1.5pt] (3,0) -- (0.6,4);
-	\draw[line width=1.5pt] (3,0) -- (2.6,4);
-	\draw[line width=1.5pt] (3,0) -- (4.6,4);
+\section{Automated Signature Generation}
 
-\end{tikzpicture}
-\caption{Amoeba architecture.}
-\label{amoeba-architecture}
-\end{figure*}
+Sumeet et. al.~\cite{DBLP:conf/osdi/SinghEVS04} have presented a method to quickly generate signatures based on anomalous behaviour of worms spreading across the network in order contain them. The method is based on an observation that the probability of unique strings occuring in normal traffic directed to diverse destination is very low.
+
+Intrusion detection techniques used by Snort and Bro rely on vulnerabilities that are well--known by comparing with a database. Automated worm detection assumes that some part of malicious program or code is invariant, i.e. it does not change in order to hide itself. The invariant portion of worm can be used to create signatures since it will occur frequently in network traffic.
+
+The goal of this project is to come up with an implementation of the signature generation algorithm in~\cite{DBLP:conf/osdi/SinghEVS04}.
 
 \nocite{*}
 \bibliographystyle{ieeetr} %plain, ieeetr
