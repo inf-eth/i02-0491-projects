@@ -9,6 +9,7 @@ SUBDIR:= 	alarm\
 			MallocFree\
 			ProgramExecutionTime\
 			StringStream\
-			LinuxFileSize
+			LinuxFileSize\
+			ArrayShift
 
 include rules.mk
