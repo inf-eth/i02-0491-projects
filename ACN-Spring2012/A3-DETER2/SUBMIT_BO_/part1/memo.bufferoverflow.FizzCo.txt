@@ -1,0 +1,12 @@
+To: William H. Flathead
+Subject: Vulnerability in FrobozzCo Webserver
+
+Sir,
+
+I've found a buffer overflow vulnerability in our Webserver. By successfully exploiting it I was able to crash the server with specific inputs. On line 312 of code file webserver.c a 'path' input string as an outside request was not bound checked before being concatenated onto 'sendmessage'. The 'sendmessage' string being only 1024 bytes in legnth could be overflown by a sufficiently large input 'path' string.
+
+I was able to fix this exploit by checking 'path' string length before concatenating onto the 'sendmessage' string. In case 'path' is longer than what the buffer can hold, a truncated version of 'path' ending in '...' is concatenated and sent back as reply.
+
+Attached with this memo are files 'exploit1.sh', 'payload1' and instructions to demonstrate this vulnerability.
+
+Attique Dawood.
