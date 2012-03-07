@@ -1,4 +1,0 @@
-1. Skip to step 3 if fhttpd server is already running on port 8080. Switch to 'cd /usr/src/fhttpd'.
-2. Start up the fhttpd server 'sudo make install'.
-3. Swith to directory where 'exploit1.sh' and 'payload1' are present. Type './exploit1.sh'
-4. fhttpd server should crash at this point. You can tell the server has crashed by doing a 'sudo make install'. If the stop server command is '[FAILED]' then it crashed. A segmentation fault message should display if the server was run manually.
