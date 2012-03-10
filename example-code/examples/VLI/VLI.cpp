@@ -8,13 +8,263 @@ CVLI::CVLI (): Sign(0)
 	
 }
 
+CVLI::CVLI (bool pSign, vector<short> &pNumber): Sign(pSign), Number(pNumber)
+{
+	Format ();
+}
+
+void CVLI::Format ()
+{
+	// Remove any preceding zeros.
+	for (int i=Number.size()-1; i > 0; i--)
+	{
+		if (Number[i] == 0U)
+			Number.pop_back();
+		else
+			break;
+	}
+	// Zero should have a positive sign.
+	if (Number.size() == 1 && Number[0] == 0U)
+		Sign = 0;
+}
+
+bool CVLI::IsZero () const
+{
+	if (Sign == 0 && Number.size () == 1 && Number[0] == 0U)
+		return true;
+	else
+		return false;
+}
+
+CVLI CVLI::Abs () const
+{
+	CVLI rAbs = (*this);
+	rAbs.Sign = 0;
+	return rAbs;
+}
+
+// Comparison operators.
+bool CVLI::operator== (const CVLI& pVLI)
+{
+	if (Sign == pVLI.Sign && Number == pVLI.Number)
+		return true;
+	else
+		return false;
+}
+
+bool CVLI::operator!= (const CVLI& pVLI)
+{
+	if ((*this) == pVLI)
+		return false;
+	else 
+		return true;
+}
+bool CVLI::operator< (const CVLI& pVLI)
+{
+	// Equality check.
+	if ((*this) == pVLI)
+		return false;
+
+	// Zero check.
+	if ((*this).IsZero() || pVLI.IsZero())
+	{
+		if ((*this).IsZero())
+			return !pVLI.Sign;
+		else
+			return Sign;
+	}
+
+	// Sign check.
+	if (Sign != pVLI.Sign)
+		return Sign;
+
+	// Both positive.
+	if (Sign == 0)
+	{
+		// Check length.
+		if (Number.size() != pVLI.Number.size())
+		{
+			return (Number.size() < pVLI.Number.size());
+		}
+		else
+		{
+			for (int i=0; i < (int)Number.size(); i++)
+			{
+				if (Number[Number.size()-1-i] == pVLI.Number[pVLI.Number.size()-1-i])
+					continue;
+				else
+					return (Number[Number.size()-1-i] < pVLI.Number[pVLI.Number.size()-1-i]);
+			}
+		}
+	}
+	// Else if both negative.
+	else
+	{
+		// Check length.
+		if (Number.size() != pVLI.Number.size())
+		{
+			return !(Number.size() < pVLI.Number.size());
+		}
+		else
+		{
+			for (int i=0; i < (int)Number.size(); i++)
+			{
+				if (Number[Number.size()-1-i] == pVLI.Number[pVLI.Number.size()-1-i])
+					continue;
+				else
+					return !(Number[Number.size()-1-i] < pVLI.Number[pVLI.Number.size()-1-i]);
+			}
+		}
+	}
+	return false;
+}
+
+bool CVLI::operator> (const CVLI& pVLI)
+{
+	// Equality check.
+	if ((*this) == pVLI)
+		return false;
+
+	// Zero check.
+	if ((*this).IsZero() || pVLI.IsZero())
+	{
+		if ((*this).IsZero())
+			return pVLI.Sign;
+		else
+			return !Sign;
+	}
+
+	// Sign check.
+	if (Sign != pVLI.Sign)
+		return !Sign;
+
+	// Both positive.
+	if (Sign == 0)
+	{
+		// Check length.
+		if (Number.size() != pVLI.Number.size())
+		{
+			return (Number.size() > pVLI.Number.size());
+		}
+		else
+		{
+			for (int i=0; i < (int)Number.size(); i++)
+			{
+				if (Number[Number.size()-1-i] == pVLI.Number[pVLI.Number.size()-1-i])
+					continue;
+				else
+					return (Number[Number.size()-1-i] > pVLI.Number[pVLI.Number.size()-1-i]);
+			}
+		}
+	}
+	// Else if both negative.
+	else
+	{
+		// Check length.
+		if (Number.size() != pVLI.Number.size())
+		{
+			return !(Number.size() > pVLI.Number.size());
+		}
+		else
+		{
+			for (int i=0; i < (int)Number.size(); i++)
+			{
+				if (Number[Number.size()-1-i] == pVLI.Number[pVLI.Number.size()-1-i])
+					continue;
+				else
+					return !(Number[Number.size()-1-i] > pVLI.Number[pVLI.Number.size()-1-i]);
+			}
+		}
+	}
+	return false;
+}
+
+bool CVLI::operator<= (const CVLI& pVLI)
+{
+	if ((*this) < pVLI || (*this) == pVLI)
+		return true;
+	else
+		return false;
+}
+
+bool CVLI::operator>= (const CVLI& pVLI)
+{
+	if ((*this) > pVLI || (*this) == pVLI)
+		return true;
+	else
+		return false;
+}
+
+// Addition and subtraction
+CVLI CVLI::operator+ (const CVLI& pVLI)
+{
+	CVLI Sum;
+	// Same signs, simple addition.
+	if (Sign == pVLI.Sign)
+	{
+		Sum.Sign = Sign;
+		Number.size()<pVLI.Number.size() ? Sum.Number = pVLI.Number : Sum.Number = Number;
+		// First Pass.
+		for (int i=0; i < (int)(Number.size()<pVLI.Number.size() ? Number.size() : pVLI.Number.size()); i++)
+			Sum.Number[i] = Number.size()<pVLI.Number.size() ? Number[i] + Sum.Number[i]: pVLI.Number[i] + Sum.Number[i];
+		// Carry Pass.
+		short Carry = 0;
+		for (int i=0; i < (int)(Number.size()<pVLI.Number.size() ? pVLI.Number.size() : Number.size()); i++)
+		{
+			Sum.Number[i] += Carry;
+			if (Sum.Number[i] > 9)
+			{
+				Carry = 1;
+				Sum.Number[i] -= 10;
+			}
+			else
+				Carry = 0;
+		}
+		if (Carry == 1)
+			Sum.Number.push_back (1);
+		return Sum;
+	}
+	// Subtraction in case of different signs.
+	else
+	{
+		Sum.Sign = (*this).Abs() > pVLI.Abs() ? (*this).Sign : pVLI.Sign;
+		(*this).Abs() < pVLI.Abs() ? Sum.Number = pVLI.Number : Sum.Number = Number;
+		// First Pass.
+		for (int i=0; i < (int)((*this).Abs() < pVLI.Abs() ? Number.size() : pVLI.Number.size()); i++)
+			Sum.Number[i] = (*this).Abs() < pVLI.Abs() ? Sum.Number[i] - Number[i]: Sum.Number[i] - pVLI.Number[i];
+		// Carry Pass.
+		short Carry = 0;
+		for (int i=0; i < (int)((*this).Abs() < pVLI.Abs() ? pVLI.Number.size() : Number.size()); i++)
+		{
+			Sum.Number[i] += Carry;
+			if (Sum.Number[i] < 0)
+			{
+				Carry = -1;
+				Sum.Number[i] += 10;
+			}
+			else
+				Carry = 0;
+		}
+		Sum.Format();
+		return Sum;
+	}
+}
+
+CVLI CVLI::operator- (const CVLI& pVLI)
+{
+	CVLI temp;
+	temp.Sign = !pVLI.Sign;
+	temp.Number = pVLI.Number;
+	return ((*this)+temp);
+}
+
 // << and >> operators.
 ostream& operator<<(ostream& out, const CVLI& pVLI)
 {
-    out << (pVLI.Sign?"-":"");
-	for(int i= pVLI.Number.size()-1; i >= 0; i--) 
-        out << pVLI.Number[i];
-    return out;
+	out << (pVLI.Sign?"-":"");
+	for(int i= pVLI.Number.size()-1; i >= 0; i--)
+		out << pVLI.Number[i];
+	return out;
 }
 istream& operator >> (istream& in, CVLI& pVLI)
 {
@@ -32,7 +282,7 @@ istream& operator >> (istream& in, CVLI& pVLI)
 		pVLI.Sign = 0;
 
 	// Remove any preceding zeros.
-	for (int i=pVLI.Sign; i < input.size(); i++)
+	for (int i=pVLI.Sign; i < (int)input.size(); i++)
 	{
 		if (input[0] == '0')
 			input.replace (0, 1, "");
@@ -47,6 +297,12 @@ istream& operator >> (istream& in, CVLI& pVLI)
 			pVLI.Number.push_back ((unsigned short)(input.c_str()[i]-48));
 		else
 			continue;
+	}
+	// If zero string.
+	if (input.size() == 0)
+	{
+		pVLI.Number.push_back ((unsigned short)(0));
+		pVLI.Sign = 0;
 	}
 	return in;
 }
