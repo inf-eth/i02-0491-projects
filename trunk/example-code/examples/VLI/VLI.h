@@ -23,9 +23,16 @@ class CVLI
 	bool operator <= (const CVLI&);
 	bool operator >= (const CVLI&);
 
-	// Addition and Subtraction
+	// Addition and Subtraction.
 	CVLI operator + (const CVLI&);
 	CVLI operator - (const CVLI&);
+
+	// Multiplication and division.
+	CVLI operator * (const CVLI&);
+	CVLI operator / (const CVLI&);
+
+	// modulus
+	CVLI operator % (const CVLI&);
 
 	// Input and output.
 	friend ostream& operator << (ostream&, const CVLI&);

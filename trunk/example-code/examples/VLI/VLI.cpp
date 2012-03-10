@@ -258,6 +258,68 @@ CVLI CVLI::operator- (const CVLI& pVLI)
 	return ((*this)+temp);
 }
 
+// Multiplication
+CVLI CVLI::operator* (const CVLI& pVLI)
+{
+	CVLI Product, temp;
+	int z;
+	Product.Number.push_back (0);
+
+	//  this
+	//x pVLI
+	//-------
+	//Product
+	//-------
+
+	for (int i=0; i < (int)pVLI.Number.size(); i++)
+	{
+		temp.Number.clear();
+		for (z=0; z<i; z++)
+			temp.Number.push_back (0);
+
+		// Raw multiplication
+		for (int j=0; j < (int)Number.size(); j++)
+		{
+			temp.Number.push_back (Number[j] * pVLI.Number[i]);
+		}
+
+		// Carry manipulation.
+		short Carry = 0;
+		for (int k=0; k < (int)temp.Number.size(); k++)
+		{
+			temp.Number[k] += Carry;
+			if (temp.Number[k] > 9)
+			{
+				Carry = temp.Number[k] / 10;
+				temp.Number[k] %= 10;
+			}
+			else
+				Carry = 0;
+		}
+		if (Carry != 0)
+			temp.Number.push_back (Carry);
+		temp.Format();
+		Product = Product + temp;
+	}
+	Product.Sign = Sign ^ pVLI.Sign;
+	return Product;
+}
+
+// Division
+CVLI CVLI::operator/ (const CVLI& pVLI)
+{
+	CVLI Quotient;
+
+	return Quotient;
+}
+
+// modulus
+CVLI CVLI::operator% (const CVLI& pVLI)
+{
+	CVLI Remainder;
+
+	return Remainder;
+}
 // << and >> operators.
 ostream& operator<<(ostream& out, const CVLI& pVLI)
 {
@@ -276,7 +338,6 @@ istream& operator >> (istream& in, CVLI& pVLI)
 	{
 		pVLI.Sign = 1;
 		input.replace (0, 1, "");
-		//std::cout << "...." << std::endl;
 	}
 	else
 		pVLI.Sign = 0;
@@ -292,7 +353,6 @@ istream& operator >> (istream& in, CVLI& pVLI)
 
 	for (int i=input.size()-1; i >= 0; i--)
 	{
-		//std::cout << "input[" << i << "] = " << (unsigned short)(input.c_str()[i]-48) << std::endl;
 		if ((unsigned short)(input.c_str()[i]-48) >= 0U && (unsigned short)(input.c_str()[i]-48) <= 9U)
 			pVLI.Number.push_back ((unsigned short)(input.c_str()[i]-48));
 		else
