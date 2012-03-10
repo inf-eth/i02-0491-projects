@@ -19,5 +19,6 @@ int main (int argc, char **argv)
 	vector<short> test;
 	cout << "V1 + V2 = " << VLIobj1 + VLIobj2 << endl;
 	cout << "V1 - V2 = " << VLIobj1 - VLIobj2 << endl;
+	cout << "V1 * V2 = " << VLIobj1 * VLIobj2 << endl;
 	return 0;
 }
