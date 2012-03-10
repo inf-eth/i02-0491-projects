@@ -18,19 +18,19 @@ void CVLI::Format ()
 	// Remove any preceding zeros.
 	for (int i=Number.size()-1; i > 0; i--)
 	{
-		if (Number[i] == 0U)
+		if (Number[i] == 0)
 			Number.pop_back();
 		else
 			break;
 	}
 	// Zero should have a positive sign.
-	if (Number.size() == 1 && Number[0] == 0U)
+	if (Number.size() == 1 && Number[0] == 0)
 		Sign = 0;
 }
 
 bool CVLI::IsZero () const
 {
-	if (Sign == 0 && Number.size () == 1 && Number[0] == 0U)
+	if (Sign == 0 && Number.size () == 1 && Number[0] == 0)
 		return true;
 	else
 		return false;
@@ -309,17 +309,123 @@ CVLI CVLI::operator* (const CVLI& pVLI)
 CVLI CVLI::operator/ (const CVLI& pVLI)
 {
 	CVLI Quotient;
+	CVLI Dividend;
+	CVLI Remainder;
+	CVLI Product;
+	CVLI Divisor = pVLI;
+	Divisor.Sign = 0;
 
+	bool ZeroFlag = false;
+	bool InsertedFlag = false;
+	for (int i=0; i<(int)Number.size(); i++)
+	{
+		if (ZeroFlag == true && Number[Number.size()-1-i] == (short)0)
+		{
+			Quotient.Number.insert (Quotient.Number.begin(), (short)0);
+			continue;
+		}
+		else
+		{
+			Dividend.Number.insert (Dividend.Number.begin(), 1, Number[Number.size()-1-i]);
+			ZeroFlag = false;
+		}
+		if (Dividend < Divisor)
+		{
+			if (InsertedFlag == true)
+				Quotient.Number.insert (Quotient.Number.begin(), (short)0);
+			continue;
+		}
+		else
+		{
+			int j = 1;
+			Product = Divisor;
+			for (; j<10; j++)
+			{
+				if (Product > Dividend)
+				{
+					Product = Product - Divisor;
+					j--;
+					break;
+				}
+				Product = Product + Divisor;
+			}
+			Remainder = Dividend - Product;
+			Quotient.Number.insert (Quotient.Number.begin(), 1, (short)j);
+			InsertedFlag = true;
+			if (Remainder.IsZero() == true)
+			{
+				ZeroFlag = true;
+				Dividend.Number.clear();
+			}
+			else
+				Dividend = Remainder;
+		}
+	}
+	Remainder = Dividend;
+	Quotient.Sign = Sign ^ pVLI.Sign;
 	return Quotient;
 }
 
 // modulus
 CVLI CVLI::operator% (const CVLI& pVLI)
 {
+	CVLI Quotient;
+	CVLI Dividend;
 	CVLI Remainder;
+	CVLI Product;
+	CVLI Divisor = pVLI;
+	Divisor.Sign = 0;
 
+	bool ZeroFlag = false;
+	bool InsertedFlag = false;
+	for (int i=0; i<(int)Number.size(); i++)
+	{
+		if (ZeroFlag == true && Number[Number.size()-1-i] == (short)0)
+		{
+			Quotient.Number.insert (Quotient.Number.begin(), (short)0);
+			continue;
+		}
+		else
+		{
+			Dividend.Number.insert (Dividend.Number.begin(), 1, Number[Number.size()-1-i]);
+			ZeroFlag = false;
+		}
+		if (Dividend < Divisor)
+		{
+			if (InsertedFlag == true)
+				Quotient.Number.insert (Quotient.Number.begin(), (short)0);
+			continue;
+		}
+		else
+		{
+			int j = 1;
+			Product = Divisor;
+			for (; j<10; j++)
+			{
+				if (Product > Dividend)
+				{
+					Product = Product - Divisor;
+					j--;
+					break;
+				}
+				Product = Product + Divisor;
+			}
+			Remainder = Dividend - Product;
+			Quotient.Number.insert (Quotient.Number.begin(), 1, (short)j);
+			InsertedFlag = true;
+			if (Remainder.IsZero() == true)
+			{
+				ZeroFlag = true;
+				Dividend.Number.clear();
+			}
+			else
+				Dividend = Remainder;
+		}
+	}
+	Remainder = Dividend;
 	return Remainder;
 }
+
 // << and >> operators.
 ostream& operator<<(ostream& out, const CVLI& pVLI)
 {
