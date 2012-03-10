@@ -25,6 +25,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StringStream", "examples\St
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArrayShift", "examples\ArrayShift\ArrayShift.vcxproj", "{1A304861-B8F0-4397-A19F-7B966FA1EBA1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VLI", "examples\VLI\VLI.vcxproj", "{FCA3F709-CC32-451D-9F8E-83F46C72E225}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -79,6 +81,10 @@ Global
 		{1A304861-B8F0-4397-A19F-7B966FA1EBA1}.Debug|Win32.Build.0 = Debug|Win32
 		{1A304861-B8F0-4397-A19F-7B966FA1EBA1}.Release|Win32.ActiveCfg = Release|Win32
 		{1A304861-B8F0-4397-A19F-7B966FA1EBA1}.Release|Win32.Build.0 = Release|Win32
+		{FCA3F709-CC32-451D-9F8E-83F46C72E225}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FCA3F709-CC32-451D-9F8E-83F46C72E225}.Debug|Win32.Build.0 = Debug|Win32
+		{FCA3F709-CC32-451D-9F8E-83F46C72E225}.Release|Win32.ActiveCfg = Release|Win32
+		{FCA3F709-CC32-451D-9F8E-83F46C72E225}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
