@@ -10,6 +10,7 @@ SUBDIR:= 	alarm\
 			ProgramExecutionTime\
 			StringStream\
 			LinuxFileSize\
-			ArrayShift
+			ArrayShift\
+			VLI
 
 include rules.mk
