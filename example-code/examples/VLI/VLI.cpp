@@ -1,11 +1,10 @@
 #include "VLI.h"
 #include <string>
-#include <cstdlib>
 using std::string;
 
 CVLI::CVLI (): Sign(0)
 {
-	
+	Number.push_back (0);
 }
 
 CVLI::CVLI (bool pSign, vector<short> &pNumber): Sign(pSign), Number(pNumber)
@@ -43,6 +42,64 @@ CVLI CVLI::Abs () const
 	return rAbs;
 }
 
+// Using twice of rough estimation as break-point
+// http://en.wikipedia.org/wiki/Methods_of_computing_square_roots
+
+bool CVLI::CheckPrime (bool CheckBaseCase)
+{
+	// Base case conditions
+	if (CheckBaseCase == true)
+	{
+		if (Number.size() == 1)
+		{
+			if (Number[0] == 1 || Number[0] == 2 || Number[0] == 3)
+				return true;
+			else
+				return false;
+		}
+	}
+
+	CVLI UpperBound;
+	CVLI temp;
+
+	if (Number.size() % 2 == 1)
+	{
+		temp.Number.insert (temp.Number.begin(), (short)2);
+		for (int i=0; i<(int)(Number.size()-1)/2; i++)
+			temp.Number.insert (temp.Number.begin(), (short)0);
+		UpperBound = temp + temp;
+	}
+	else
+	{
+		temp.Number.insert (temp.Number.begin(), (short)6);
+		for (int i=0; i<(int)(Number.size()-2)/2; i++)
+			temp.Number.insert (temp.Number.begin(), (short)0);
+		UpperBound = temp + temp;
+	}
+
+	CVLI two;
+	CVLI Check;
+	two.Number.push_back (2);
+
+	/* GPU initialization.
+	CVLI i;
+	CVLI three;
+	i.Number.push_back (0);
+	three.Number.push_back (3);
+	Check = two * i + three;
+	*/
+
+	// CPU Initialization.
+	Check.Number.push_back (3);
+
+	while (Check < UpperBound)
+	{
+		if (((*this) % Check).IsZero() == true)
+			return false;
+		Check = Check + two;	// Check only odd numbers starting from 3.
+	}
+	return true;
+}
 // Comparison operators.
 bool CVLI::operator== (const CVLI& pVLI)
 {
@@ -195,6 +252,36 @@ bool CVLI::operator>= (const CVLI& pVLI)
 		return false;
 }
 
+// Pre-post increment.
+CVLI CVLI::operator++ ()
+{
+	Number[0]++;
+	// Carry Pass.
+	short Carry = 0;
+	for (int i=0; i < (int)Number.size(); i++)
+	{
+		Number[i] += Carry;
+		if (Number[i] > 9)
+		{
+			Carry = 1;
+			Number[i] -= 10;
+		}
+		else
+			Carry = 0;
+	}
+	if (Carry == 1)
+		Number.push_back (1);
+	return (*this);
+}
+
+// Pre-post increment.
+CVLI CVLI::operator++ (int dummy)
+{
+	CVLI temp = (*this);
+	++(*this);
+	return temp;
+}
+
 // Addition and subtraction
 CVLI CVLI::operator+ (const CVLI& pVLI)
 {
@@ -341,12 +428,10 @@ CVLI CVLI::operator/ (const CVLI& pVLI)
 			Product = Divisor;
 			for (; j<10; j++)
 			{
-				if (Product > Dividend)
-				{
-					Product = Product - Divisor;
-					j--;
+				if (Product == Dividend)
 					break;
-				}
+				if ((Product+Divisor) > Dividend)
+					break;
 				Product = Product + Divisor;
 			}
 			Remainder = Dividend - Product;
@@ -361,7 +446,6 @@ CVLI CVLI::operator/ (const CVLI& pVLI)
 				Dividend = Remainder;
 		}
 	}
-	Remainder = Dividend;
 	Quotient.Sign = Sign ^ pVLI.Sign;
 	return Quotient;
 }
@@ -402,12 +486,10 @@ CVLI CVLI::operator% (const CVLI& pVLI)
 			Product = Divisor;
 			for (; j<10; j++)
 			{
-				if (Product > Dividend)
-				{
-					Product = Product - Divisor;
-					j--;
+				if (Product == Dividend)
 					break;
-				}
+				if ((Product+Divisor) > Dividend)
+					break;
 				Product = Product + Divisor;
 			}
 			Remainder = Dividend - Product;
@@ -422,7 +504,8 @@ CVLI CVLI::operator% (const CVLI& pVLI)
 				Dividend = Remainder;
 		}
 	}
-	Remainder = Dividend;
+	if (Dividend.Number.empty() == false)
+		Remainder = Dividend;
 	return Remainder;
 }
 

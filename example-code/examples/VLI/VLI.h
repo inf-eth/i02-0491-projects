@@ -1,8 +1,9 @@
 #include <vector>
 #include <iostream>
+using std::vector;
 using std::ostream;
 using std::istream;
-using std::vector;
+
 class CVLI
 {
 	bool Sign;			// 0=positive, 1=negative
@@ -15,6 +16,9 @@ class CVLI
 	CVLI ();
 	CVLI::CVLI (bool, vector<short> &);		// VLI from sign and number.
 
+	// Check for primality.
+	bool CheckPrime (bool=false);
+
 	// Comparison operators.
 	bool operator == (const CVLI&);
 	bool operator != (const CVLI&);
@@ -22,6 +26,10 @@ class CVLI
 	bool operator > (const CVLI&);
 	bool operator <= (const CVLI&);
 	bool operator >= (const CVLI&);
+
+	// Pre-post increment.
+	CVLI operator ++ ();
+	CVLI operator ++ (int);
 
 	// Addition and Subtraction.
 	CVLI operator + (const CVLI&);

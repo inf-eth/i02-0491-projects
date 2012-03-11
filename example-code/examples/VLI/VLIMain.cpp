@@ -16,11 +16,11 @@ int main (int argc, char **argv)
 		cout << "1 < 2" << endl;
 	if (VLIobj1 > VLIobj2)
 		cout << "1 > 2" << endl;
-	vector<short> test;
 	cout << "V1 + V2 = " << VLIobj1 + VLIobj2 << endl;
 	cout << "V1 - V2 = " << VLIobj1 - VLIobj2 << endl;
 	cout << "V1 * V2 = " << VLIobj1 * VLIobj2 << endl;
 	cout << "V1 / V2 = " << VLIobj1 / VLIobj2 << endl;
 	cout << "V1 % V2 = " << VLIobj1 % VLIobj2 << endl;
+	cout << "Primality test for V1 = " << VLIobj1.CheckPrime(true) << endl;
 	return 0;
 }
