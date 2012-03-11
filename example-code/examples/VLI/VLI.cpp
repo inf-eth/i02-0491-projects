@@ -4,7 +4,6 @@ using std::string;
 
 CVLI::CVLI (): Sign(0)
 {
-	Number.push_back (0);
 }
 
 CVLI::CVLI (bool pSign, vector<short> &pNumber): Sign(pSign), Number(pNumber)
@@ -77,26 +76,20 @@ bool CVLI::CheckPrime (bool CheckBaseCase)
 		UpperBound = temp + temp;
 	}
 
-	CVLI two;
-	CVLI Check;
-	two.Number.push_back (2);
-
-	/* GPU initialization.
 	CVLI i;
-	CVLI three;
-	i.Number.push_back (0);
-	three.Number.push_back (3);
-	Check = two * i + three;
-	*/
+	CVLI one;
+	CVLI six;
+	CVLI Check;
 
-	// CPU Initialization.
-	Check.Number.push_back (3);
+	i.Number.push_back (1);
+	six.Number.push_back (6);
+	Check.Number.push_back (2);
 
 	while (Check < UpperBound)
 	{
 		if (((*this) % Check).IsZero() == true)
 			return false;
-		Check = Check + two;	// Check only odd numbers starting from 3.
+		Check < (six+one) ? Check++ : Check = ++(six * (i++));
 	}
 	return true;
 }
@@ -519,6 +512,7 @@ ostream& operator<<(ostream& out, const CVLI& pVLI)
 }
 istream& operator >> (istream& in, CVLI& pVLI)
 {
+	pVLI.Number.clear();
 	string input;
 	in >> input;
 
