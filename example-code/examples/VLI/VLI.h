@@ -14,7 +14,7 @@ class CVLI
 
 	public:
 	CVLI ();
-	CVLI::CVLI (bool, vector<short> &);		// VLI from sign and number.
+	CVLI (bool, vector<short> &);		// VLI from sign and number.
 
 	// Check for primality.
 	bool CheckPrime (bool=false);

@@ -1,8 +1,20 @@
-# Makefile for VLI. Portable on windows or linux.
+# Generic Makefile.
+# Input names of cpp files (without .cpp extension) against CPPFILES separated by spaces.
+# Mention output binary filename against TARGET.
+#
+# CC = compiler name
+# DEPS = any additional folders containing header apart from system headers. Default is current directory.
+# SRCDIR = directory containing source files. Default is current directory.
+# CPPFILES = names of cpp files to be compiled.
+# TARGET= output binary file name.
+# LIBS= any libraries to link with (e.g. -lpthread). Default is none.
+
 CC=g++
-DEPS=-I./
-SRCDIR=./
+DEPS=-I.
+SRCDIR=.
+CPPFILES=VLI VLIMain
 TARGET=VLI
+LIBS=
 
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
@@ -16,18 +28,16 @@ BINDIR:=../../bin/release
 ODIR:=../../obj/release
 endif
 
-_OBJ=$(TARGET).o
-OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
+OBJ=$(patsubst %,$(ODIR)/%.obj,$(CPPFILES))
 
 $(BINDIR)/$(TARGET): $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-$(ODIR)/%.o: $(SRCDIR)/%.cpp
+$(ODIR)/%.obj: $(SRCDIR)/%.cpp
 	$(CC) -c -o $@ $< $(DEPS) $(CFLAGS)
 
 # Object and binary files must be placed in obj and bin directories.
 # Create bin and obj directories if they do not exist before compiling.
-
 $(OBJ): | $(ODIR) $(BINDIR)
 
 $(ODIR):
@@ -35,12 +45,11 @@ $(ODIR):
 $(BINDIR):
 	mkdir -p $(BINDIR)
 
-all: $(BINDIR)/$(TARGET)
-
+# Default run.
 run: $(BINDIR)/$(TARGET)
-	./$(BINDIR)/$(TARGET)
+	./$(BINDIR)/$(TARGET) $(ARG)
 
 .PHONY: clean
 
 clean:
-	rm -f ./obj/debug/*.o ./obj/release/*.o ../../bin/debug/$(TARGET) ../../bin/release/$(TARGET)
+	rm -rf obj ../../bin/debug/$(TARGET) ../../bin/release/$(TARGET)
