@@ -80,8 +80,10 @@ bool CVLI::CheckPrime (bool CheckBaseCase)
 	CVLI one;
 	CVLI six;
 	CVLI Check;
+	bool odd = false;
 
 	i.Number.push_back (1);
+	one.Number.push_back (1);
 	six.Number.push_back (6);
 	Check.Number.push_back (2);
 
@@ -89,7 +91,13 @@ bool CVLI::CheckPrime (bool CheckBaseCase)
 	{
 		if (((*this) % Check).IsZero() == true)
 			return false;
-		Check < (six+one) ? Check++ : Check = ++(six * (i++));
+		if (Check < (six-one))
+			Check++;
+		else
+		{
+			odd ? Check = (six * i)-one : Check = (six * (i++))+one;
+			odd = !odd;
+		}
 	}
 	return true;
 }
