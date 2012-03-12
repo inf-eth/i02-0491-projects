@@ -1,10 +1,13 @@
 #include <iostream>
 #include <sstream>
+#include <vector>
 #include <ctime>
+
 using std::cin;
 using std::cout;
 using std::endl;
 using std::stringstream;
+using std::vector;
 
 #define VLI64 unsigned long long
 
@@ -16,16 +19,73 @@ VLI64 Sqrt (const VLI64&, int = 5);
 // Default check for range 101-17977
 int main (int argc, char **argv)
 {
+	// Timing.
 	clock_t Start, End;
-	Start = clock();
 	
-	VLI64 x = 1171432692373ULL;
-	cout << "x = " << x << endl;
-	cout << "Primality test for x: " << CheckPrime (x) << endl;
+	Start = clock();
+	if (argc == 2)
+	{
+		stringstream ssN;
+		VLI64 N;
+		
+		ssN << argv[1];
+		ssN >> N;
+		cout << "N = " << N << endl;
+		cout << "Primality test for N = " << CheckPrime(N) << endl;
+	}
+	else if (argc == 3)
+	{
+		stringstream ssN, ssM;
+		VLI64 N, M;
+		vector<VLI64> PrimeList;
+		
+		ssN << argv[1];
+		ssN >> N;
+		ssM << argv[2];
+		ssM >> M;
+		cout << "N = " << N << endl;
+		cout << "M = " << M << endl;
+		
+		// CVLI variables for iteration. Assuming N is larger than 3.
+		bool odd = false;
+		VLI64 i;
+		VLI64 Check;
 
+		i = ((N-1ULL)/6ULL)+1ULL;
+		Check = (6ULL*i)-1ULL;
+		
+		if (Check <= N)
+		{
+			Check = (6ULL*i++)+1ULL;
+			odd = !odd;
+		}
+
+		cout << "i = " << i << endl;
+		cout << "Check = " << Check << endl;
+
+		while (Check < M)
+		{
+			if (CheckPrime(Check) == true)
+			{
+				cout << Check << " is prime." << endl;
+				//PrimeList.push_back (Check);
+			}
+			if (odd == false)
+			{
+				Check = (6ULL*(i++))+1ULL;
+				odd = !odd;
+			}
+			else
+			{
+				Check = (6ULL*i)-1ULL;
+				odd = !odd;
+			}
+		}
+	}
+	
 	End = clock();
 	cout << "Time taken = " << (double)(End - Start)/CLOCKS_PER_SEC << " seconds." << endl;
-
+	
 	return 0;
 }
 
