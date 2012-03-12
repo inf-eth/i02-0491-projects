@@ -105,8 +105,8 @@ CVLI CVLI::Sqrt (CVLI& VLI, int Iterations)
 	CVLI x;
 	CVLI two;
 	CVLI six;
-	two.Number.push_back (2U);
-	six.Number.push_back (6U);
+	two.Number.push_back (2);
+	six.Number.push_back (6);
 	
 	// Determine guess.
 	if (D % 2 == 1)
