@@ -46,17 +46,23 @@ CVLI CVLI::Abs () const
 
 bool CVLI::CheckPrime (bool CheckBaseCase)
 {
-	// Base case conditions
+	// Base case conditions upto 11.
 	if (CheckBaseCase == true)
 	{
 		if (Number.size() == 1)
 		{
-			if (Number[0] == 1 || Number[0] == 2 || Number[0] == 3)
+			if (Number[0] == 1 || Number[0] == 2 || Number[0] == 3 || Number[0] == 5 || Number[0] == 7)
 				return true;
-			else
-				return false;
 		}
+		else if (Number.size() == 2 && Number[0] == 1 && Number[1] == 1)
+			return true;
 	}
+	// Division by 2 and 3.
+	CVLI two, three;
+	two.Number.push_back (2);
+	three.Number.push_back (3);
+	if ( ((*this) % two).IsZero() == true || ((*this) % three).IsZero() == true )
+		return false;
 
 	CVLI UpperBound;
 	CVLI temp;
@@ -85,19 +91,15 @@ bool CVLI::CheckPrime (bool CheckBaseCase)
 	i.Number.push_back (1);
 	one.Number.push_back (1);
 	six.Number.push_back (6);
-	Check.Number.push_back (2);
+	Check.Number.push_back (5);
 
 	while (Check < UpperBound)
 	{
 		if (((*this) % Check).IsZero() == true)
 			return false;
-		if (Check < (six-one))
-			Check++;
-		else
-		{
-			odd ? Check = (six * i)-one : Check = (six * (i++))+one;
-			odd = !odd;
-		}
+
+		odd == false ? Check = (six * (i++))+one : Check = (six * i)-one;
+		odd = !odd;
 	}
 	return true;
 }
