@@ -11,6 +11,7 @@ class CVLI
 	void Format ();		// Properly format the Number.
 	bool IsZero () const;		// Is this zero?
 	CVLI Abs () const;
+	CVLI Power10 (int n);
 
 	public:
 	CVLI ();
@@ -18,6 +19,7 @@ class CVLI
 
 	// Check for primality.
 	bool CheckPrime (bool=false);
+	CVLI Sqrt (CVLI&, int = 5);	// Default number of iterations is 5. More iterations = better accuracy.
 
 	// Comparison operators.
 	bool operator == (const CVLI&);

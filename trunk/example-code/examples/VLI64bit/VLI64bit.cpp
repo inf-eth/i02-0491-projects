@@ -46,20 +46,7 @@ bool CheckPrime (const VLI64& VLICheck)
 	int n, D;
 	VLI64 UpperBound;
 
-	D = DigitCount (VLICheck);
-
-	// Determine uppperbound.
-	if (DigitCount(VLICheck) % 2 == 1)
-	{
-		n = (D-1)/2;
-		UpperBound = 4ULL * Power10 (n);
-	}
-	else
-	{
-		n = (D-2)/2;
-		UpperBound = 12ULL * Power10 (n);
-	}
-
+	UpperBound = Sqrt (VLICheck) + 1ULL;
 	while (Current < UpperBound)
 	{
 		if (VLICheck % Current == 0ULL)

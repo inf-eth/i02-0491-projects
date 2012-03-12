@@ -21,11 +21,11 @@ LIBS=
 ifdef dbg
 CFLAGS:=-g3
 BINDIR:=../../bin/debug
-ODIR:=../../obj/debug
+ODIR:=./obj/debug
 else
 CFLAGS:=-O3
 BINDIR:=../../bin/release
-ODIR:=../../obj/release
+ODIR:=./obj/release
 endif
 
 OBJ=$(patsubst %,$(ODIR)/%.obj,$(CPPFILES))

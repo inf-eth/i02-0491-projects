@@ -41,6 +41,14 @@ CVLI CVLI::Abs () const
 	return rAbs;
 }
 
+CVLI CVLI::Power10 (int n)
+{
+	CVLI temp;
+	temp.Number.insert (temp.Number.begin(), (short)1);
+	for (int i=0; i<n; i++)
+		temp.Number.insert (temp.Number.begin(), (short)0);
+	return temp;
+}
 // Using twice of rough estimation as break-point
 // http://en.wikipedia.org/wiki/Methods_of_computing_square_roots
 
@@ -67,21 +75,6 @@ bool CVLI::CheckPrime (bool CheckBaseCase)
 	CVLI UpperBound;
 	CVLI temp;
 
-	if (Number.size() % 2 == 1)
-	{
-		temp.Number.insert (temp.Number.begin(), (short)2);
-		for (int i=0; i<(int)(Number.size()-1)/2; i++)
-			temp.Number.insert (temp.Number.begin(), (short)0);
-		UpperBound = temp + temp;
-	}
-	else
-	{
-		temp.Number.insert (temp.Number.begin(), (short)6);
-		for (int i=0; i<(int)(Number.size()-2)/2; i++)
-			temp.Number.insert (temp.Number.begin(), (short)0);
-		UpperBound = temp + temp;
-	}
-
 	CVLI i;
 	CVLI one;
 	CVLI six;
@@ -93,6 +86,7 @@ bool CVLI::CheckPrime (bool CheckBaseCase)
 	six.Number.push_back (6);
 	Check.Number.push_back (5);
 
+	UpperBound = ++(Sqrt ((*this)));
 	while (Check < UpperBound)
 	{
 		if (((*this) % Check).IsZero() == true)
@@ -102,6 +96,34 @@ bool CVLI::CheckPrime (bool CheckBaseCase)
 		odd = !odd;
 	}
 	return true;
+}
+
+CVLI CVLI::Sqrt (CVLI& VLI, int Iterations)
+{
+	int n;
+	int D = VLI.Number.size();
+	CVLI x;
+	CVLI two;
+	CVLI six;
+	two.Number.push_back (2U);
+	six.Number.push_back (6U);
+	
+	// Determine guess.
+	if (D % 2 == 1)
+	{
+		n = (D-1)/2;
+		x = two * Power10 (n);
+	}
+	else
+	{
+		n = (D-2)/2;
+		x = six * Power10 (n);
+	}
+	for (int i=0; i<Iterations; i++)
+	{
+		x = (x+(VLI/x))/two;
+	}
+	return x;
 }
 // Comparison operators.
 bool CVLI::operator== (const CVLI& pVLI)
