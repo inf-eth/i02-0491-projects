@@ -9,21 +9,24 @@
 # TARGET= output binary file name.
 # LIBS= any libraries to link with (e.g. -lpthread). Default is none.
 
+# Number of threads to be spawned
+export OMP_NUM_THREADS=2
+
 CC=g++
 DEPS=-I.
 SRCDIR=.
 CPPFILES=VLI VLIMain
 TARGET=VLI
-LIBS=
+LIBS=-lpthread
 
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
 ifdef dbg
-CFLAGS:=-g3
+CFLAGS:=-g3 -fopenmp
 BINDIR:=../../bin/debug
 ODIR:=./obj/debug
 else
-CFLAGS:=-O3
+CFLAGS:=-O3 -fopenmp
 BINDIR:=../../bin/release
 ODIR:=./obj/release
 endif
