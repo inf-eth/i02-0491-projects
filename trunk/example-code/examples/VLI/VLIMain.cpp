@@ -1,9 +1,9 @@
 #ifdef __linux__
-#define MULTITHREADED true
-#define USE_PTHREAD   true
+#define MULTITHREADED 1
+#define USE_PTHREAD   1
 #else
-#define MULTITHREADED false
-#define USE_PTHREAD   false
+#define MULTITHREADED 0
+#define USE_PTHREAD   0
 #endif
 
 #include "VLI.h"
@@ -11,8 +11,8 @@
 #include <sstream>
 #include <ctime>
 
-#if MULTITHREADED == true
-	#if USE_PTHREAD == true
+#if MULTITHREADED == 1
+	#if USE_PTHREAD == 1
 	#include <pthread.h>
 	void* OddThread (void *);
 	void* EvenThread (void *);
@@ -92,7 +92,7 @@ int main (int argc, char **argv)
 		cout << "i = " << i << endl;
 		cout << "Check = " << Check << endl;
 		
-		#if MULTITHREADED == false
+		#if MULTITHREADED == 0
 		cout << "Single threaded execution..." << endl;
 		while (Check < M)
 		{
@@ -113,7 +113,7 @@ int main (int argc, char **argv)
 			}
 		}
 		#else
-		#if USE_PTHREAD == true
+		#if USE_PTHREAD == 1
 		cout << "Using pthreads..." << endl;
 		pthread_t OThread;
 		pthread_t EThread;
@@ -185,6 +185,7 @@ int main (int argc, char **argv)
 	return 0;
 }
 
+#if USE_PTHREAD == 1
 void* OddThread (void *arg)
 {
 	ThreadArg a = *((ThreadArg *)arg);
@@ -210,3 +211,4 @@ void* EvenThread (void *arg)
 	}
 	return NULL;
 }
+#endif
