@@ -1,7 +1,19 @@
+#define MULTITHREADED true
+#define USE_PTHREAD   true
+
 #include "VLI.h"
 #include <iostream>
 #include <sstream>
 #include <ctime>
+
+#if MULTITHREADED
+	#if USE_PTHREAD
+	#include <pthread.h>
+	#else
+	#include <omp.h>
+	#endif
+#endif
+
 using std::cin;
 using std::cout;
 using std::endl;
@@ -64,7 +76,8 @@ int main (int argc, char **argv)
 		cout << "six = " << six << endl;
 		cout << "i = " << i << endl;
 		cout << "Check = " << Check << endl;
-
+		
+		#if !MULTITHREADED
 		while (Check < M)
 		{
 			if (Check.CheckPrime() == true)
@@ -83,6 +96,45 @@ int main (int argc, char **argv)
 				odd = !odd;
 			}
 		}
+		#else
+		CVLI Oddi = i;
+		CVLI Eveni = i;
+		CVLI OddCheck = odd == false ? Check : (six*i)-one;
+		CVLI EvenCheck = odd == false ? (six*i)+one : Check;
+
+		int tid = 0;
+		int np = 1;
+		#pragma omp parallel default(shared) private(tid, np)
+		{
+			#if defined (_OPENMP)
+			tid = omp_get_thread_num();
+			np = omp_get_num_threads();
+			#endif
+			//std::cout << "Hello from thread " << tid << " out of " << np << std::endl;
+			// Odd section.
+			if (tid == 0)
+			{
+				while (OddCheck < M)
+				{
+					if (OddCheck.CheckPrime() == true)
+						cout << OddCheck << " is prime." << endl;
+					Oddi++;
+					OddCheck = (six*Oddi)-one;
+				}
+			}
+			// Even section.
+			else if (tid == 1)
+			{
+				while (EvenCheck < M)
+				{
+					if (EvenCheck.CheckPrime() == true)
+						cout << EvenCheck << " is prime." << endl;
+					Eveni++;
+					EvenCheck = (six*Eveni)+one;
+				}
+			}
+		}
+		#endif
 	}
 
 	End = clock();
