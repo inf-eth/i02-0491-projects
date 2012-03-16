@@ -1,5 +1,10 @@
+#ifdef __linux__
 #define MULTITHREADED true
 #define USE_PTHREAD   true
+#else
+#define MULTITHREADED false
+#define USE_PTHREAD   false
+#endif
 
 #include "VLI.h"
 #include <iostream>
@@ -9,6 +14,16 @@
 #if MULTITHREADED
 	#if USE_PTHREAD
 	#include <pthread.h>
+	void* OddThread (void *);
+	void* EvenThread (void *);
+	struct ThreadArg
+	{
+		CVLI Check;
+		CVLI i;
+		CVLI M;
+		CVLI six;
+		CVLI one;
+	};
 	#else
 	#include <omp.h>
 	#endif
@@ -78,6 +93,7 @@ int main (int argc, char **argv)
 		cout << "Check = " << Check << endl;
 		
 		#if !MULTITHREADED
+		cout << "Single threaded execution..." << endl;
 		while (Check < M)
 		{
 			if (Check.CheckPrime() == true)
@@ -97,6 +113,31 @@ int main (int argc, char **argv)
 			}
 		}
 		#else
+		#if USE_PTHREAD
+		cout << "Using pthreads..." << endl;
+		pthread_t OThread;
+		pthread_t EThread;
+
+		ThreadArg OddArg, EvenArg;
+		OddArg.Check = odd == false ? Check : (six*i)-one;
+		OddArg.M = M;
+		OddArg.i = i;
+		OddArg.six = six;
+		OddArg.one = one;
+
+		EvenArg.Check = odd == false ? (six*i)+one : Check;
+		EvenArg.M = M;
+		EvenArg.i = i;
+		EvenArg.six = six;
+		EvenArg.one = one;
+
+		pthread_create (&OThread, NULL, OddThread, (void*)&OddArg);
+		pthread_create (&EThread, NULL, EvenThread, (void*)&EvenArg);
+		pthread_join (OThread, NULL);
+		pthread_join (EThread, NULL);
+	
+		#else
+		cout << "Using OPENMP..." << endl;
 		CVLI Oddi = i;
 		CVLI Eveni = i;
 		CVLI OddCheck = odd == false ? Check : (six*i)-one;
@@ -135,10 +176,37 @@ int main (int argc, char **argv)
 			}
 		}
 		#endif
+		#endif
 	}
 
 	End = clock();
 	cout << "Time taken = " << (double)(End - Start)/CLOCKS_PER_SEC << " seconds." << endl;
 
 	return 0;
+}
+
+void* OddThread (void *arg)
+{
+	ThreadArg a = *((ThreadArg *)arg);
+	while (a.Check < a.M)
+	{
+		if (a.Check.CheckPrime() == true)
+			cout << a.Check << " is prime." << endl;
+		a.i++;
+		a.Check = (a.six*a.i)-a.one;
+	}
+	return NULL;
+}
+
+void* EvenThread (void *arg)
+{
+	ThreadArg a = *((ThreadArg *)arg);
+	while (a.Check < a.M)
+	{
+		if (a.Check.CheckPrime() == true)
+			cout << a.Check << " is prime." << endl;
+		a.i++;
+		a.Check = (a.six*a.i)+a.one;
+	}
+	return NULL;
 }
