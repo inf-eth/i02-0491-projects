@@ -11,8 +11,8 @@
 #include <sstream>
 #include <ctime>
 
-#if MULTITHREADED
-	#if USE_PTHREAD
+#if MULTITHREADED == true
+	#if USE_PTHREAD == true
 	#include <pthread.h>
 	void* OddThread (void *);
 	void* EvenThread (void *);
@@ -92,7 +92,7 @@ int main (int argc, char **argv)
 		cout << "i = " << i << endl;
 		cout << "Check = " << Check << endl;
 		
-		#if !MULTITHREADED
+		#if MULTITHREADED == false
 		cout << "Single threaded execution..." << endl;
 		while (Check < M)
 		{
@@ -113,7 +113,7 @@ int main (int argc, char **argv)
 			}
 		}
 		#else
-		#if USE_PTHREAD
+		#if USE_PTHREAD == true
 		cout << "Using pthreads..." << endl;
 		pthread_t OThread;
 		pthread_t EThread;
