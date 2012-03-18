@@ -12,9 +12,9 @@
 CC=g++
 DEPS=-I./include
 SRCDIR=./src
-CPPFILES=AutomatedWormFingerPrinting
-TARGET=AutomatedWormFingerPrinting
-LIBS=
+CPPFILES=AutomatedWormFingerprinting PacketManip
+TARGET=AutomatedWormFingerprinting
+LIBS=-lpcap
 
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
