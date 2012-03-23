@@ -9,7 +9,7 @@
 #include "VLI.h"
 #include <iostream>
 #include <sstream>
-#include <ctime>
+#include <sys/time.h>
 
 #if MULTITHREADED == 1
 	#if USE_PTHREAD == 1
@@ -38,9 +38,9 @@ using std::stringstream;
 int main (int argc, char **argv)
 {
 	// Timing.
-	clock_t Start, End;
+	struct timeval tv1, tv2;
 
-	Start = clock();
+	gettimeofday(&tv1, NULL);
 	if (argc == 2)
 	{
 		stringstream ssN;
@@ -179,13 +179,13 @@ int main (int argc, char **argv)
 		#endif
 	}
 
-	End = clock();
-	cout << "Time taken = " << (double)(End - Start)/CLOCKS_PER_SEC << " seconds." << endl;
+	gettimeofday(&tv2, NULL);
+	cout << "Time taken = " << (double)(tv2.tv_sec-tv1.tv_sec) + (double)(tv2.tv_usec-tv1.tv_usec)/(1000000.) << " seconds." << endl;
 
 	return 0;
 }
 
-#if USE_PTHREAD == 1
+#if USE_PTHREAD == 1 && MULTITHREADED == 1
 void* OddThread (void *arg)
 {
 	ThreadArg a = *((ThreadArg *)arg);
