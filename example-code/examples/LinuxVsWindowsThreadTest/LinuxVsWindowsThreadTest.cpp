@@ -9,8 +9,8 @@
 
 #include <iostream>
 #include <cstdlib>
-#include <time.h>
 #include <sys/types.h>
+#include <sys/time.h>
 
 void PerformanceTest ();
 TRET_TYPE thread1f (void *);
@@ -25,7 +25,7 @@ double A[X][Y];
 double B[X][Y];
 double C[X][Y];
 
-clock_t tStart, tEnd;
+struct timeval tv1, tv2;
 
 int main (int argc, char **argv)
 {
@@ -37,14 +37,13 @@ int main (int argc, char **argv)
 #endif
 
 	std::cout << "Single thread test: " << X << " * " << Y << " * " << T2 << " multplications." << std::endl;
-	tStart = clock();
+	gettimeofday(&tv1, NULL);
 	PerformanceTest();
-	tEnd = clock();
-	std::cout << "Time elapsed = " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << " seconds." << std::endl;
+	gettimeofday(&tv2, NULL);
+	std::cout << "Elapsed time = " << (double)(tv2.tv_sec-tv1.tv_sec) + (double)(tv2.tv_usec-tv1.tv_usec)/(1000000.) << std::endl;
 
 	std::cout << "2x thread test: " << X << " * " << Y << " * " << T1 << " multiplications per thread." << std::endl;
-	tStart = clock();
-
+	gettimeofday(&tv1, NULL);
 #ifdef WIN32
 	th[0] = (HANDLE)_beginthread (thread1f, 0, NULL);
 	th[1] = (HANDLE)_beginthread (thread2f, 0, NULL);
@@ -55,9 +54,9 @@ int main (int argc, char **argv)
 	pthread_join (thread1, NULL);
 	pthread_join (thread2, NULL);
 #endif
+	gettimeofday(&tv2, NULL);
+	std::cout << "Elapsed time = " << (double)(tv2.tv_sec-tv1.tv_sec) + (double)(tv2.tv_usec-tv1.tv_usec)/(1000000.) << std::endl;
 
-	clock_t tEnd = clock();
-	std::cout << "Time elapsed = " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << " seconds." << std::endl;
 	return 0;
 }
 
