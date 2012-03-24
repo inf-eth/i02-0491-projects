@@ -1,18 +1,18 @@
-#ifdef __linux__
+#if defined __linux__ || defined __CYGWIN__
 #define MULTITHREADED 1
 #define USE_PTHREAD   1
+#include <sys/time.h>
 #else
-#define MULTITHREADED 0
-#define USE_PTHREAD   0
+#define MULTITHREADED 1
+#include "wintime.h"
 #endif
 
 #include "VLI.h"
 #include <iostream>
 #include <sstream>
-#include <sys/time.h>
 
 #if MULTITHREADED == 1
-	#if USE_PTHREAD == 1
+	#if USE_PTHREAD == 1 && (defined __linux__ || defined __CYGWIN__)
 	#include <pthread.h>
 	void* OddThread (void *);
 	void* EvenThread (void *);
@@ -38,9 +38,13 @@ using std::stringstream;
 int main (int argc, char **argv)
 {
 	// Timing.
+	#if defined __linux__ || defined __CYGWIN__
 	struct timeval tv1, tv2;
-
 	gettimeofday(&tv1, NULL);
+	#else
+	__int64 tStart, tEnd;
+	tStart = GetTimeus64();
+	#endif
 	if (argc == 2)
 	{
 		stringstream ssN;
@@ -113,7 +117,7 @@ int main (int argc, char **argv)
 			}
 		}
 		#else
-		#if USE_PTHREAD == 1
+		#if USE_PTHREAD == 1 && (defined __linux__ || defined __CYGWIN__)
 		cout << "Using pthreads..." << endl;
 		pthread_t OThread;
 		pthread_t EThread;
@@ -178,14 +182,18 @@ int main (int argc, char **argv)
 		#endif
 		#endif
 	}
-
+	#if defined __linux__ || defined __CYGWIN__
 	gettimeofday(&tv2, NULL);
 	cout << "Time taken = " << (double)(tv2.tv_sec-tv1.tv_sec) + (double)(tv2.tv_usec-tv1.tv_usec)/(1000000.) << " seconds." << endl;
+	#else
+	tEnd = GetTimeus64();
+	cout << "Time taken = " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
+	#endif
 
 	return 0;
 }
 
-#if USE_PTHREAD == 1 && MULTITHREADED == 1
+#if USE_PTHREAD == 1 && MULTITHREADED == 1 && (defined __linux__ || defined __CYGWIN__)
 void* OddThread (void *arg)
 {
 	ThreadArg a = *((ThreadArg *)arg);

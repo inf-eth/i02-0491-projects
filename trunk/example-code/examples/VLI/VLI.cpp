@@ -568,7 +568,7 @@ istream& operator >> (istream& in, CVLI& pVLI)
 
 	for (int i=input.size()-1; i >= 0; i--)
 	{
-		if ((unsigned short)(input.c_str()[i]-48) >= 0U && (unsigned short)(input.c_str()[i]-48) <= 9U)
+		if ((unsigned short)(input.c_str()[i]-48) <= 9U)
 			pVLI.Number.push_back ((unsigned short)(input.c_str()[i]-48));
 		else
 			continue;
