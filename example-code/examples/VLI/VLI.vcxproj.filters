@@ -26,5 +26,8 @@
     <ClInclude Include="VLI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="wintime.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

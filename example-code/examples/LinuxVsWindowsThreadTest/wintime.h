@@ -19,23 +19,9 @@
 // There are a large number of options you can set with gprof. If you're interested,
 // there is more information in the man pages or through Google.
 
-#if defined __linux__ || defined __CYGWIN__
-#include <sys/time.h>
-#include <stdint.h>
-#include <sys/types.h>
-#define __int64 long long
-#else
+#ifdef WIN32
 #include <Windows.h>
 #endif
-
-#include "ExecutionTime.h"
-#include <iostream>
-#include <ctime>
-using std::cout;
-using std::endl;
-
-/* Returns the amount of milliseconds elapsed since the UNIX epoch. Works on both
-* windows and linux. */
 
 __int64 GetTimeMs64()
 {
@@ -106,26 +92,4 @@ __int64 GetTimeus64()
 
 	return ret;
 #endif
-}
-
-int main(void) 
-{
-	// Simple timer.
-	clock_t tStart = clock();
-
-	// Do something here.
-
-	clock_t tEnd = clock();
-	cout << (double)(tEnd - tStart)/CLOCKS_PER_SEC << endl;
-
-	// Microseconds timer. More precise.
-	__int64 tStartus, tEndus;
-	tStartus = GetTimeus64();
-
-	// Do something here.
-
-	tEndus = GetTimeus64();
-	cout << "Time taken = " << ((double)(tEndus-tStartus))/(1000000.) << " seconds." << endl;
-
-	return 0;
 }
