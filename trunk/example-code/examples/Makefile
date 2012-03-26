@@ -11,6 +11,8 @@ SUBDIR:= 	alarm\
 			StringStream\
 			LinuxFileSize\
 			ArrayShift\
-			VLI
+			VLI\
+			VLI64bit\
+			HighPrecisionTimer
 
 include rules.mk
