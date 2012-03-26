@@ -9,24 +9,21 @@
 # TARGET= output binary file name.
 # LIBS= any libraries to link with (e.g. -lpthread). Default is none.
 
-# Number of threads to be spawned
-export OMP_NUM_THREADS=2
-
 CC=g++
 DEPS=-I.
 SRCDIR=.
-CPPFILES=VLI VLIMain
-TARGET=VLI
-LIBS=-lpthread
+CPPFILES=HighPrecisionTimer
+TARGET=HighPrecisionTimer
+LIBS=
 
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
 ifdef dbg
-CFLAGS:=-g3 -fopenmp
+CFLAGS:=-g3
 BINDIR:=../../bin/debug
 ODIR:=./obj/debug
 else
-CFLAGS:=-O3 -fopenmp
+CFLAGS:=-O3
 BINDIR:=../../bin/release
 ODIR:=./obj/release
 endif
