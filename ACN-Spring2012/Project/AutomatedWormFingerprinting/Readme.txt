@@ -14,8 +14,11 @@
     5. 'make'
     6. 'sudo make install' or as su 'make install'
 - Windows:
-  - Download and install winpcap from http://www.winpcap.org/install/default.htm
-  - Requires Visual Studio 2010. Express version is recommended.
+  - Download and install winpcap (http://www.winpcap.org/install/bin/WpdPack_4_1_2.zip)
+  - Extract the archive. 
+  - Copy all the files in 'include' folder to 'C:\Program Files\Visual Studio 10.0\VC\lib'
+  - Copy all the files in 'lib' folder to 'C:\Program Files\Visual Studio 10.0\VC\lib'
+  - Requires Visual Studio 2010. Express edition is recommended.
 
 2. Compilation:
 - Linux:

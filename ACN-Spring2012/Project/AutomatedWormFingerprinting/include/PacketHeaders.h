@@ -9,8 +9,11 @@
 * pcap_setfilter()
 *
 **********************************************************************/
-
+#ifdef WIN32
+#include <WinSock2.h>
+#else
 #include <netinet/in.h>
+#endif
 
 /* default snap length (maximum bytes per packet to capture) */
 #define SNAP_LEN 1518
