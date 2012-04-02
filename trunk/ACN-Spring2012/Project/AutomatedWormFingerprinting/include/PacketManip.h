@@ -1,6 +1,7 @@
 #include <PacketHeaders.h>
 #include <pcap.h>
 
+
 // Packet capturing and manipulation class.
 class CPacketManip
 {
