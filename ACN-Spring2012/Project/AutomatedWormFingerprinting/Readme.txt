@@ -14,6 +14,7 @@
     5. 'make'
     6. 'sudo make install' or as su 'make install'
 - Windows:
+  - Download and install winpcap dll (http://www.winpcap.org/install/bin/WinPcap_4_1_2.exe)
   - Download and install winpcap (http://www.winpcap.org/install/bin/WpdPack_4_1_2.zip)
   - Extract the archive. 
   - Copy all the files in 'include' folder to 'C:\Program Files\Visual Studio 10.0\VC\lib'
