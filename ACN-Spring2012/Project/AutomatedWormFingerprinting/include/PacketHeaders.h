@@ -1,3 +1,26 @@
+/*
+# PacketHeaders.h
+#
+# Copyright (c) 2012 Attique Dawood, Awais Aslam
+#
+# This file is part of Automated Worm Fingerprinting.
+#
+# Automated Worm Fingerprinting is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Automated Worm Fingerprinting is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+#
+#################################################################################
+*/
+
 /************************* Reference *********************************
 * http://www.tcpdump.org/pcap.html
 * file:   testpcap3.c
@@ -9,6 +32,7 @@
 * pcap_setfilter()
 *
 **********************************************************************/
+
 #ifdef WIN32
 #include <WinSock2.h>
 #else
