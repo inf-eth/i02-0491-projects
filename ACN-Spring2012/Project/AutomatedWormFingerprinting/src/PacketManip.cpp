@@ -126,7 +126,7 @@ void CPacketManip::Initialize (char *pdev, char *pfilter)
 	if (dev == NULL)
 	{
 		cerr << "Couldn't find default device: " << errbuf << endl;
-		return(-1);
+		return;
 	}
 	#endif
 

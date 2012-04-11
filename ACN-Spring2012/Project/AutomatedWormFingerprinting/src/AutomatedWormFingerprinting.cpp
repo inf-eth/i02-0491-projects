@@ -35,7 +35,7 @@ int main (int argc, char **argv)
 	// Empty filter program will capture all packets on device.
 	// set device as "lo" to capture packets on loopback interface.
 	// filter program can be "dst localhost", "src localhost", "dst www.google.com" etc.
-
+	cout << "argc = " <<  argc << endl;
 	// Check if user passed capture device and filter string as argument.
 	if (argc == 3)
 		PacketCapture.Initialize (argv[1], argv[2]);
