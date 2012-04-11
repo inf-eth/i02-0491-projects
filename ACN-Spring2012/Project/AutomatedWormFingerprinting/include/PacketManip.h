@@ -20,7 +20,7 @@
 #
 #################################################################################
 */
-
+#define HAVE_REMOTE
 #include <PacketHeaders.h>
 #include <pcap.h>
 
@@ -39,7 +39,7 @@ private:
 	bpf_u_int32 netp;           /* ip                        */
 public:
 	CPacketManip (): dev(NULL), descr(NULL) {}
-	CPacketManip (const char *, const char *);		// takes device name and filter program as arguments.
-	void Initialize (const char*, const char *);	// takes device name and filter program as arguments.
+	CPacketManip (char *, char *);		// takes device name and filter program as arguments.
+	void Initialize (char*, char *);	// takes device name and filter program as arguments.
 	void Loop ();
 };

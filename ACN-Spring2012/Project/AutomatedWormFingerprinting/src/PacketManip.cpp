@@ -27,6 +27,7 @@
 #include <iostream>
 #include <bitset>
 
+using std::cin;
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -34,7 +35,7 @@ using std::bitset;
 
 void packet_capture_callback(u_char *, const struct pcap_pkthdr*, const u_char*);
 
-CPacketManip::CPacketManip (const char *pdev, const char *pfilter)
+CPacketManip::CPacketManip (char *pdev, char *pfilter)
 {
 	// ask pcap for the network address and mask of the device
 	if (pcap_lookupnet (pdev, &netp, &maskp, errbuf) == -1)
@@ -68,8 +69,67 @@ CPacketManip::CPacketManip (const char *pdev, const char *pfilter)
 	cout << "Filter: " << pfilter << endl;
 }
 
-void CPacketManip::Initialize (const char *pdev, const char *pfilter)
+void CPacketManip::Initialize (char *pdev, char *pfilter)
 {
+	#ifdef WIN32
+	// If no interface specified ask for one.
+	if (pdev == NULL)
+	{
+		pcap_if_t *alldevs;
+		pcap_if_t *d;
+		int inum;
+		int i=0;
+	
+		/* Retrieve the device list on the local machine */
+		if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf) == -1)
+		{
+			cerr << "Error in pcap_findalldevs: " << errbuf << endl;
+			exit(-1);
+		}
+	
+		/* Print the list */
+		for(d=alldevs; d; d=d->next)
+		{
+			cout << ++i << "." << d->name << endl;
+			if (d->description)
+				cout << "Description: " << d->description << endl;
+			else
+				cerr<< "(No description available)" << endl;
+		}
+	
+		if(i==0)
+		{
+			cerr << "No interfaces found! Make sure WinPcap is installed." << endl;
+			return;
+		}
+	
+		cout << "Enter the interface number (1-" << i << "):" << endl;
+		cin >> inum;
+	
+		if(inum < 1 || inum > i)
+		{
+			cerr << "Interface number out of range." << endl;
+			/* Free the device list */
+			pcap_freealldevs(alldevs);
+			return;
+		}
+
+		/* Jump to the selected adapter */
+		for(d=alldevs, i=0; i< inum-1 ;d=d->next, i++);
+	
+		pdev = new char[strlen(d->name)+1];
+		strcpy (pdev, d->name);
+		pcap_freealldevs(alldevs);
+	}
+	#else
+	dev = pcap_lookupdev(errbuf);
+	if (dev == NULL)
+	{
+		cerr << "Couldn't find default device: " << errbuf << endl;
+		return(-1);
+	}
+	#endif
+
 	// ask pcap for the network address and mask of the device
 	if (pcap_lookupnet (pdev, &netp, &maskp, errbuf) == -1)
 	{
@@ -127,6 +187,15 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 	ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);		// IP header comes after ethernet header.
 	// *************************************************************************************
 
+	u_int size_ip;		// IP header length.
+	size_ip = IP_HL(ip)*4;		// IP_HL is a macro for ((ip)->ip_vhl) & 0x0f;
+	// IP_HL(ip) gives length in 32bit words. Multiplication by 4 gives length in bytes.
+	if (size_ip < 20)
+	{
+		cerr << "ERROR: Invalid IP header length: " << size_ip << " bytes." << endl;
+		return;
+	}
+
 	// TODO: Packet capturing condition. Only process packets with the specified protocol, and port numbers.
 	// TODO: Process UDP packets and display their headers.
 	// Default condition is to capture only packets with TCP protocol and source port = 6000 or 6001
@@ -136,17 +205,8 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 	if ( ip && ip->ip_p == IPPROTO_TCP && (ntohs(tcp->th_sport) == 6000 || ntohs(tcp->th_sport) == 6001) )
 	{
 		// TODO: Process the headers. Display IP header.
-		u_int size_ip;		// IP header length.
 		u_int size_tcp;		// TCP header legnth.
 		cout << " Recieved a TCP packet at: " << ctime((const time_t*)&header->ts.tv_sec) << endl;
-
-		size_ip = IP_HL(ip)*4;		// IP_HL is a macro for ((ip)->ip_vhl) & 0x0f;
-		// IP_HL(ip) gives length in 32bit words. Multiplication by 4 gives length in bytes.
-		if (size_ip < 20)
-		{
-			cerr << "ERROR: Invalid IP header length: " << size_ip << " bytes." << endl;
-			return;
-		}
 
 		tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);		// TCP header follows ethernet and IP headers.
 		size_tcp = TH_OFF(tcp)*4;	// TH_OFF(tcp) is a macro for ((ip)->ip_vhl) >> 4;
@@ -198,7 +258,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		{
 			cout << "Payload: ";
 			u_int Payload_Offset = SIZE_ETHERNET + size_ip + size_tcp;
-			for (int i=0; i<size_payload; i++)
+			for (u_int i=0; i<size_payload; i++)
 			{
 				cout << packet[i + Payload_Offset];
 			}
