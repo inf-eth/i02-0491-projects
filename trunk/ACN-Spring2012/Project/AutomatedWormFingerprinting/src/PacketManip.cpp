@@ -167,35 +167,46 @@ void CPacketManip::Loop ()
 	pcap_loop (descr, -1, packet_capture_callback, NULL);
 }
 
-// All the work needs to be done here.
+// TODO: All the work needs to be done here.
 void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,const u_char* packet)
 {
-	if (!header)
-		return;
-	
 	// TODO: Comment this to stop some spam onscreen or set the appropriate filter program in main() if running on network.
 	cout << " Recieved a packet at: " << ctime((const time_t*)&header->ts.tv_sec) << endl;
 
 	// Header pointers.
-	const struct sniff_ethernet *ethernet = NULL; /* The ethernet header */
-	const struct sniff_ip *ip = NULL; /* The IP header */
-	const struct sniff_tcp *tcp = NULL; /* The TCP header */
-	const u_char *payload = NULL; /* Packet payload */
+	const struct sniff_ethernet *ethernet; /* The ethernet header */
+	const struct sniff_ip *ip; /* The IP header */
+	const struct sniff_tcp *tcp; /* The TCP header */
+	const u_char *payload; /* Packet payload */
+
+	u_int size_ip;		// IP header length.
+	u_int size_tcp;		// TCP header legnth.
 
 	// ************************** Pointer Initialization *********************************
 	// packet* is the starting address of captured packet stored in memory.
 	ethernet = (struct sniff_ethernet*)(packet);			// First thing in a packet is ethernet header.
 	ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);		// IP header comes after ethernet header.
-	// *************************************************************************************
 
-	u_int size_ip;		// IP header length.
 	size_ip = IP_HL(ip)*4;		// IP_HL is a macro for ((ip)->ip_vhl) & 0x0f;
-	// IP_HL(ip) gives length in 32bit words. Multiplication by 4 gives length in bytes.
+								// IP_HL(ip) gives length in 32bit words. Multiplication by 4 gives length in bytes.
 	if (size_ip < 20)
 	{
 		cerr << "ERROR: Invalid IP header length: " << size_ip << " bytes." << endl;
-		//return;
+		return;
 	}
+
+	tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);		// TCP header follows ethernet and IP headers.
+	size_tcp = TH_OFF(tcp)*4;	// TH_OFF(tcp) is a macro for ((ip)->ip_vhl) >> 4;
+								// TH_OFF(tcp) gives length of TCP header in 32bit words. Multiplication by 4 gives length in bytes.
+	if (size_tcp < 20)
+	{
+		cerr << "ERROR: Invalid TCP header length: " << size_tcp << " bytes." << endl;
+		return;
+	}
+
+	payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);	// Payload or data in packet.
+	// *************************************************************************************
+
 
 	// TODO: Packet capturing condition. Only process packets with the specified protocol, and port numbers.
 	// TODO: Process UDP packets and display their headers.
@@ -203,21 +214,10 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 	// ntohs(tcp->th_sport) gives source port
 	// ntohs(tcp->th_dport) gives destination port
 	// Protocols are IPPROTO_IP, IPPROTO_UDP, IPPROTO_ICMP etc.
-	if ( ip && ip->ip_p == IPPROTO_TCP && (ntohs(tcp->th_sport) == 6000 || ntohs(tcp->th_sport) == 6001) )
+	if ( ip->ip_p == IPPROTO_TCP && (ntohs(tcp->th_sport) == 6000 || ntohs(tcp->th_sport) == 6001) )
 	{
 		// TODO: Process the headers. Display IP header.
-		u_int size_tcp;		// TCP header legnth.
 		cout << " Recieved a TCP packet at: " << ctime((const time_t*)&header->ts.tv_sec) << endl;
-
-		tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);		// TCP header follows ethernet and IP headers.
-		size_tcp = TH_OFF(tcp)*4;	// TH_OFF(tcp) is a macro for ((ip)->ip_vhl) >> 4;
-		// TH_OFF(tcp) gives length of TCP header in 32bit words. Multiplication by 4 gives length in bytes.
-		if (size_tcp < 20)
-		{
-			cerr << "ERROR: Invalid TCP header length: " << size_tcp << " bytes." << endl;
-			return;
-		}
-		payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);	// Payload or data in packet.
 
 		/* define/compute tcp payload (segment) offset */
 		//payload = (packet + SIZE_ETHERNET + size_ip + size_tcp);
@@ -259,7 +259,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		{
 			cout << "Payload: ";
 			u_int Payload_Offset = SIZE_ETHERNET + size_ip + size_tcp;
-			for (u_int i=0; i<size_payload; i++)
+			for (int i=0; i<size_payload; i++)
 			{
 				cout << packet[i + Payload_Offset];
 			}
