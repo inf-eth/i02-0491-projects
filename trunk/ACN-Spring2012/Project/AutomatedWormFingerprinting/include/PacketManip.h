@@ -40,6 +40,6 @@ private:
 public:
 	CPacketManip (): dev(NULL), descr(NULL) {}
 	CPacketManip (char *, char *);		// takes device name and filter program as arguments.
-	void Initialize (char*, char *);	// takes device name and filter program as arguments.
+	void Initialize (const char*, const char *);	// takes device name and filter program as arguments.
 	void Loop ();
 };

@@ -69,7 +69,7 @@ CPacketManip::CPacketManip (char *pdev, char *pfilter)
 	cout << "Filter: " << pfilter << endl;
 }
 
-void CPacketManip::Initialize (char *pdev, char *pfilter)
+void CPacketManip::Initialize (const char *pdev, const char *pfilter)
 {
 	#ifdef WIN32
 	// If no interface specified ask for one.
@@ -117,13 +117,14 @@ void CPacketManip::Initialize (char *pdev, char *pfilter)
 		/* Jump to the selected adapter */
 		for(d=alldevs, i=0; i< inum-1 ;d=d->next, i++);
 	
-		pdev = new char[strlen(d->name)+1];
-		strcpy (pdev, d->name);
+		char *tdev = new char[strlen(d->name)+1];
+		strcpy (tdev, d->name);
+		pdev = tdev;
 		pcap_freealldevs(alldevs);
 	}
 	#else
-	dev = pcap_lookupdev(errbuf);
-	if (dev == NULL)
+	pdev = pcap_lookupdev(errbuf);
+	if (pdev == NULL)
 	{
 		cerr << "Couldn't find default device: " << errbuf << endl;
 		return;
@@ -193,7 +194,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 	if (size_ip < 20)
 	{
 		cerr << "ERROR: Invalid IP header length: " << size_ip << " bytes." << endl;
-		return;
+		//return;
 	}
 
 	// TODO: Packet capturing condition. Only process packets with the specified protocol, and port numbers.
