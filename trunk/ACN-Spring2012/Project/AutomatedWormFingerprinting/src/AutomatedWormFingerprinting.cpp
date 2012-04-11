@@ -39,9 +39,9 @@ int main (int argc, char **argv)
 	// Check if user passed capture device and filter string as argument.
 	if (argc == 3)
 		PacketCapture.Initialize (argv[1], argv[2]);
-	// Defulat is to capture all packets on eth0.
+	// Default is to capture all ip packets on default interface.
 	else
-		PacketCapture.Initialize ("eth0", "");
+		PacketCapture.Initialize (NULL, "tcp || udp");
 
 	PacketCapture.Loop ();
 	return 0;
