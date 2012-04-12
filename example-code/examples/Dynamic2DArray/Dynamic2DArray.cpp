@@ -7,6 +7,7 @@ int main ()
 {
 	int rows = 2;
 	int cols = 3;
+	int height = 3;
 
 	// ************************ 2D Array using double pointer ********************
 	int **Matrix1;
@@ -45,8 +46,9 @@ int main ()
 	// ***************************************************************************
 
 	// ********************** 3D array using triple pointer **********************
+	// Matrix is treated as an array of 2D slices wrt to height.
+
 	int ***Matrix3;
-	int height = 3;
 
 	// Allocate row pointers
 	Matrix3 = new int**[rows];
@@ -61,16 +63,18 @@ int main ()
 			Matrix3[i][j] = new int[height];
 
 	// Input.
-	for (int i=0; i<rows; i++)
-		for (int j=0; j<cols; j++)
-			for (int k=0; k<height; k++)
+	for (int k=0; k<height; k++)
+		for (int i=0; i<rows; i++)
+			for (int j=0; j<cols; j++)
 				Matrix3[i][j][k] = rand()%10;
 
 	// Output. Displays 2D slices/arrays height-wise.
 	for (int k=0; k<height; k++)
 	{
+		cout << "Height = " << k << endl;
 		for (int i=0; i<rows; i++)
 		{
+			cout << "Row = " << i << endl;
 			for (int j=0; j<cols; j++)
 			{
 				cout << "Mat[" << i << "][" << j << "][" << k <<"] = " << Matrix3[i][j][k] << " ";
@@ -78,7 +82,7 @@ int main ()
 			cout << endl;
 		}
 		cout << endl;
-	}	
+	}
 
 	// Deallocation.
 	for (int i=0; i<rows; i++)
@@ -89,6 +93,40 @@ int main ()
 		delete [] Matrix3[i];
 
 	delete [] Matrix3;
+	// ***************************************************************************
+
+	// *********************** 3D array using single pointer *********************
+	// In memory matrix is stored as 2D slices height-wise.
+
+	int *Matrix4;
+
+	// Single step allocation.
+	Matrix4 = new int[rows*cols*height];
+
+	// Input.
+	for (int k=0; k<height; k++)
+		for (int i=0; i<rows; i++)
+			for (int j=0; j<cols; j++)
+				Matrix4[k*cols*rows + i*cols + j] = rand()%10;
+
+	// Output. Displays 2D slices/arrays height-wise.
+	for (int k=0; k<height; k++)
+	{
+		cout << "Height = " << k << endl;
+		for (int i=0; i<rows; i++)
+		{
+			cout << "Row = " << i << endl;
+			for (int j=0; j<cols; j++)
+			{
+				cout << "Mat[" << i << "][" << j << "][" << k <<"] = " << Matrix4[k*cols*rows + i*cols + j] << " ";
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
+
+	// Single-step deallocation.
+	delete [] Matrix4;
 	// ***************************************************************************
 	return 0;
 }
