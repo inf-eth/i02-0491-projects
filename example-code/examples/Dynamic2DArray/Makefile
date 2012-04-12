@@ -20,11 +20,11 @@ LIBS=
 # 'make dbg=1' will use debug configuration.
 ifdef dbg
 CFLAGS:=-g3
-BINDIR:=bin/debug
+BINDIR:=../../bin/debug
 ODIR:=./obj/debug
 else
 CFLAGS:=-O3
-BINDIR:=bin/release
+BINDIR:=../../bin/release
 ODIR:=./obj/release
 endif
 
@@ -56,4 +56,4 @@ run: $(BINDIR)/$(TARGET)
 .PHONY: clean
 
 clean:
-	rm -rf obj bin/debug/$(TARGET) bin/release/$(TARGET)
+	rm -rf obj ../../bin/debug/$(TARGET) ../../bin/release/$(TARGET)
