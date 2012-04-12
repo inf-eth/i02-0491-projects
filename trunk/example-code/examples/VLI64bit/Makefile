@@ -28,6 +28,10 @@ BINDIR:=../../bin/release
 ODIR:=./obj/release
 endif
 
+ifdef m64bit
+CFLAGS+=-m64
+endif
+
 OBJ=$(patsubst %,$(ODIR)/%.obj,$(CPPFILES))
 
 $(BINDIR)/$(TARGET): $(OBJ)
