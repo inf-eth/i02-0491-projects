@@ -17,6 +17,10 @@ BINDIR:=../../bin/release
 ODIR:=./obj/release
 endif
 
+ifdef m64bit
+CFLAGS+=-m64
+endif
+
 _OBJ=$(TARGET).o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
