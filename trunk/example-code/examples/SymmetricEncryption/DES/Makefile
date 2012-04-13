@@ -14,7 +14,7 @@ DEPS=-I.
 SRCDIR=.
 CPPFILES=DES
 TARGET=DES
-LIBS=-lssl /lib/libcrypto.so.10
+LIBS=-lssl -lcrypto
 
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
