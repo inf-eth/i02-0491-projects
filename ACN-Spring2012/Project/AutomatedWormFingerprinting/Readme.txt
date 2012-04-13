@@ -50,5 +50,6 @@
     - To compile in debug mode add 'dbg=1' to make command, e.g. 'make dbg=1'
   - 'make run' will run the default executible. Adding 'make run dbg=1' will run the debug exe.
   - To pass arguments to executible use 'make run ARG="arg1 argument2 arg3"' etc.
+    For Example, 'make run ARG="wlan0 tcp"' will capture only tcp packets on wifi.
 - Windows:
   Open the VS2010 solution file provided.
