@@ -221,6 +221,7 @@
 #include <iomanip>
 #include <cctype>
 #include <arpa/inet.h>		// inet_ntoa()
+#include <openssl/sha.h>	// SHA1()
 
 using std::cin;
 using std::cout;
@@ -232,6 +233,7 @@ using std::dec;
 using std::setfill;
 using std::setw;
 
+CPacketManip PacketCapture;
 void packet_capture_callback(u_char *, const struct pcap_pkthdr*, const u_char*);
 
 CPacketManip::CPacketManip (char *pdev, char *pfilter)
@@ -369,6 +371,21 @@ void CPacketManip::Loop ()
 	pcap_loop (descr, -1, packet_capture_callback, NULL);
 }
 
+// Generate Key (sha1 hash) from protocol, destination port and payload.
+unsigned char * CPacketManip::GenerateKey (unsigned char pip_p, unsigned short pth_dport, unsigned char *ppayload, unsigned int psize_payload)
+{
+	unsigned char *Key = new unsigned char[20];
+	unsigned char *Input = new unsigned char[psize_payload + 3];
+	Input[0] = pip_p;
+	Input[1] = *(unsigned char*)(&pth_dport);
+	Input[2] = *((unsigned char*)(&pth_dport)+1);
+	for (unsigned int i=0; i<psize_payload; i++)
+		Input[3+i] = ppayload[i];
+
+	SHA1(Input, psize_payload+3, Key);
+	return Key;
+}
+	
 // TODO: All the work needs to be done here.
 void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,const u_char* packet)
 {
@@ -485,7 +502,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		{
 			cout << "Payload: " << endl;
 			u_int Payload_Offset = SIZE_ETHERNET + size_ip + size_tcp;
-			print_payload (packet+Payload_Offset, size_payload);
+			print_payload (payload/*packet+Payload_Offset*/, size_payload);
 			/*
 			for (int i=0; i<size_payload; i++)
 			{
@@ -496,6 +513,16 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		}
 		cout << "*************************" << endl;
 
+		// Key generation.
+		unsigned char *GeneratedKey = PacketCapture.GenerateKey (ip->ip_p, tcp->th_dport, (unsigned char *)payload, size_payload);
+
+		// Printing key.
+		cout << "Key: ";
+		for (int i=0; i<20; i++)
+		{
+			cout << hex << setfill('0') << setw(2) << (int)GeneratedKey[i] << " ";
+		}
+		cout << endl;
 	}
 	else
 		return;		// Not a packet of our interest.

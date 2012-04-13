@@ -26,11 +26,11 @@
 using std::cout;
 using std::endl;
 
+extern CPacketManip PacketCapture;
+
 int main (int argc, char **argv)
 {
 	cout << "Automated Worm Fingerprinting." << endl;
-
-	CPacketManip PacketCapture;
 
 	// Empty filter program will capture all packets on device.
 	// set device as "lo" to capture packets on loopback interface.

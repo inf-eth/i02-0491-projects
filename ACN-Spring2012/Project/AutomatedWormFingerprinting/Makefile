@@ -33,7 +33,7 @@ DEPS=-I./include
 SRCDIR=./src
 CPPFILES=AutomatedWormFingerprinting PacketManip
 TARGET=AutomatedWormFingerprinting
-LIBS=-lpcap
+LIBS=-lpcap -lssl -lcrypto
 
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
