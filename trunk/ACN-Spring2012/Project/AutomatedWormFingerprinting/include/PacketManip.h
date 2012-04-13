@@ -216,6 +216,22 @@
 #define HAVE_REMOTE
 #include <PacketHeaders.h>
 #include <pcap.h>
+#include <vector>
+
+using std::vector;
+
+struct ContentPrevalenceEntry
+{
+	unsigned char Key[20];
+	int Count;
+};
+
+struct AddressDispersionEntry
+{
+	unsigned char Key[20];
+	vector<in_addr> SrcIPs;
+	vector<in_addr> DstIPs;
+};
 
 // Packet capturing and manipulation class.
 class CPacketManip
@@ -230,11 +246,27 @@ private:
 	struct bpf_program fp;      /* hold compiled program     */
 	bpf_u_int32 maskp;          /* subnet mask               */
 	bpf_u_int32 netp;           /* ip                        */
+
+	// Content Prevalence Table
+	vector<ContentPrevalenceEntry> ContentPrevalenceTable;
+	// Address Dispersion Table
+	vector<AddressDispersionEntry> AddressDispersionTable;
+
 public:
 	CPacketManip (): dev(NULL), descr(NULL) {}
-	CPacketManip (char *, char *);		// takes device name and filter program as arguments.
+	CPacketManip (char *, char *);					// takes device name and filter program as arguments.
 	void Initialize (const char*, const char *);	// takes device name and filter program as arguments.
 	void Loop ();
+
+	// Generate Key (sha1 hash) from protocol, destination port and payload.
+	unsigned char * GenerateKey (unsigned char, unsigned short, unsigned char *, unsigned int);
+
+	// Search Key in Content Prevalence Table.
+	int SearchContentPrevalenceTable (unsigned char *);
+
+	// Search Key in Address Dispersion Table.
+	int SearchAddressDispersionTable (unsigned char *);
+	
 };
 
 void print_hex_ascii_line(const u_char *, int, int);
