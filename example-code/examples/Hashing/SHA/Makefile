@@ -12,8 +12,8 @@
 CC=g++
 DEPS=-I.
 SRCDIR=.
-CPPFILES=SHA1
-TARGET=SHA1
+CPPFILES=SHA
+TARGET=SHA
 LIBS=-lssl -lcrypto
 
 # debug or release configuration. Default is release.
