@@ -14,7 +14,7 @@ DEPS=-I.
 SRCDIR=.
 CPPFILES=RC4
 TARGET=RC4
-LIBS=-lssl /lib/libcrypto.so.10
+LIBS=-lssl -lcrypto
 
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
