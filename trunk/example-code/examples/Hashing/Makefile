@@ -1,4 +1,4 @@
 DEPTH:=../..
-SUBDIR:= 	SHA1\
-		
+SUBDIR:= 	SHA\
+		MD5
 include rules.mk
