@@ -15,7 +15,9 @@ int main()
 {
     unsigned char ibuf[] = "compute sha1";
     unsigned char obuf[20];
+	unsigned char obuf256[32];
 
+	// Sha1 example.
     SHA1(ibuf, strlen((char *)ibuf), obuf);
 
 	for (int i=0; i<20; i++)
@@ -24,5 +26,14 @@ int main()
 	}
 	cout << endl;
 
+	// Sha256 example.
+	SHA256(ibuf, strlen((char *)ibuf), obuf256);
+
+	for (int i=0; i<32; i++)
+	{
+		cout << hex << setfill('0') << setw(2) << (int)obuf256[i] << " ";
+	}
+	cout << endl;
+	
     return 0;
 }
