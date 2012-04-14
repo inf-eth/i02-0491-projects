@@ -217,20 +217,22 @@
 #include <cstdlib>			// exit()
 #include <ctime>
 #include <iostream>
+#include <fstream>
 #include <bitset>
 #include <iomanip>
 #include <cctype>
+#include <openssl/sha.h>	// SHA1()
 #ifdef WIN32
 #include <WinSock2.h>
 #else
 #include <arpa/inet.h>		// inet_ntoa()
 #endif
-#include <openssl/sha.h>	// SHA1()
 
 using std::cin;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::fstream;
 using std::bitset;
 using std::hex;
 using std::dec;
@@ -407,7 +409,7 @@ unsigned char * CPacketManip::GenerateKey (unsigned char pip_p, unsigned short p
 // Search Key in Content Prevalence Table.
 int CPacketManip::SearchContentPrevalenceTable (unsigned char *pKey)
 {
-	for (int i=0; i < ContentPrevalenceTable.size(); i++)
+	for (int i=0; i < (int)ContentPrevalenceTable.size(); i++)
 	{
 		if (memncmp ((const char *)ContentPrevalenceTable[i].Key, (const char *)pKey, KEY_LENGTH) == true)
 			return i;
@@ -418,7 +420,7 @@ int CPacketManip::SearchContentPrevalenceTable (unsigned char *pKey)
 // Search Key in Address Dispersion Table.
 int CPacketManip::SearchAddressDispersionTable (unsigned char *pKey)
 {
-	for (int i=0; i < AddressDispersionTable.size(); i++)
+	for (int i=0; i < (int)AddressDispersionTable.size(); i++)
 	{
 		if (memncmp ((const char *)AddressDispersionTable[i].Key, (const char *)pKey, KEY_LENGTH) == true)
 			return i;
@@ -541,7 +543,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		if (size_payload != 0)
 		{
 			cout << "Payload: " << endl;
-			u_int Payload_Offset = SIZE_ETHERNET + size_ip + size_tcp;
+			//u_int Payload_Offset = SIZE_ETHERNET + size_ip + size_tcp;
 			print_payload (payload/*packet+Payload_Offset*/, size_payload);
 			/*
 			for (int i=0; i<size_payload; i++)
@@ -571,12 +573,21 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 			
 			// Check Content Prevalence Table.
 			int SearchIndex;
-			if ( SearchIndex = PacketCapture.SearchContentPrevalenceTable (GeneratedKey) == -1)
+			if ( (SearchIndex = PacketCapture.SearchContentPrevalenceTable (GeneratedKey)) == -1)
 			{
 				ContentPrevalenceEntry temp;
 				memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
 				temp.Count = 1;
 				PacketCapture.ContentPrevalenceTable.push_back(temp);
+
+				fstream ContentPrevalenceTableLog("ContentPrevalenceTable.log", std::ios::out);
+				for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
+				{
+					for (int j=0; j<KEY_LENGTH; j++)
+						ContentPrevalenceTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec << (j==9 ? " " : "");
+					ContentPrevalenceTableLog << ": " << PacketCapture.ContentPrevalenceTable[i].Count << endl;
+				}
+				ContentPrevalenceTableLog.close();
 			}
 			else
 			{
