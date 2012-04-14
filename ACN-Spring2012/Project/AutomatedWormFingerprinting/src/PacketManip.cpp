@@ -240,6 +240,15 @@ using std::setw;
 CPacketManip PacketCapture;
 void packet_capture_callback(u_char *, const struct pcap_pkthdr*, const u_char*);
 
+CPacketManip::CPacketManip ():
+								dev(NULL),
+								descr(NULL),
+								ContentPrevalenceThreshold(-1),
+								SrcAddressDispersionThreshold(-1),
+								DstAddressDispersionThreshold(-1)
+{
+}
+
 CPacketManip::CPacketManip (char *pdev, char *pfilter)
 {
 	// ask pcap for the network address and mask of the device
@@ -369,6 +378,11 @@ void CPacketManip::Initialize (const char *pdev, const char *pfilter)
 	}
 	cout << "Device: " << pdev << endl;
 	cout << "Filter: " << pfilter << endl;
+
+	// Initializing thresholds.
+	SetContentPrevalenceThreshold (20);
+	SetSrcAddressDispersionThreshold (40);
+	SetDstAddressDispersionThreshold (40);
 }
 void CPacketManip::Loop ()
 {
@@ -378,7 +392,7 @@ void CPacketManip::Loop ()
 // Generate Key (sha1 hash) from protocol, destination port and payload.
 unsigned char * CPacketManip::GenerateKey (unsigned char pip_p, unsigned short pth_dport, unsigned char *ppayload, unsigned int psize_payload)
 {
-	unsigned char *Key = new unsigned char[20];
+	unsigned char *Key = new unsigned char[KEY_LENGTH];
 	unsigned char *Input = new unsigned char[psize_payload + 3];
 	Input[0] = pip_p;
 	Input[1] = *(unsigned char*)(&pth_dport);
@@ -389,7 +403,29 @@ unsigned char * CPacketManip::GenerateKey (unsigned char pip_p, unsigned short p
 	SHA1(Input, psize_payload+3, Key);
 	return Key;
 }
-	
+
+// Search Key in Content Prevalence Table.
+int CPacketManip::SearchContentPrevalenceTable (unsigned char *pKey)
+{
+	for (int i=0; i < ContentPrevalenceTable.size(); i++)
+	{
+		if (memncmp ((const char *)ContentPrevalenceTable[i].Key, (const char *)pKey, KEY_LENGTH) == true)
+			return i;
+	}
+	return -1;
+}
+
+// Search Key in Address Dispersion Table.
+int CPacketManip::SearchAddressDispersionTable (unsigned char *pKey)
+{
+	for (int i=0; i < AddressDispersionTable.size(); i++)
+	{
+		if (memncmp ((const char *)AddressDispersionTable[i].Key, (const char *)pKey, KEY_LENGTH) == true)
+			return i;
+	}
+	return -1;
+}
+
 // TODO: All the work needs to be done here.
 void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,const u_char* packet)
 {
@@ -501,7 +537,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 			 << "Checksum:            " << ntohs(tcp->th_sum) << endl
 			 << "Urgent Pointer:      " << ntohs(tcp->th_urp) << endl;
 
-		// TODO: Display payload data.
+		// Displaying payload data.
 		if (size_payload != 0)
 		{
 			cout << "Payload: " << endl;
@@ -517,19 +553,57 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		}
 		cout << "*************************" << endl;
 
-		// Key generation.
-		unsigned char *GeneratedKey = PacketCapture.GenerateKey (ip->ip_p, tcp->th_dport, (unsigned char *)payload, size_payload);
-
-		// Printing key.
-		cout << "Key: ";
-		for (int i=0; i<20; i++)
+		// Key generation. Only generate signatures for packets with non-zero payload.
+		if (size_payload != 0)
 		{
-			cout << hex << setfill('0') << setw(2) << (int)GeneratedKey[i] << " ";
+			unsigned char *GeneratedKey = PacketCapture.GenerateKey (ip->ip_p, tcp->th_dport, (unsigned char *)payload, size_payload);
+
+			// Printing key.
+			cout << "Key: ";
+			for (int i=0; i<KEY_LENGTH; i++)
+			{
+				cout << hex << setfill('0') << setw(2) << (int)GeneratedKey[i] << " ";
+			}
+			cout << endl;
+
+			// TODO: Check key entry in Address Dispersion Table.
+			// <>
+			
+			// Check Content Prevalence Table.
+			int SearchIndex;
+			if ( SearchIndex = PacketCapture.SearchContentPrevalenceTable (GeneratedKey) == -1)
+			{
+				ContentPrevalenceEntry temp;
+				memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
+				temp.Count = 1;
+				PacketCapture.ContentPrevalenceTable.push_back(temp);
+			}
+			else
+			{
+				PacketCapture.ContentPrevalenceTable[SearchIndex].Count++;
+				// TODO: Check threshold and promote entry into address dispersion table.
+			}
 		}
-		cout << endl;
 	}
 	else
 		return;		// Not a packet of our interest.
+}
+
+// Compare two blocks of memory and returns true if they match else returns false.
+bool memncmp (const char *block1, const char *block2, int size)
+{
+	for (int i=0; i<size; i++)
+	{
+		if (block1[i] != block2[i])
+			return false;
+	}
+	return true;
+}
+
+void memncpy (char *dst, const char *src, int size)
+{
+	for (int i=0; i<size; i++)
+		dst[i] = src[i];
 }
 
 /*

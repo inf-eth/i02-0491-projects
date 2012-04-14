@@ -220,15 +220,16 @@
 
 using std::vector;
 
+#define KEY_LENGTH	20
 struct ContentPrevalenceEntry
 {
-	unsigned char Key[20];
+	unsigned char Key[KEY_LENGTH];
 	int Count;
 };
 
 struct AddressDispersionEntry
 {
-	unsigned char Key[20];
+	unsigned char Key[KEY_LENGTH];
 	vector<in_addr> SrcIPs;
 	vector<in_addr> DstIPs;
 };
@@ -247,16 +248,31 @@ private:
 	bpf_u_int32 maskp;          /* subnet mask               */
 	bpf_u_int32 netp;           /* ip                        */
 
+	// Thresholds.
+	int ContentPrevalenceThreshold;
+	int SrcAddressDispersionThreshold;
+	int DstAddressDispersionThreshold;
+
+public:
+	CPacketManip ();
+	CPacketManip (char *, char *);					// takes device name and filter program as arguments.
+	void Initialize (const char*, const char *);	// takes device name and filter program as arguments.
+	void Loop ();
+
+	// Set Thresholds.
+	void SetContentPrevalenceThreshold (int pThreshold) { ContentPrevalenceThreshold = pThreshold; }
+	void SetSrcAddressDispersionThreshold (int pThreshold) { SrcAddressDispersionThreshold = pThreshold; }
+	void SetDstAddressDispersionThreshold (int pThreshold) { DstAddressDispersionThreshold = pThreshold; }
+
+	// Get Thresholds.
+	int GetContentPrevalenceThreshold () { return ContentPrevalenceThreshold; }
+	int GetSrcAddressDispersionThreshold () { return SrcAddressDispersionThreshold; }
+	int GetDstAddressDispersionThreshold () { return DstAddressDispersionThreshold; }
+
 	// Content Prevalence Table
 	vector<ContentPrevalenceEntry> ContentPrevalenceTable;
 	// Address Dispersion Table
 	vector<AddressDispersionEntry> AddressDispersionTable;
-
-public:
-	CPacketManip (): dev(NULL), descr(NULL) {}
-	CPacketManip (char *, char *);					// takes device name and filter program as arguments.
-	void Initialize (const char*, const char *);	// takes device name and filter program as arguments.
-	void Loop ();
 
 	// Generate Key (sha1 hash) from protocol, destination port and payload.
 	unsigned char * GenerateKey (unsigned char, unsigned short, unsigned char *, unsigned int);
@@ -266,8 +282,12 @@ public:
 
 	// Search Key in Address Dispersion Table.
 	int SearchAddressDispersionTable (unsigned char *);
-	
 };
+
+// Compare two blocks of memory and returns true if they match else returns false.
+bool memncmp (const char *, const char *, int);
+// Memcopy.
+void memncpy (char *, const char *, int);
 
 void print_hex_ascii_line(const u_char *, int, int);
 void print_payload(const u_char *, int);
