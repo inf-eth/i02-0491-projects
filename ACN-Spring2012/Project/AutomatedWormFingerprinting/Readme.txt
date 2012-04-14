@@ -25,8 +25,8 @@
 1. Requirements:
 - Linux:
   Requires libpcap and openssl development libraries.
-  - To install on Ubuntu type on terminal: sudo apt-get install libpcap-devel openssl-devel
-  - For Fedora, type as su: yum install libpcap-devel openssl-devel
+  - Ubuntu: sudo apt-get install libpcap-devel openssl-devel
+  - Fedora: (as su) yum install libpcap-devel openssl-devel
   - To compile libpcap from source:
     1. Download libpcap (http://www.tcpdump.org/release/libpcap-1.2.1.tar.gz) from http://www.tcpdump.org/
     2. Extract the tar file using 'tar -xvf libpcap-1.2.1.tar.gz' or use GUI based extractor.
