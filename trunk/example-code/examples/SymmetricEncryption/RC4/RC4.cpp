@@ -3,7 +3,6 @@
 // http://linux.die.net/man/3/rc4_set_key
 // http://old.nabble.com/About-RC4-decryption.-td32757842.html
 
-#include <unistd.h>
 #include <cstring>
 #include <iostream>
 #include <openssl/rc4.h>

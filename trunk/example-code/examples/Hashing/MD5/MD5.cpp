@@ -13,11 +13,11 @@ using std::endl;
 
 int main()
 {
-    unsigned char ibuf[] = "compute sha1";
-    unsigned char obuf[16];
+	unsigned char ibuf[] = "compute sha1";
+	unsigned char obuf[16];
 
 	// Sha1 example.
-    MD5(ibuf, strlen((char *)ibuf), obuf);
+	MD5(ibuf, strlen((char *)ibuf), obuf);
 
 	for (int i=0; i<16; i++)
 	{
@@ -25,5 +25,5 @@ int main()
 	}
 	cout << endl;
 
-    return 0;
+	return 0;
 }

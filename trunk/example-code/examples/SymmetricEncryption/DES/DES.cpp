@@ -1,7 +1,6 @@
 // Reference: http://www.codealias.info/technotes/des_encryption_using_openssl_a_simple_example
 
 #include <cstdio>
-#include <unistd.h>
 #include <cstring>
 #include <openssl/des.h>
 

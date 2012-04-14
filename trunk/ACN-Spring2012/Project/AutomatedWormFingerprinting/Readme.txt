@@ -24,10 +24,10 @@
 
 1. Requirements:
 - Linux:
-  Requires libpcap development libraries.
-  - To install on Ubuntu type on terminal: sudo apt-get install libpcap-devel
-  - For Fedora, type as su: yum install libpcap-devel
-  - To compile from source:
+  Requires libpcap and openssl development libraries.
+  - To install on Ubuntu type on terminal: sudo apt-get install libpcap-devel openssl-devel
+  - For Fedora, type as su: yum install libpcap-devel openssl-devel
+  - To compile libpcap from source:
     1. Download libpcap (http://www.tcpdump.org/release/libpcap-1.2.1.tar.gz) from http://www.tcpdump.org/
     2. Extract the tar file using 'tar -xvf libpcap-1.2.1.tar.gz' or use GUI based extractor.
     3. 'cd libpcap-1.2.1'
@@ -35,10 +35,15 @@
     5. 'make'
     6. 'sudo make install' or as su 'make install'
 - Windows:
+  OpenSSL Development files:
+  - Download openssl for windows from http://code.google.com/p/openssl-for-windows/downloads/detail?name=openssl-0.9.8k_WIN32.zip
+  - Copy 'include' folder over 'C:\Program Files\Visual Studio 10.0\VC\include'
+  - Copy 'lib' folder over 'C:\Program Files\Visual Studio 10.0\VC\lib'
+  Winpcap development files:
   - Download and install winpcap dll (http://www.winpcap.org/install/bin/WinPcap_4_1_2.exe)
   - Download and install winpcap (http://www.winpcap.org/install/bin/WpdPack_4_1_2.zip)
   - Extract the archive. 
-  - Copy all the files in 'include' folder to 'C:\Program Files\Visual Studio 10.0\VC\lib'
+  - Copy all the files in 'include' folder to 'C:\Program Files\Visual Studio 10.0\VC\include'
   - Copy all the files in 'lib' folder to 'C:\Program Files\Visual Studio 10.0\VC\lib'
   - Requires Visual Studio 2010. Express edition is recommended.
 
