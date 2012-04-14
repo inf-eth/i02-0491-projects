@@ -220,7 +220,11 @@
 #include <bitset>
 #include <iomanip>
 #include <cctype>
+#ifdef WIN32
+#include <WinSock2.h>
+#else
 #include <arpa/inet.h>		// inet_ntoa()
+#endif
 #include <openssl/sha.h>	// SHA1()
 
 using std::cin;
