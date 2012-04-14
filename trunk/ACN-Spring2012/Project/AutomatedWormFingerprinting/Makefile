@@ -22,17 +22,21 @@
 # Mention output binary filename against TARGET.
 #
 # CC = compiler name
+# WARN = warning level
 # DEPS = any additional folders containing header apart from system headers. Default is current directory.
 # SRCDIR = directory containing source files. Default is current directory.
 # CPPFILES = names of cpp files to be compiled.
-# TARGET= output binary file name.
-# LIBS= any libraries to link with (e.g. -lpthread). Default is none.
+# TARGET = output binary file name.
+# LINKING = static or dynamic linking
+# LIBS = any libraries to link with (e.g. -lpthread). Default is none.
 
 CC=g++
+WARN=-Wall
 DEPS=-I./include
 SRCDIR=./src
 CPPFILES=AutomatedWormFingerprinting PacketManip
 TARGET=AutomatedWormFingerprinting
+LINKING=
 LIBS=-lpcap -lssl -lcrypto
 
 # debug or release configuration. Default is release.
@@ -54,10 +58,10 @@ endif
 OBJ=$(patsubst %,$(ODIR)/%.obj,$(CPPFILES))
 
 $(BINDIR)/$(TARGET): $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) $(WARN) $(LINKING) -o $@ $^ $(CFLAGS) $(LIBS)
 
 $(ODIR)/%.obj: $(SRCDIR)/%.cpp
-	$(CC) -c -o $@ $< $(DEPS) $(CFLAGS)
+	$(CC) $(WARN) -c -o $@ $< $(DEPS) $(CFLAGS)
 
 # Object and binary files must be placed in obj and bin directories.
 # Create bin and obj directories if they do not exist before compiling.
@@ -77,4 +81,4 @@ all: $(BINDIR)/$(TARGET)
 .PHONY: clean
 
 clean:
-	rm -rf bin obj
+	rm -rf bin obj *.log
