@@ -805,7 +805,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 			PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.push_back (ip_dst);
 
 		// Checking alarm thresholds.
-		if (PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size() > PacketCapture.GetSrcAddressDispersionThreshold() && PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size() > PacketCapture.GetDstAddressDispersionThreshold())
+		if ((int)PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size() > PacketCapture.GetSrcAddressDispersionThreshold() && (int)PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size() > PacketCapture.GetDstAddressDispersionThreshold())
 		{
 			fstream AlarmLog("Alarm.log", std::ios::out | std::ios::app);
 			AlarmLog << "######################## Alarm ########################" << endl;
