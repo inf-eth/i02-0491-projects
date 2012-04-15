@@ -300,6 +300,11 @@ public:
 
 	// Search Key in Address Dispersion Table.
 	int SearchAddressDispersionTable (unsigned char *);
+
+	// Search Src IPs for a match.
+	bool SearchSrcIPs (int, in_addr);
+	// Search Dst IPs for a match.
+	bool SearchDstIPs (int, in_addr);
 };
 
 // Compare two blocks of memory and returns true if they match else returns false.
