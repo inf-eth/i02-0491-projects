@@ -22,6 +22,7 @@
 */
 
 #include <PacketManip.h>
+#include <cstring>
 #include <iostream>
 using std::cout;
 using std::cerr;
