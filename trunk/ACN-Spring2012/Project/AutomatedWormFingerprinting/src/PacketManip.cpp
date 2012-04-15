@@ -253,16 +253,19 @@ using std::fill;
 #ifdef WIN32
 HANDLE tGarbageCollector;
 HANDLE tReceiver;
+HANDLE tLogger;
 HANDLE MutexLock = CreateMutex (NULL, FALSE, NULL);
 #else
 pthread_t tGarbageCollector;
 pthread_t tReceiver;
+pthread_t tLogger;
 pthread_mutex_t MutexLock = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
 // Threads.
 THREAD_RETURN_TYPE GarbageCollector (void *);
 THREAD_RETURN_TYPE Receiver (void *);
+THREAD_RETURN_TYPE Logger (void *);
 
 // Network related.
 // ****************************************** #Defintions ***********************************************
@@ -547,9 +550,11 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 		#ifdef WIN32
 		tGarbageCollector = (HANDLE)_beginthread (GarbageCollector, 0, NULL);
 		tReceiver = (HANDLE)_beginthread (Receiver, 0, NULL);
+		tLogger = (HANDLE)_beginthread (Logger, 0, NULL);
 		#else
 		pthread_create (&tGarbageCollector, NULL, GarbageCollector, NULL);
 		pthread_create (&tReceiver, NULL, Receiver, NULL);
+		pthread_create (&tLogger, NULL, Logger, NULL);
 		#endif
 	}
 }
@@ -755,7 +760,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 				temp.th_dport = tcp->th_dport;
 				memncpy ((char *)&temp.ip_src, (const char *)&ip->ip_src, sizeof(in_addr));
 				memncpy ((char *)&temp.ip_dst, (const char *)&ip->ip_dst, sizeof(in_addr));
-				SafeCall (NumOfBytesSent = sendto (SocketFD, (char *)&temp, sizeof(SignatureData), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()");
+				SafeCallAssert (NumOfBytesSent = sendto (SocketFD, (char *)&temp, sizeof(SignatureData), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()", sizeof(SignatureData));
 			}
 		}
 	}
@@ -771,6 +776,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 	if ( (SearchIndex = PacketCapture.SearchAddressDispersionTable (GeneratedKey)) != -1)
 	{
 		cout << "Key already exists..." << endl;
+
 	}
 	// Check Content Prevalence Table.
 	else if ( (SearchIndex = PacketCapture.SearchContentPrevalenceTable (GeneratedKey)) == -1)
@@ -781,14 +787,6 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 		temp.InsertionTime = GetTimeus64();
 		PacketCapture.ContentPrevalenceTable.push_back(temp);
 
-		fstream ContentPrevalenceTableLog("ContentPrevalenceTable.log", std::ios::out);
-		for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
-		{
-			for (int j=0; j<KEY_LENGTH; j++)
-				ContentPrevalenceTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec << (j==9 ? " " : "");
-			ContentPrevalenceTableLog << ": " << PacketCapture.ContentPrevalenceTable[i].Count << endl;
-		}
-		ContentPrevalenceTableLog.close();
 	}
 	else
 	{
@@ -796,11 +794,15 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 		PacketCapture.ContentPrevalenceTable[SearchIndex].InsertionTime = GetTimeus64();
 		if (PacketCapture.ContentPrevalenceTable[SearchIndex].Count > PacketCapture.GetContentPrevalenceThreshold())
 		{
-			// TODO: Check threshold and promote entry into address dispersion table.
+			// Check threshold and promote entry into address dispersion table.
 			AddressDispersionEntry temp;
 			memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
 			temp.SrcIPs.push_back (ip_src);
 			temp.DstIPs.push_back (ip_dst);
+			// Insert into Address Dispersion table.
+			PacketCapture.AddressDispersionTable.push_back (temp);
+			// Erase from Content Prevalence Table.
+			PacketCapture.ContentPrevalenceTable.erase (PacketCapture.ContentPrevalenceTable.begin() + SearchIndex);
 		}
 	}
 }
@@ -985,6 +987,7 @@ THREAD_RETURN_TYPE GarbageCollector (void *arg)
 	return NULL;
 	#endif
 }
+
 THREAD_RETURN_TYPE Receiver (void *arg)
 {
 	SignatureData temp;
@@ -1000,6 +1003,58 @@ THREAD_RETURN_TYPE Receiver (void *arg)
 		#else
 		pthread_mutex_lock (&MutexLock);
 		ProcessPacket (temp.Key, temp.th_sport, temp.th_dport, temp.ip_src, temp.ip_dst);
+		pthread_mutex_unlock (&MutexLock);
+		#endif
+	}
+	#ifndef WIN32
+	return NULL;
+	#endif
+}
+
+// Tables are logged every 5 seconds.
+THREAD_RETURN_TYPE Logger (void *arg)
+{
+	__int64 Start = GetTimeus64();
+	__int64 Current = GetTimeus64();
+	while (true)
+	{
+		#ifdef WIN32
+		Sleep (5*1000);
+		#else
+		sleep (5);
+		#endif
+
+		Current = GetTimeus64();
+		cout << "Elapsed time = " << ((double)(Current-Start))/(1000000.) << " seconds." << endl;
+		cout << "Writing logs..." << endl;
+
+		//  Garbage Collection.
+		#ifdef WIN32
+		WaitForSingleObject (MutexLock, INFINITE);
+		#else
+		pthread_mutex_lock (&MutexLock);
+		#endif
+		// Writing logs.
+		fstream ContentPrevalenceTableLog("ContentPrevalenceTable.log", std::ios::out);
+		for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
+		{
+			for (int j=0; j<KEY_LENGTH; j++)
+				ContentPrevalenceTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec << (j==9 ? " " : "");
+			ContentPrevalenceTableLog << ": " << PacketCapture.ContentPrevalenceTable[i].Count << endl;
+		}
+		ContentPrevalenceTableLog.close();
+
+		fstream AddressDispersionTableLog("AddressDispersionTable.log", std::ios::out);
+		for (int i=0; i < (int)PacketCapture.AddressDispersionTable.size(); i++)
+		{
+			for (int j=0; j<KEY_LENGTH; j++)
+				AddressDispersionTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.AddressDispersionTable[i].Key[j] << dec << (j==9 ? " " : "");
+			AddressDispersionTableLog << ": SrcIPCount=" << PacketCapture.AddressDispersionTable[i].SrcIPs.size() << ", DstIPCount=" << PacketCapture.AddressDispersionTable[i].DstIPs.size() << endl;
+		}
+		AddressDispersionTableLog.close();
+		#ifdef WIN32
+		ReleaseMutex (MutexLock);
+		#else
 		pthread_mutex_unlock (&MutexLock);
 		#endif
 	}
