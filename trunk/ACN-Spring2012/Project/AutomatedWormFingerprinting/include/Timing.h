@@ -21,7 +21,6 @@
 
 #ifndef __TIMING
 #define __TIMING
-#define NULL 0
 
 #if defined __linux__ || defined __CYGWIN__
 #define __int64 long long

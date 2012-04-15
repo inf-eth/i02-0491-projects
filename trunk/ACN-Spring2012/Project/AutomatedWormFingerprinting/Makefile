@@ -37,7 +37,7 @@ SRCDIR=./src
 CPPFILES=AutomatedWormFingerprinting PacketManip
 TARGET=AutomatedWormFingerprinting
 LINKING=
-LIBS=-lpcap -lssl -lcrypto
+LIBS=-lpcap -lssl -lcrypto -lpthread
 
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
