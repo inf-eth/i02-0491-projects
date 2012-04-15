@@ -793,6 +793,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 	else
 	{
 		PacketCapture.ContentPrevalenceTable[SearchIndex].Count++;
+		PacketCapture.ContentPrevalenceTable[SearchIndex].InsertionTime = GetTimeus64();
 		if (PacketCapture.ContentPrevalenceTable[SearchIndex].Count > PacketCapture.GetContentPrevalenceThreshold())
 		{
 			// TODO: Check threshold and promote entry into address dispersion table.
@@ -803,6 +804,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 		}
 	}
 }
+
 // Compare two blocks of memory and returns true if they match else returns false.
 bool memncmp (const char *block1, const char *block2, int size)
 {
@@ -919,9 +921,18 @@ void print_payload(const u_char *payload, int len)
 	return;
 }
 
-void SafeCall (int returnvalue, const char *FunctionName)
+void SafeCall (int returnvalue, const char *FunctionName, int errorvalue)
 {
-	if (returnvalue == -1)
+	if (returnvalue == errorvalue)
+	{
+		cerr << "ERROR: " << FunctionName << endl;
+		exit (-1);
+	}
+}
+
+void SafeCallAssert (int returnvalue, const char *FunctionName, int expectedvalue)
+{
+	if (returnvalue != expectedvalue)
 	{
 		cerr << "ERROR: " << FunctionName << endl;
 		exit (-1);
@@ -944,6 +955,31 @@ THREAD_RETURN_TYPE GarbageCollector (void *arg)
 		Current = GetTimeus64();
 		cout << "Elapsed time = " << ((double)(Current-Start))/(1000000.) << " seconds." << endl;
 		cout << "Garbage collection started..." << endl;
+
+		//  Garbage Collection.
+		#ifdef WIN32
+		WaitForSingleObject (MutexLock, INFINITE);
+		#else
+		pthread_mutex_lock (&MutexLock);
+		#endif
+		for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
+		{
+			// Check if an entry has persisted for 15 seconds without an increase in prevalence count then decrease its prevalence count.
+			if (((double)(Current-PacketCapture.ContentPrevalenceTable[i].InsertionTime))/(1000000.) > 15.)
+			{
+				// Decrease prevalence count.
+				PacketCapture.ContentPrevalenceTable[i].Count--;
+
+				// If Count is zero then erase the entry.
+				if (PacketCapture.ContentPrevalenceTable[i].Count == 0)
+					PacketCapture.ContentPrevalenceTable.erase (PacketCapture.ContentPrevalenceTable.begin()+i);
+			}
+		}
+		#ifdef WIN32
+		ReleaseMutex (MutexLock);
+		#else
+		pthread_mutex_unlock (&MutexLock);
+		#endif
 	}
 	#ifndef WIN32
 	return NULL;
@@ -951,7 +987,22 @@ THREAD_RETURN_TYPE GarbageCollector (void *arg)
 }
 THREAD_RETURN_TYPE Receiver (void *arg)
 {
+	SignatureData temp;
+	while (true)
+	{
+		sin_size = sizeof (ClientAddress);
+		SafeCallAssert (NumOfBytesReceived = recvfrom (SocketFD, (char *)&temp, sizeof(SignatureData), 0, (sockaddr *)&ClientAddress, &sin_size), "recvfrom()", sizeof(SignatureData));
 
+		#ifdef WIN32
+		WaitForSingleObject (MutexLock, INFINITE);
+		ProcessPacket (temp.Key, temp.th_sport, temp.th_dport, temp.ip_src, temp.ip_dst);
+		ReleaseMutex (MutexLock);
+		#else
+		pthread_mutex_lock (&MutexLock);
+		ProcessPacket (temp.Key, temp.th_sport, temp.th_dport, temp.ip_src, temp.ip_dst);
+		pthread_mutex_unlock (&MutexLock);
+		#endif
+	}
 	#ifndef WIN32
 	return NULL;
 	#endif
