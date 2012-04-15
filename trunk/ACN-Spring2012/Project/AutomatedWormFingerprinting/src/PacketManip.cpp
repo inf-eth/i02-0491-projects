@@ -540,9 +540,9 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 	}
 
 	// Initializing thresholds.
-	SetContentPrevalenceThreshold (20);
-	SetSrcAddressDispersionThreshold (40);
-	SetDstAddressDispersionThreshold (40);
+	SetContentPrevalenceThreshold (CONTENT_PREVALENCE_THRESHOLD);
+	SetSrcAddressDispersionThreshold (SRC_IP_DISPERSION_THRESHOOLD);
+	SetDstAddressDispersionThreshold (DST_IP_DISPERSION_THRESHOOLD);
 
 	// Create Garbage Collector and Receiver threads.
 	if (PacketCapture.Get_Mode() == MODE_SERVER)
@@ -994,9 +994,9 @@ THREAD_RETURN_TYPE GarbageCollector (void *arg)
 	while (true)
 	{
 		#ifdef WIN32
-		Sleep (10*1000);
+		Sleep (GARBAGE_COLLECTION_INTERVAL*1000);
 		#else
-		sleep (10);
+		sleep (GARBAGE_COLLECTION_INTERVAL);
 		#endif
 
 		Current = GetTimeus64();
@@ -1012,7 +1012,7 @@ THREAD_RETURN_TYPE GarbageCollector (void *arg)
 		for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
 		{
 			// Check if an entry has persisted for 15 seconds without an increase in prevalence count then decrease its prevalence count.
-			if (((double)(Current-PacketCapture.ContentPrevalenceTable[i].InsertionTime))/(1000000.) > 15.)
+			if (((double)(Current-PacketCapture.ContentPrevalenceTable[i].InsertionTime))/(1000000.) > CONTENT_PREVALENCE_TIMEOUT)
 			{
 				// Decrease prevalence count.
 				PacketCapture.ContentPrevalenceTable[i].Count--;
@@ -1064,9 +1064,9 @@ THREAD_RETURN_TYPE Logger (void *arg)
 	while (true)
 	{
 		#ifdef WIN32
-		Sleep (5*1000);
+		Sleep (LOGGING_INTERVAL*1000);
 		#else
-		sleep (5);
+		sleep (LOGGING_INTERVAL);
 		#endif
 
 		Current = GetTimeus64();
