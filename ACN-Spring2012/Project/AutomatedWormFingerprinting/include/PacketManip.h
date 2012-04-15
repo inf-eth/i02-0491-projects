@@ -310,4 +310,5 @@ void memncpy (char *, const char *, int);
 void print_hex_ascii_line(const u_char *, int, int);
 void print_payload(const u_char *, int);
 
-void SafeCall (int, const char *);
+void SafeCall (int, const char *, int=-1);
+void SafeCallAssert (int, const char *, int=0);
