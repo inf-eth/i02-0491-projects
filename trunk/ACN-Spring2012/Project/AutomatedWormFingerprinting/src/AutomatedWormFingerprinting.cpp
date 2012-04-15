@@ -35,7 +35,7 @@ extern CPacketManip PacketCapture;
 // 3 arguments: Specified capture device, filter and server port. Operating in server mode.
 // 5 arguments: Specified capture device, filter, server port, client port and server IP. Operating in client mode.
 
-// 1. Device to sniff on: e.g. "eth0", 'wlan0"
+// 1. Device to sniff on: e.g. "eth0", 'wlan0". Can be passed as 'NULL' for autoselection.
 // 2. Filter string: See examples.
 // Mode of operation depends on number of arguments: Server = 3, Client = 5
 // 3. Server port
@@ -55,9 +55,9 @@ int main (int argc, char **argv)
 	if (argc == 1)
 		PacketCapture.Initialize (argc, NULL, "tcp || udp", NULL, NULL, NULL);
 	else if (argc == 4)
-		PacketCapture.Initialize (argc, argv[1], argv[2], argv[3], NULL, NULL);
+		PacketCapture.Initialize (argc, !strcmp(argv[1], "NULL") ? NULL : argv[1], argv[2], argv[3], NULL, NULL);
 	else if (argc == 6)
-		PacketCapture.Initialize (argc, argv[1], argv[2], argv[3], argv[4], argv[5]);
+		PacketCapture.Initialize (argc, !strcmp(argv[1], "NULL") ? NULL : argv[1], argv[2], argv[3], argv[4], argv[5]);
 	else
 	{
 		cerr << "ERROR: Invalid argument list." << endl;
@@ -68,7 +68,7 @@ int main (int argc, char **argv)
 			 << "3 arguments:  Specified capture device, filter and server port. Operating in server mode." << endl
 			 << "5 arguments:  Specified capture device, filter, server port, client port and server IP. Operating in client mode." << endl
 			 << endl
-			 << "1. Device to sniff on: e.g. eth0, wlan0" << endl
+			 << "1. Device to sniff on: e.g. eth0, wlan0. Can be 'NULL' for autoselection." << endl
 			 << "2. Filter string: See examples." << endl
 			 << "Mode of operation depends on number of arguments: Server = 3, Client = 5" << endl
 			 << "3. Server port" << endl

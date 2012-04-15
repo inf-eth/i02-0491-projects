@@ -380,14 +380,12 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 		pdev = tdev;
 		pcap_freealldevs(alldevs);
 	}
-	#ifdef WIN32
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0)
 	{
 		cerr << "WSAStartup failed." << endl;
 		exit(1);
 	}
-	#endif
 	#else
 	if (pdev == NULL)
 	{
@@ -444,7 +442,7 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 		}
 
 		// Server socket.
-		SocketFD = socket (AF_INET, SOCK_DGRAM, 0);
+		SafeCall (SocketFD = socket (AF_INET, SOCK_DGRAM, 0), "socket()");
 		// Server address initialization for binding.
 		ServerAddress.sin_family = AF_INET;				// Socekt family.
 		ServerAddress.sin_addr.s_addr = INADDR_ANY;		// Setting server IP. INADDR_ANY is the localhost IP.
@@ -452,7 +450,7 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 		fill ((char*)&(ServerAddress.sin_zero), (char*)&(ServerAddress.sin_zero)+8, '\0');
 
 		// bind()
-		bind (SocketFD, (sockaddr *)&ServerAddress, sizeof (ServerAddress));
+		SafeCall (bind (SocketFD, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "bind()");
 		/*
 		// recvfrom() is blocking and will wait for any messages from client.
 		socklen_t ClientAddressSize = sizeof (ClientAddress);
@@ -473,10 +471,13 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 		PacketCapture.Set_Mode (MODE_CLIENT);
 
 		// Getting server's name/IP.
-		he = gethostbyname (pServerIP);
-
+		if ((he = gethostbyname (pServerIP)) == NULL)
+		{
+			cerr << "ERROR: Cannot determine Server name/IP. " << endl;
+			exit(-1);
+		}
 		// Creating a socket for the client.
-		SocketFD = socket ( AF_INET, SOCK_DGRAM, 0 );
+		SafeCall (SocketFD = socket ( AF_INET, SOCK_DGRAM, 0 ), "socket()");
 
 		// Initializing Client address for binding.
 		ClientAddress.sin_family = AF_INET;							// Socket family.
@@ -485,7 +486,7 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 		fill ((char*)&(ClientAddress.sin_zero), (char*)&(ClientAddress.sin_zero)+8, '\0');
 
 		// bind()
-		bind (SocketFD, (sockaddr *)&ClientAddress, sizeof (ClientAddress));
+		SafeCall (bind (SocketFD, (sockaddr *)&ClientAddress, sizeof (ClientAddress)), "bind()");
 
 		// Initializing Server address to connect to.
 		ServerAddress.sin_family = AF_INET;							// Socket family.
