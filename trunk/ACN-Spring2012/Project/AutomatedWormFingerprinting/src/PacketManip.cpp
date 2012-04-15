@@ -224,8 +224,11 @@
 #include <openssl/sha.h>	// SHA1()
 #ifdef WIN32
 #include <WinSock2.h>
+#define CLOSE closesocket
 #else
 #include <arpa/inet.h>		// inet_ntoa()
+#include <netdb.h>			// gethostbyname(), connect(), send(), recv()
+#define CLOSE close
 #endif
 
 using std::cin;
@@ -238,16 +241,55 @@ using std::hex;
 using std::dec;
 using std::setfill;
 using std::setw;
+using std::fill;
 
+// Network related.
+// ****************************************** #Defintions ***********************************************
+#define  MAXBUFFERSIZE		512		// Maximum default buffersize.
+#define  SERVERPORT		   6011		// Server will be listening on this port by default.
+//#define  CLIENTPORT        6012		// Client will running on this port.
+// ******************************************************************************************************
+
+// *********************************************** Globals ************************************************
+int SocketFD;
+
+struct hostent *he;
+struct sockaddr_in ServerAddress;
+struct sockaddr_in ClientAddress;
+
+// Buffer.
+char Buffer[MAXBUFFERSIZE];
+int NumOfBytesSent;
+int NumOfBytesReceived;
+
+// Miscellaneous Variables.
+int Yes = 1;
+int AddressLength;
+int errorcheck;
+#ifdef WIN32
+int sin_size;
+#else
+socklen_t sin_size;
+#endif
+// ********************************************************************************************************
+
+// Global Packet Manipulation object.
 CPacketManip PacketCapture;
+
+// Packet capture callback is called everytime a packet is received.
 void packet_capture_callback(u_char *, const struct pcap_pkthdr*, const u_char*);
 
+// ProcessPacket() is called everytime a packet is received with non-zero payload.
+void ProcessPacket (unsigned char *, unsigned short, unsigned short, in_addr, in_addr);
+
+// Default constructor.
 CPacketManip::CPacketManip ():
 								dev(NULL),
 								descr(NULL),
 								ContentPrevalenceThreshold(-1),
 								SrcAddressDispersionThreshold(-1),
-								DstAddressDispersionThreshold(-1)
+								DstAddressDispersionThreshold(-1),
+								Mode(MODE_SERVER)
 {
 }
 
@@ -285,7 +327,7 @@ CPacketManip::CPacketManip (char *pdev, char *pfilter)
 	cout << "Filter: " << pfilter << endl;
 }
 
-void CPacketManip::Initialize (const char *pdev, const char *pfilter)
+void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter, const char *pServerPort, const char *pClientPort, const char *pServerIP)
 {
 	#ifdef WIN32
 	// If no interface specified ask for one.
@@ -338,6 +380,14 @@ void CPacketManip::Initialize (const char *pdev, const char *pfilter)
 		pdev = tdev;
 		pcap_freealldevs(alldevs);
 	}
+	#ifdef WIN32
+	WSADATA wsaData;
+	if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0)
+	{
+		cerr << "WSAStartup failed." << endl;
+		exit(1);
+	}
+	#endif
 	#else
 	if (pdev == NULL)
 	{
@@ -356,7 +406,6 @@ void CPacketManip::Initialize (const char *pdev, const char *pfilter)
 		cerr << "ERROR pcap_lookupnet(): " << errbuf << endl;
 		exit(-1);
 	}
-
 	// open device for reading this time lets set it in promiscuous mode so we can monitor traffic to another machine
 	descr = pcap_open_live (pdev, BUFSIZ, 1, -1, errbuf);
 	if(descr == NULL)
@@ -364,14 +413,12 @@ void CPacketManip::Initialize (const char *pdev, const char *pfilter)
 		cerr << "ERROR pcap_open_live(): " << errbuf << endl;
 		exit(-1);
 	}
-
 	// Lets try and compile the program.. non-optimized
 	if (pcap_compile (descr, &fp, pfilter, 0, netp) == -1)
 	{
 		cerr << "ERROR calling pcap_compile()" << endl;
 		exit(-1);
 	}
-
 	// set the compiled program as the filter
 	if (pcap_setfilter (descr, &fp) == -1)
 	{
@@ -380,6 +427,84 @@ void CPacketManip::Initialize (const char *pdev, const char *pfilter)
 	}
 	cout << "Device: " << pdev << endl;
 	cout << "Filter: " << pfilter << endl;
+
+	// Default server mode.
+	if (pargc == 1 || pargc == 4)
+	{
+		int ServerPort;
+		if (pargc == 1)
+		{
+			ServerPort = SERVERPORT;
+			cout << "Running as Server and listening on default port " << ServerPort << endl;
+		}
+		else
+		{
+			ServerPort = atoi (pServerPort);
+			cout << "Running as Server and listening on port " << ServerPort << endl;
+		}
+
+		// Server socket.
+		SocketFD = socket (AF_INET, SOCK_DGRAM, 0);
+		// Server address initialization for binding.
+		ServerAddress.sin_family = AF_INET;				// Socekt family.
+		ServerAddress.sin_addr.s_addr = INADDR_ANY;		// Setting server IP. INADDR_ANY is the localhost IP.
+		ServerAddress.sin_port = htons (ServerPort);	// Setting server port.
+		fill ((char*)&(ServerAddress.sin_zero), (char*)&(ServerAddress.sin_zero)+8, '\0');
+
+		// bind()
+		bind (SocketFD, (sockaddr *)&ServerAddress, sizeof (ServerAddress));
+		/*
+		// recvfrom() is blocking and will wait for any messages from client.
+		socklen_t ClientAddressSize = sizeof (ClientAddress);
+		NumOfBytesReceived = recvfrom (ServerSocketFD, Buffer, MAXBUFFERSIZE-1, 0, (sockaddr *)&ClientAddress, &ClientAddressSize);
+
+		Buffer[NumOfBytesReceived] = '\0';
+		cout << "Server got packet from " << inet_ntoa (ClientAddress.sin_addr) << " on socket " << ServerSocketFD << endl;
+		cout << "Client says: " << Buffer << endl;
+
+		// sendto()
+		char ServerMessage[] = "Hello from Server. Now bye!";
+		NumOfBytesSent = sendto (ServerSocketFD, ServerMessage, strlen (ServerMessage), 0, (sockaddr *)&ClientAddress, sizeof (ClientAddress));*/
+	}
+	// If running in client mode.
+	else if (pargc == 6)
+	{
+		// TODO: Set client mode.
+		PacketCapture.Set_Mode (MODE_CLIENT);
+
+		// Getting server's name/IP.
+		he = gethostbyname (pServerIP);
+
+		// Creating a socket for the client.
+		SocketFD = socket ( AF_INET, SOCK_DGRAM, 0 );
+
+		// Initializing Client address for binding.
+		ClientAddress.sin_family = AF_INET;							// Socket family.
+		ClientAddress.sin_addr.s_addr = INADDR_ANY;					// Assigninig client IP.
+		ClientAddress.sin_port = htons (atoi (pClientPort));		// Client port.
+		fill ((char*)&(ClientAddress.sin_zero), (char*)&(ClientAddress.sin_zero)+8, '\0');
+
+		// bind()
+		bind (SocketFD, (sockaddr *)&ClientAddress, sizeof (ClientAddress));
+
+		// Initializing Server address to connect to.
+		ServerAddress.sin_family = AF_INET;							// Socket family.
+		ServerAddress.sin_addr = *((in_addr *)(*he).h_addr);	// Server name/IP.
+		ServerAddress.sin_port = htons (atoi (pServerPort));			// Server port provided as argument.
+		fill ((char*)&(ServerAddress.sin_zero), (char*)&(ServerAddress.sin_zero)+8, '\0');
+
+		/*
+		// sendto()
+		char ClientMessage[] = "Hello from client.";
+		NumOfBytesSent = sendto (ClientSocketFD, ClientMessage, strlen (ClientMessage), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress));
+
+		// recvfrom() is blocking and will wait for any messages.
+		socklen_t ServerAddressSize = sizeof (ServerAddress);
+		NumOfBytesReceived = recvfrom (ClientSocketFD, Buffer, MAXBUFFERSIZE-1, 0, (sockaddr *)&ServerAddress, &ServerAddressSize);		// Blocking.
+
+		Buffer[NumOfBytesReceived] = '\0';
+		cout << "Server says: " << Buffer << endl;*/
+	}
 
 	// Initializing thresholds.
 	SetContentPrevalenceThreshold (20);
@@ -564,42 +689,54 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 			cout << "Key: ";
 			for (int i=0; i<KEY_LENGTH; i++)
 			{
-				cout << hex << setfill('0') << setw(2) << (int)GeneratedKey[i] << " ";
+				cout << hex << setfill('0') << setw(2) << (int)GeneratedKey[i] << dec << " ";
 			}
 			cout << endl;
-
-			// TODO: Check key entry in Address Dispersion Table.
-			// <>
-			
-			// Check Content Prevalence Table.
-			int SearchIndex;
-			if ( (SearchIndex = PacketCapture.SearchContentPrevalenceTable (GeneratedKey)) == -1)
-			{
-				ContentPrevalenceEntry temp;
-				memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
-				temp.Count = 1;
-				PacketCapture.ContentPrevalenceTable.push_back(temp);
-
-				fstream ContentPrevalenceTableLog("ContentPrevalenceTable.log", std::ios::out);
-				for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
-				{
-					for (int j=0; j<KEY_LENGTH; j++)
-						ContentPrevalenceTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec << (j==9 ? " " : "");
-					ContentPrevalenceTableLog << ": " << PacketCapture.ContentPrevalenceTable[i].Count << endl;
-				}
-				ContentPrevalenceTableLog.close();
-			}
-			else
-			{
-				PacketCapture.ContentPrevalenceTable[SearchIndex].Count++;
-				// TODO: Check threshold and promote entry into address dispersion table.
-			}
+			ProcessPacket (GeneratedKey, tcp->th_sport, tcp->th_dport, ip->ip_src, ip->ip_dst);
 		}
 	}
 	else
 		return;		// Not a packet of our interest.
 }
 
+void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsigned short th_dport, in_addr ip_src, in_addr ip_dst)
+{
+	int SearchIndex;
+	// TODO: Check key entry in Address Dispersion Table.
+	if ( (SearchIndex = PacketCapture.SearchAddressDispersionTable (GeneratedKey)) != -1)
+	{
+		cout << "Key already exists..." << endl;
+	}
+	// Check Content Prevalence Table.
+	else if ( (SearchIndex = PacketCapture.SearchContentPrevalenceTable (GeneratedKey)) == -1)
+	{
+		ContentPrevalenceEntry temp;
+		memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
+		temp.Count = 1;
+		PacketCapture.ContentPrevalenceTable.push_back(temp);
+
+		fstream ContentPrevalenceTableLog("ContentPrevalenceTable.log", std::ios::out);
+		for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
+		{
+			for (int j=0; j<KEY_LENGTH; j++)
+				ContentPrevalenceTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec << (j==9 ? " " : "");
+			ContentPrevalenceTableLog << ": " << PacketCapture.ContentPrevalenceTable[i].Count << endl;
+		}
+		ContentPrevalenceTableLog.close();
+	}
+	else
+	{
+		PacketCapture.ContentPrevalenceTable[SearchIndex].Count++;
+		if (PacketCapture.ContentPrevalenceTable[SearchIndex].Count > PacketCapture.GetContentPrevalenceThreshold())
+		{
+			// TODO: Check threshold and promote entry into address dispersion table.
+			AddressDispersionEntry temp;
+			memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
+			temp.SrcIPs.push_back (ip_src);
+			temp.DstIPs.push_back (ip_dst);
+		}
+	}
+}
 // Compare two blocks of memory and returns true if they match else returns false.
 bool memncmp (const char *block1, const char *block2, int size)
 {
@@ -714,4 +851,13 @@ void print_payload(const u_char *payload, int len)
 		}
 	}
 	return;
+}
+
+void SafeCall (int returnvalue, const char *FunctionName)
+{
+	if (returnvalue == -1)
+	{
+		cerr << "ERROR: " << FunctionName << endl;
+		exit (-1);
+	}
 }

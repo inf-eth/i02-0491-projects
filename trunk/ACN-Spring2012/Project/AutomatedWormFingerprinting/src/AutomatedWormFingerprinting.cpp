@@ -24,9 +24,23 @@
 #include <PacketManip.h>
 #include <iostream>
 using std::cout;
+using std::cerr;
 using std::endl;
 
 extern CPacketManip PacketCapture;
+
+// Arguments required:
+// Can provide none, 3 or 5 additional arguments.
+// No arguments: Default capture device, filter "tcp||udp", 6011 server port. Operating in server mode.
+// 3 arguments: Specified capture device, filter and server port. Operating in server mode.
+// 5 arguments: Specified capture device, filter, server port, client port and server IP. Operating in client mode.
+
+// 1. Device to sniff on: e.g. "eth0", 'wlan0"
+// 2. Filter string: See examples.
+// Mode of operation depends on number of arguments: Server = 3, Client = 5
+// 3. Server port
+// 4. Client port (Client mode only)
+// 5. Server IP (Client mode only)
 
 int main (int argc, char **argv)
 {
@@ -35,14 +49,39 @@ int main (int argc, char **argv)
 	// Empty filter program will capture all packets on device.
 	// set device as "lo" to capture packets on loopback interface.
 	// filter program can be "dst localhost", "src localhost", "dst www.google.com" etc.
+	
 	cout << "argc = " <<  argc << endl;
-	// Check if user passed capture device and filter string as argument.
+
+	if (argc == 1)
+		PacketCapture.Initialize (argc, NULL, "tcp || udp", NULL, NULL, NULL);
+	else if (argc == 4)
+		PacketCapture.Initialize (argc, argv[1], argv[2], argv[3], NULL, NULL);
+	else if (argc == 6)
+		PacketCapture.Initialize (argc, argv[1], argv[2], argv[3], argv[4], argv[5]);
+	else
+	{
+		cerr << "ERROR: Invalid argument list." << endl;
+		cout << "Input format: " << endl
+			 << "Arguments required: " << endl
+			 << "Can provide none, 3 or 5 additional arguments." << endl
+			 << "No arguments: Default capture device, filter 'tcp||udp', 6011 server port. Operating in server mode." << endl
+			 << "3 arguments:  Specified capture device, filter and server port. Operating in server mode." << endl
+			 << "5 arguments:  Specified capture device, filter, server port, client port and server IP. Operating in client mode." << endl
+			 << endl
+			 << "1. Device to sniff on: e.g. eth0, wlan0" << endl
+			 << "2. Filter string: See examples." << endl
+			 << "Mode of operation depends on number of arguments: Server = 3, Client = 5" << endl
+			 << "3. Server port" << endl
+			 << "4. Client port (Client mode only)" << endl
+			 << "5. Server IP (Client mode only)" << endl;
+		return -1;
+	}
+	/*
 	if (argc == 3)
 		PacketCapture.Initialize (argv[1], argv[2]);
-	// Default is to capture all ip packets on default interface.
 	else
 		PacketCapture.Initialize (NULL, "tcp || udp");
-
+	*/
 	PacketCapture.Loop ();
 	return 0;
 }

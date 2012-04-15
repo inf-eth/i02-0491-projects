@@ -221,6 +221,13 @@
 using std::vector;
 
 #define KEY_LENGTH	20
+
+enum MODE_OF_OPERATION
+{
+	MODE_SERVER = 0,
+	MODE_CLIENT = 1
+};
+
 struct ContentPrevalenceEntry
 {
 	unsigned char Key[KEY_LENGTH];
@@ -253,12 +260,18 @@ private:
 	int SrcAddressDispersionThreshold;
 	int DstAddressDispersionThreshold;
 
+	// Working as server or client?
+	MODE_OF_OPERATION Mode;		// Default mode is server.
+
 public:
 	CPacketManip ();
 	CPacketManip (char *, char *);					// takes device name and filter program as arguments.
-	void Initialize (const char*, const char *);	// takes device name and filter program as arguments.
+	void Initialize (int ,const char*, const char *, const char *, const char *, const char *);	// parse arguments
 	void Loop ();
 
+	void Set_Mode(MODE_OF_OPERATION pMode) { Mode = pMode; }
+	MODE_OF_OPERATION Get_Mode() { return Mode; }
+	
 	// Set Thresholds.
 	void SetContentPrevalenceThreshold (int pThreshold) { ContentPrevalenceThreshold = pThreshold; }
 	void SetSrcAddressDispersionThreshold (int pThreshold) { SrcAddressDispersionThreshold = pThreshold; }
@@ -291,3 +304,5 @@ void memncpy (char *, const char *, int);
 
 void print_hex_ascii_line(const u_char *, int, int);
 void print_payload(const u_char *, int);
+
+void SafeCall (int, const char *);
