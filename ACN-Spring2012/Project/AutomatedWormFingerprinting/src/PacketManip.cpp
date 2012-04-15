@@ -600,6 +600,29 @@ int CPacketManip::SearchAddressDispersionTable (unsigned char *pKey)
 	return -1;
 }
 
+
+// Search Src IP vector for a match.
+bool CPacketManip::SearchSrcIPs (int SearchIndex, in_addr ip_src)
+{
+	for (int i=0; i < (int)AddressDispersionTable[SearchIndex].SrcIPs.size(); i++)
+	{
+		if (memncmp((const char *)&AddressDispersionTable[SearchIndex].SrcIPs[i], (const char *)&ip_src, sizeof(in_addr)) == true)
+			return true;
+	}
+	return false;
+}
+
+// Search Dst IP vector for a match.
+bool CPacketManip::SearchDstIPs (int SearchIndex, in_addr ip_dst)
+{
+	for (int i=0; i < (int)AddressDispersionTable[SearchIndex].DstIPs.size(); i++)
+	{
+		if (memncmp((const char *)&AddressDispersionTable[SearchIndex].DstIPs[i], (const char *)&ip_dst, sizeof(in_addr)) == true)
+			return true;
+	}
+	return false;
+}
+
 // TODO: All the work needs to be done here.
 void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,const u_char* packet)
 {
@@ -772,11 +795,33 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsigned short th_dport, in_addr ip_src, in_addr ip_dst)
 {
 	int SearchIndex;
-	// TODO: Check key entry in Address Dispersion Table.
+	// Check key entry in Address Dispersion Table.
 	if ( (SearchIndex = PacketCapture.SearchAddressDispersionTable (GeneratedKey)) != -1)
 	{
-		cout << "Key already exists..." << endl;
+		cout << "Key already exists in Address Dispersion Table..." << endl;
+		if (PacketCapture.SearchSrcIPs (SearchIndex, ip_src) == false)
+			PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.push_back (ip_src);
+		if (PacketCapture.SearchDstIPs (SearchIndex, ip_dst) == false)
+			PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.push_back (ip_dst);
 
+		// Checking alarm thresholds.
+		if (PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size() > PacketCapture.GetSrcAddressDispersionThreshold() && PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size() > PacketCapture.GetDstAddressDispersionThreshold())
+		{
+			fstream AlarmLog("Alarm.log", std::ios::out | std::ios::app);
+			AlarmLog << "######################## Alarm ########################" << endl;
+
+			time_t rawtime;
+			time ( &rawtime );
+			AlarmLog << "Date/Time: " << asctime (localtime (&rawtime)) << endl;
+
+			AlarmLog << "Key: ";
+			for (int i=0; i<KEY_LENGTH; i++)
+				AlarmLog << hex << setfill('0') << setw(2) << (int)PacketCapture.AddressDispersionTable[SearchIndex].Key[i] << dec << (i==9 ? " " : "");
+
+			AlarmLog << "SrcIPCount = " << PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size() << ", DstIPCount = " << PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size() << endl;
+			AlarmLog << "Src Port = " << ntohs(th_sport) << ", Dst Port = " << ntohs(th_dport) << endl;
+			AlarmLog.close();
+		}
 	}
 	// Check Content Prevalence Table.
 	else if ( (SearchIndex = PacketCapture.SearchContentPrevalenceTable (GeneratedKey)) == -1)
@@ -786,7 +831,6 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 		temp.Count = 1;
 		temp.InsertionTime = GetTimeus64();
 		PacketCapture.ContentPrevalenceTable.push_back(temp);
-
 	}
 	else
 	{
@@ -799,6 +843,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 			memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
 			temp.SrcIPs.push_back (ip_src);
 			temp.DstIPs.push_back (ip_dst);
+
 			// Insert into Address Dispersion table.
 			PacketCapture.AddressDispersionTable.push_back (temp);
 			// Erase from Content Prevalence Table.
