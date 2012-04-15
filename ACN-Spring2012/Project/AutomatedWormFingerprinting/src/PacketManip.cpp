@@ -223,6 +223,7 @@
 #include <iomanip>
 #include <cctype>
 #include <openssl/sha.h>	// SHA1()
+
 #ifdef WIN32
 #include <process.h>
 #include <Windows.h>
@@ -252,6 +253,7 @@ using std::fill;
 #ifdef WIN32
 HANDLE tGarbageCollector;
 HANDLE tReceiver;
+HANDLE MutexLock = CreateMutex (NULL, FALSE, NULL);
 #else
 pthread_t tGarbageCollector;
 pthread_t tReceiver;
@@ -735,9 +737,15 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 			// If this is Server then process the packet. Otherwise send signature data to Server.
 			if (PacketCapture.Get_Mode() == MODE_SERVER)
 			{
+				#ifdef WIN32
+				WaitForSingleObject (MutexLock, INFINITE);
+				ProcessPacket (GeneratedKey, tcp->th_sport, tcp->th_dport, ip->ip_src, ip->ip_dst);
+				ReleaseMutex (MutexLock);
+				#else
 				pthread_mutex_lock (&MutexLock);
 				ProcessPacket (GeneratedKey, tcp->th_sport, tcp->th_dport, ip->ip_src, ip->ip_dst);
 				pthread_mutex_unlock (&MutexLock);
+				#endif
 			}
 			else
 			{
