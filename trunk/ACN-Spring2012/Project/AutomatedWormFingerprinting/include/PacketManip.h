@@ -222,6 +222,10 @@ using std::vector;
 
 #define KEY_LENGTH	20
 
+#ifndef WIN32
+#define __int64 long long
+#endif
+
 enum MODE_OF_OPERATION
 {
 	MODE_SERVER = 0,
@@ -232,6 +236,7 @@ struct ContentPrevalenceEntry
 {
 	unsigned char Key[KEY_LENGTH];
 	int Count;
+	__int64 InsertionTime;
 };
 
 struct AddressDispersionEntry

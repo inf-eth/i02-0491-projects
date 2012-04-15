@@ -82,6 +82,7 @@
   <ItemGroup>
     <ClInclude Include="..\include\PacketHeaders.h" />
     <ClInclude Include="..\include\PacketManip.h" />
+    <ClInclude Include="..\include\Timing.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\AutomatedWormFingerprinting.cpp" />
