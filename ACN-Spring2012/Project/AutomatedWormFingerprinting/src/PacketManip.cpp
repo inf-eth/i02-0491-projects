@@ -247,7 +247,6 @@ using std::fill;
 // ****************************************** #Defintions ***********************************************
 #define  MAXBUFFERSIZE		512		// Maximum default buffersize.
 #define  SERVERPORT		   6011		// Server will be listening on this port by default.
-//#define  CLIENTPORT        6012		// Client will running on this port.
 // ******************************************************************************************************
 
 // *********************************************** Globals ************************************************
@@ -271,6 +270,15 @@ int sin_size;
 #else
 socklen_t sin_size;
 #endif
+
+struct SignatureData
+{
+	unsigned char Key[KEY_LENGTH];
+	unsigned short th_sport;
+	unsigned short th_dport;
+	in_addr ip_src;
+	in_addr ip_dst;
+};
 // ********************************************************************************************************
 
 // Global Packet Manipulation object.
@@ -693,13 +701,26 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 				cout << hex << setfill('0') << setw(2) << (int)GeneratedKey[i] << dec << " ";
 			}
 			cout << endl;
-			ProcessPacket (GeneratedKey, tcp->th_sport, tcp->th_dport, ip->ip_src, ip->ip_dst);
+			// If this is Server then process the packet. Otherwise send signature data to Server.
+			if (PacketCapture.Get_Mode() == MODE_SERVER)
+				ProcessPacket (GeneratedKey, tcp->th_sport, tcp->th_dport, ip->ip_src, ip->ip_dst);
+			else
+			{
+				SignatureData temp;
+				memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
+				temp.th_sport = tcp->th_sport;
+				temp.th_dport = tcp->th_dport;
+				memncpy ((char *)&temp.ip_src, (const char *)&ip->ip_src, sizeof(in_addr));
+				memncpy ((char *)&temp.ip_dst, (const char *)&ip->ip_dst, sizeof(in_addr));
+				SafeCall (NumOfBytesSent = sendto (SocketFD, (char *)&temp, sizeof(SignatureData), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()");
+			}
 		}
 	}
 	else
 		return;		// Not a packet of our interest.
 }
 
+// Only Server will process packets.
 void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsigned short th_dport, in_addr ip_src, in_addr ip_dst)
 {
 	int SearchIndex;
