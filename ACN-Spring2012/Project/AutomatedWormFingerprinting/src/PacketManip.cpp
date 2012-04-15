@@ -214,6 +214,7 @@
 */
 
 #include <PacketManip.h>
+#include <Timing.h>
 #include <cstdlib>			// exit()
 #include <ctime>
 #include <iostream>
@@ -223,12 +224,17 @@
 #include <cctype>
 #include <openssl/sha.h>	// SHA1()
 #ifdef WIN32
+#include <process.h>
+#include <Windows.h>
 #include <WinSock2.h>
 #define CLOSE closesocket
+#define THREAD_RETURN_TYPE void
 #else
 #include <arpa/inet.h>		// inet_ntoa()
 #include <netdb.h>			// gethostbyname(), connect(), send(), recv()
+#include <pthread.h>
 #define CLOSE close
+#define THREAD_RETURN_TYPE void*
 #endif
 
 using std::cin;
@@ -242,6 +248,18 @@ using std::dec;
 using std::setfill;
 using std::setw;
 using std::fill;
+
+#ifdef WIN32
+HANDLE tGarbageCollector;
+HANDLE tReceiver;
+#else
+pthread_t tGarbageCollector;
+pthread_t tReceiver;
+#endif
+
+// Threads.
+THREAD_RETURN_TYPE GarbageCollector (void *);
+THREAD_RETURN_TYPE Receiver (void *);
 
 // Network related.
 // ****************************************** #Defintions ***********************************************
@@ -519,6 +537,18 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 	SetContentPrevalenceThreshold (20);
 	SetSrcAddressDispersionThreshold (40);
 	SetDstAddressDispersionThreshold (40);
+
+	// Create Garbage Collector and Receiver threads.
+	if (PacketCapture.Get_Mode() == MODE_SERVER)
+	{
+		#ifdef WIN32
+		tGarbageCollector = (HANDLE)_beginthread (GarbageCollector, 0, NULL);
+		tReceiver = (HANDLE)_beginthread (Receiver, 0, NULL);
+		#else
+		pthread_create (&tGarbageCollector, NULL, GarbageCollector, NULL);
+		pthread_create (&tReceiver, NULL, Receiver, NULL);
+		#endif
+	}
 }
 void CPacketManip::Loop ()
 {
@@ -735,6 +765,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 		ContentPrevalenceEntry temp;
 		memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
 		temp.Count = 1;
+		temp.InsertionTime = GetTimeus64();
 		PacketCapture.ContentPrevalenceTable.push_back(temp);
 
 		fstream ContentPrevalenceTableLog("ContentPrevalenceTable.log", std::ios::out);
@@ -882,4 +913,33 @@ void SafeCall (int returnvalue, const char *FunctionName)
 		cerr << "ERROR: " << FunctionName << endl;
 		exit (-1);
 	}
+}
+
+// Threads.
+THREAD_RETURN_TYPE GarbageCollector (void *arg)
+{
+	__int64 Start = GetTimeus64();
+	__int64 Current = GetTimeus64();
+	while (true)
+	{
+		#ifdef WIN32
+		Sleep (10*1000);
+		#else
+		sleep (10);
+		#endif
+
+		Current = GetTimeus64();
+		cout << "Elapsed time = " << ((double)(Current-Start))/(1000000.) << " seconds." << endl;
+		cout << "Garbage collection started..." << endl;
+	}
+	#ifndef WIN32
+	return NULL;
+	#endif
+}
+THREAD_RETURN_TYPE Receiver (void *arg)
+{
+
+	#ifndef WIN32
+	return NULL;
+	#endif
 }
