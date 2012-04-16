@@ -369,14 +369,14 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 		pcap_if_t *d;
 		int inum;
 		int i=0;
-	
+
 		/* Retrieve the device list on the local machine */
 		if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf) == -1)
 		{
 			cerr << "Error in pcap_findalldevs: " << errbuf << endl;
 			exit(-1);
 		}
-	
+
 		/* Print the list */
 		for(d=alldevs; d; d=d->next)
 		{
@@ -386,13 +386,13 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 			else
 				cerr<< "(No description available)" << endl;
 		}
-	
+
 		if(i==0)
 		{
 			cerr << "No interfaces found! Make sure WinPcap is installed." << endl;
 			return;
 		}
-	
+
 		cout << "Enter the interface number (1-" << i << "):" << endl;
 		cin >> inum;
 	
@@ -406,7 +406,7 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 
 		/* Jump to the selected adapter */
 		for(d=alldevs, i=0; i< inum-1 ;d=d->next, i++);
-	
+
 		char *tdev = new char[strlen(d->name)+1];
 		strcpy (tdev, d->name);
 		pdev = tdev;
@@ -631,12 +631,16 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 
 	// Header pointers.
 	const struct sniff_ethernet *ethernet; /* The ethernet header */
-	const struct sniff_ip *ip; /* The IP header */
-	const struct sniff_tcp *tcp; /* The TCP header */
-	const u_char *payload; /* Packet payload */
+	const struct sniff_ip *ip;		/* The IP header */
+	const struct sniff_tcp *tcp;	/* The TCP header */
+	const struct sniff_udp *udp;	// UDP header.
+	const u_char *payload;			/* Packet payload */
 
 	u_int size_ip;		// IP header length.
 	u_int size_tcp;		// TCP header legnth.
+	u_int size_udp;		// UDP header length.
+	u_int size_payload;	// Size of payload.
+	u_int PacketSize;	// Total packet size.
 
 	// ************************** Pointer Initialization *********************************
 	// packet* is the starting address of captured packet stored in memory.
@@ -651,16 +655,49 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		return;
 	}
 
-	tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);		// TCP header follows ethernet and IP headers.
-	size_tcp = TH_OFF(tcp)*4;	// TH_OFF(tcp) is a macro for ((ip)->ip_vhl) >> 4;
-								// TH_OFF(tcp) gives length of TCP header in 32bit words. Multiplication by 4 gives length in bytes.
-	if (size_tcp < 20)
+	// determine protocol
+	switch(ip->ip_p)
 	{
-		cerr << "ERROR: Invalid TCP header length: " << size_tcp << " bytes." << endl;
-		return;
+		case IPPROTO_TCP:
+			cout << "Protocol: TCP" << endl;
+			break;
+		case IPPROTO_UDP:
+			cout << "Protocol: UDP" << endl;
+			return;
+		case IPPROTO_ICMP:
+			cout << "Protocol: ICMP" << endl;
+			return;
+		case IPPROTO_IP:
+			cout << "Protocol: IP" << endl;
+			return;
+		default:
+			cout << "Protocol: unknown" << endl;
+			return;
 	}
 
-	payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);	// Payload or data in packet.
+	if (ip->ip_p == IPPROTO_TCP)
+	{
+		tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);		// TCP header follows ethernet and IP headers.
+		size_tcp = TH_OFF(tcp)*4;	// TH_OFF(tcp) is a macro for ((ip)->ip_vhl) >> 4;
+									// TH_OFF(tcp) gives length of TCP header in 32bit words. Multiplication by 4 gives length in bytes.
+		if (size_tcp < 20)
+		{
+			cerr << "ERROR: Invalid TCP header length: " << size_tcp << " bytes." << endl;
+			return;
+		}
+		payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);	// Payload or data in packet.
+	}
+	else if (ip->ip_p == IPPROTO_UDP)
+	{
+		udp = (struct sniff_udp*)(packet + SIZE_ETHERNET + size_ip);
+		size_udp = ntohs(udp->th_len);
+		cout << "UDP header length = " << size_udp << endl;
+		if (size_udp < 8)
+		{
+			cerr << "ERROR: Invalid UDP header length: " << size_udp << " bytes." << endl;
+		}
+		payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_udp);	// Payload or data in packet.
+	}
 	// *************************************************************************************
 
 
@@ -670,69 +707,73 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 	// ntohs(tcp->th_sport) gives source port
 	// ntohs(tcp->th_dport) gives destination port
 	// Protocols are IPPROTO_IP, IPPROTO_UDP, IPPROTO_ICMP etc.
-	if (ip)
+	if (ip && (ip->ip_p == IPPROTO_TCP || ip->ip_p == IPPROTO_TCP))
 	{
-		// TODO: Process the headers. Display IP header.
-		cout << "Recieved a TCP packet at: " << ctime((const time_t*)&header->ts.tv_sec) << endl;
-		
 		// print source and destination IP addresses
 		cout << "Src IP: " << inet_ntoa(ip->ip_src) << endl;
 		cout << "Dst IP: " << inet_ntoa(ip->ip_dst) << endl;
 
-		// determine protocol
-		switch(ip->ip_p)
+		// If this is TCP packet.
+		if (ip->ip_p == IPPROTO_TCP)
 		{
-			case IPPROTO_TCP:
-				cout << "Protocol: TCP" << endl;
-				break;
-			case IPPROTO_UDP:
-				cout << "Protocol: UDP" << endl;
-				return;
-			case IPPROTO_ICMP:
-				cout << "Protocol: ICMP" << endl;
-				return;
-			case IPPROTO_IP:
-				cout << "Protocol: IP" << endl;
-				return;
-			default:
-				cout << "Protocol: unknown" << endl;
-				return;
+			// TODO: Process the headers. Display IP header.
+			cout << "Recieved a TCP packet at: " << ctime((const time_t*)&header->ts.tv_sec) << endl;
+		
+			/* define/compute tcp payload (segment) offset */
+			//payload = (packet + SIZE_ETHERNET + size_ip + size_tcp);
+			/* compute tcp payload (segment) size */
+			size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
+			PacketSize = size_payload + size_ip + SIZE_ETHERNET + size_tcp;
+			cout << "Payload size: " << size_payload << endl;
+			cout << "Packet size: " << PacketSize << endl;
+
+			// bitset is a C++ class for bit manipulation. It has overloaded [], << and >> operators for easy access to individual bits and input/output.
+			// Using bitset of size 8 to display bits in a single character (byte).
+			bitset<8> DataOffset;
+			bitset<8> Flags;
+			DataOffset = tcp->th_offx2;		// tcp->th_offx2 points to offset character.
+			Flags = tcp->th_flags;			// tcp->th_flags character contain flag bits.
+
+			cout << "******* TCP Header *******" << endl
+				 << "Source Port:         " << ntohs(tcp->th_sport) << endl
+				 << "Destination Port:    " << ntohs(tcp->th_dport) << endl
+				 << "Sequence No.:        " << ntohl (tcp->th_seq) << endl
+				 << "Acknowledgement No.: " << ntohl(tcp->th_ack) << endl
+				 << "TCP header length:   " << size_tcp << endl
+				 << "Data offset flags:   " << DataOffset << endl
+				 << "Flags:               " << endl
+											<< "\t\t" << "FIN:    " << Flags[0] << endl
+											<< "\t\t" << "SYN:    " << Flags[1] << endl
+											<< "\t\t" << "RESET:  " << Flags[2] << endl
+											<< "\t\t" << "PUSH:   " << Flags[3] << endl
+											<< "\t\t" << "ACK:    " << Flags[4] << endl
+											<< "\t\t" << "URGENT: " << Flags[5] << endl
+											<< "\t\t" << "ECE:    " << Flags[6] << endl
+											<< "\t\t" << "CWR:    " << Flags[7] << endl
+				 << "Window size:         " << ntohs(tcp->th_win) << endl
+				 << "Checksum:            " << ntohs(tcp->th_sum) << endl
+				 << "Urgent Pointer:      " << ntohs(tcp->th_urp) << endl;
 		}
+		// UDP packet.
+		else
+		{
+			// TODO: Process the headers. Display IP header.
+			cout << "Recieved a UDP packet at: " << ctime((const time_t*)&header->ts.tv_sec) << endl;
+		
+			/* define/compute tcp payload (segment) offset */
+			//payload = (packet + SIZE_ETHERNET + size_ip + size_tcp);
+			/* compute tcp payload (segment) size */
+			size_payload = ntohs(ip->ip_len) - (size_ip + size_udp);
+			PacketSize = size_payload + size_ip + SIZE_ETHERNET + size_udp;
+			cout << "Payload size: " << size_payload << endl;
+			cout << "Packet size: " << PacketSize << endl;
 
-		/* define/compute tcp payload (segment) offset */
-		//payload = (packet + SIZE_ETHERNET + size_ip + size_tcp);
-		/* compute tcp payload (segment) size */
-		u_int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
-		u_int PacketSize = size_payload + size_ip + SIZE_ETHERNET + size_tcp;
-		cout << "Payload size: " << size_payload << endl;
-		cout << "Packet size: " << PacketSize << endl;
-
-		// bitset is a C++ class for bit manipulation. It has overloaded [], << and >> operators for easy access to individual bits and input/output.
-		// Using bitset of size 8 to display bits in a single character (byte).
-		bitset<8> DataOffset;
-		bitset<8> Flags;
-		DataOffset = tcp->th_offx2;		// tcp->th_offx2 points to offset character.
-		Flags = tcp->th_flags;			// tcp->th_flags character contain flag bits.
-
-		cout << "******* TCP Header *******" << endl
-			 << "Source Port:         " << ntohs(tcp->th_sport) << endl
-			 << "Destination Port:    " << ntohs(tcp->th_dport) << endl
-			 << "Sequence No.:        " << ntohl (tcp->th_seq) << endl
-			 << "Acknowledgement No.: " << ntohl(tcp->th_ack) << endl
-			 << "TCP header length:   " << size_tcp << endl
-			 << "Data offset flags:   " << DataOffset << endl
-			 << "Flags:               " << endl
-										<< "\t\t" << "FIN:    " << Flags[0] << endl
-										<< "\t\t" << "SYN:    " << Flags[1] << endl
-										<< "\t\t" << "RESET:  " << Flags[2] << endl
-										<< "\t\t" << "PUSH:   " << Flags[3] << endl
-										<< "\t\t" << "ACK:    " << Flags[4] << endl
-										<< "\t\t" << "URGENT: " << Flags[5] << endl
-										<< "\t\t" << "ECE:    " << Flags[6] << endl
-										<< "\t\t" << "CWR:    " << Flags[7] << endl
-			 << "Window size:         " << ntohs(tcp->th_win) << endl
-			 << "Checksum:            " << ntohs(tcp->th_sum) << endl
-			 << "Urgent Pointer:      " << ntohs(tcp->th_urp) << endl;
+			cout << "******* UDP Header *******" << endl
+				 << "Source Port:         " << ntohs(udp->th_sport) << endl
+				 << "Destination Port:    " << ntohs(udp->th_dport) << endl
+				 << "TCP header length:   " << ntohs(udp->th_len) << endl
+				 << "Checksum:            " << ntohs(udp->th_sum) << endl;
+		}
 
 		// Displaying payload data.
 		if (size_payload != 0)
