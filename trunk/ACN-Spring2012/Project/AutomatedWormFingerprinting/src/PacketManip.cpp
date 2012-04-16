@@ -631,16 +631,16 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 
 	// Header pointers.
 	const struct sniff_ethernet *ethernet; /* The ethernet header */
-	const struct sniff_ip *ip;		/* The IP header */
-	const struct sniff_tcp *tcp;	/* The TCP header */
-	const struct sniff_udp *udp;	// UDP header.
-	const u_char *payload;			/* Packet payload */
+	const struct sniff_ip *ip;			/* The IP header */
+	const struct sniff_tcp *tcp = NULL;	/* The TCP header */
+	const struct sniff_udp *udp = NULL;	// UDP header.
+	const u_char *payload;				/* Packet payload */
 
-	u_int size_ip;		// IP header length.
-	u_int size_tcp;		// TCP header legnth.
-	u_int size_udp;		// UDP header length.
-	u_int size_payload;	// Size of payload.
-	u_int PacketSize;	// Total packet size.
+	u_int size_ip;			// IP header length.
+	u_int size_tcp = 0;		// TCP header legnth.
+	u_int size_udp = 0;		// UDP header length.
+	u_int size_payload;		// Size of payload.
+	u_int PacketSize;		// Total packet size.
 
 	// ************************** Pointer Initialization *********************************
 	// packet* is the starting address of captured packet stored in memory.
@@ -663,7 +663,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 			break;
 		case IPPROTO_UDP:
 			cout << "Protocol: UDP" << endl;
-			return;
+			break;
 		case IPPROTO_ICMP:
 			cout << "Protocol: ICMP" << endl;
 			return;
@@ -690,8 +690,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 	else if (ip->ip_p == IPPROTO_UDP)
 	{
 		udp = (struct sniff_udp*)(packet + SIZE_ETHERNET + size_ip);
-		size_udp = ntohs(udp->th_len);
-		cout << "UDP header length = " << size_udp << endl;
+		size_udp = 8;//ntohs(udp->th_len);
 		if (size_udp < 8)
 		{
 			cerr << "ERROR: Invalid UDP header length: " << size_udp << " bytes." << endl;
@@ -707,7 +706,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 	// ntohs(tcp->th_sport) gives source port
 	// ntohs(tcp->th_dport) gives destination port
 	// Protocols are IPPROTO_IP, IPPROTO_UDP, IPPROTO_ICMP etc.
-	if (ip && (ip->ip_p == IPPROTO_TCP || ip->ip_p == IPPROTO_TCP))
+	if (ip && (ip->ip_p == IPPROTO_TCP || ip->ip_p == IPPROTO_UDP))
 	{
 		// print source and destination IP addresses
 		cout << "Src IP: " << inet_ntoa(ip->ip_src) << endl;
@@ -716,8 +715,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		// If this is TCP packet.
 		if (ip->ip_p == IPPROTO_TCP)
 		{
-			// TODO: Process the headers. Display IP header.
-			cout << "Recieved a TCP packet at: " << ctime((const time_t*)&header->ts.tv_sec) << endl;
+			cout << "Recieved a TCP packet at: " << ctime((const time_t*)&header->ts.tv_sec);
 		
 			/* define/compute tcp payload (segment) offset */
 			//payload = (packet + SIZE_ETHERNET + size_ip + size_tcp);
@@ -757,21 +755,20 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		// UDP packet.
 		else
 		{
-			// TODO: Process the headers. Display IP header.
-			cout << "Recieved a UDP packet at: " << ctime((const time_t*)&header->ts.tv_sec) << endl;
+			cout << "Recieved a UDP packet at: " << ctime((const time_t*)&header->ts.tv_sec);
 		
 			/* define/compute tcp payload (segment) offset */
 			//payload = (packet + SIZE_ETHERNET + size_ip + size_tcp);
 			/* compute tcp payload (segment) size */
-			size_payload = ntohs(ip->ip_len) - (size_ip + size_udp);
-			PacketSize = size_payload + size_ip + SIZE_ETHERNET + size_udp;
+			size_payload = ntohs(udp->th_len) - 8;
+			PacketSize = size_ip + SIZE_ETHERNET + ntohs(udp->th_len);
 			cout << "Payload size: " << size_payload << endl;
 			cout << "Packet size: " << PacketSize << endl;
 
 			cout << "******* UDP Header *******" << endl
 				 << "Source Port:         " << ntohs(udp->th_sport) << endl
 				 << "Destination Port:    " << ntohs(udp->th_dport) << endl
-				 << "TCP header length:   " << ntohs(udp->th_len) << endl
+				 << "Length:              " << ntohs(udp->th_len) << endl
 				 << "Checksum:            " << ntohs(udp->th_sum) << endl;
 		}
 
@@ -794,7 +791,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		// Key generation. Only generate signatures for packets with non-zero payload.
 		if (size_payload != 0)
 		{
-			unsigned char *GeneratedKey = PacketCapture.GenerateKey (ip->ip_p, tcp->th_dport, (unsigned char *)payload, size_payload);
+			unsigned char *GeneratedKey = PacketCapture.GenerateKey (ip->ip_p, (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), (unsigned char *)payload, size_payload);
 
 			// Printing key.
 			cout << "Key: ";
@@ -808,11 +805,11 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 			{
 				#ifdef WIN32
 				WaitForSingleObject (MutexLock, INFINITE);
-				ProcessPacket (GeneratedKey, tcp->th_sport, tcp->th_dport, ip->ip_src, ip->ip_dst);
+				ProcessPacket (GeneratedKey, (ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport), (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), ip->ip_src, ip->ip_dst);
 				ReleaseMutex (MutexLock);
 				#else
 				pthread_mutex_lock (&MutexLock);
-				ProcessPacket (GeneratedKey, tcp->th_sport, tcp->th_dport, ip->ip_src, ip->ip_dst);
+				ProcessPacket (GeneratedKey, (ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport), (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), ip->ip_src, ip->ip_dst);
 				pthread_mutex_unlock (&MutexLock);
 				#endif
 			}
@@ -820,13 +817,14 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 			{
 				SignatureData temp;
 				memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
-				temp.th_sport = tcp->th_sport;
-				temp.th_dport = tcp->th_dport;
+				temp.th_sport = ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport;
+				temp.th_dport = ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport;
 				memncpy ((char *)&temp.ip_src, (const char *)&ip->ip_src, sizeof(in_addr));
 				memncpy ((char *)&temp.ip_dst, (const char *)&ip->ip_dst, sizeof(in_addr));
 				SafeCallAssert (NumOfBytesSent = sendto (SocketFD, (char *)&temp, sizeof(SignatureData), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()", sizeof(SignatureData));
 			}
 		}
+		cout << endl;
 	}
 	else
 		return;		// Not a packet of our interest.
