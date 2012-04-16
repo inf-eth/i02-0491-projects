@@ -228,14 +228,10 @@
 #include <process.h>
 #include <Windows.h>
 #include <WinSock2.h>
-#define CLOSE closesocket
-#define THREAD_RETURN_TYPE void
 #else
 #include <arpa/inet.h>		// inet_ntoa()
 #include <netdb.h>			// gethostbyname(), connect(), send(), recv()
 #include <pthread.h>
-#define CLOSE close
-#define THREAD_RETURN_TYPE void*
 #endif
 
 using std::cin;
@@ -250,6 +246,21 @@ using std::setfill;
 using std::setw;
 using std::fill;
 
+// Platform specific #defines
+#ifdef WIN32
+#define THREAD_RETURN_TYPE void
+#define CLOSE closesocket
+
+#else
+#define THREAD_RETURN_TYPE void*
+#define CLOSE close
+#endif
+
+// Threads.
+THREAD_RETURN_TYPE GarbageCollector (void *);
+THREAD_RETURN_TYPE Receiver (void *);
+THREAD_RETURN_TYPE Logger (void *);
+
 #ifdef WIN32
 HANDLE tGarbageCollector;
 HANDLE tReceiver;
@@ -261,11 +272,6 @@ pthread_t tReceiver;
 pthread_t tLogger;
 pthread_mutex_t MutexLock = PTHREAD_MUTEX_INITIALIZER;
 #endif
-
-// Threads.
-THREAD_RETURN_TYPE GarbageCollector (void *);
-THREAD_RETURN_TYPE Receiver (void *);
-THREAD_RETURN_TYPE Logger (void *);
 
 // Network related.
 // ****************************************** #Defintions ***********************************************
@@ -408,7 +414,7 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 		for(d=alldevs, i=0; i< inum-1 ;d=d->next, i++);
 
 		char *tdev = new char[strlen(d->name)+1];
-		strcpy (tdev, d->name);
+		memncpy (tdev, d->name, strlen(d->name)+1);
 		pdev = tdev;
 		pcap_freealldevs(alldevs);
 	}
@@ -627,7 +633,10 @@ bool CPacketManip::SearchDstIPs (int SearchIndex, in_addr ip_dst)
 void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,const u_char* packet)
 {
 	// TODO: Comment this to stop some spam onscreen or set the appropriate filter program in main() if running on network.
+	// Compile time check for Visual Studio 2008 Version (#if _MSC_VER = 1500)
+	#if _MSC_VER > 1500 || defined __linux__ || defined __CYGWIN__
 	cout << "Recieved a packet at: " << ctime((const time_t*)&header->ts.tv_sec);
+	#endif
 
 	// Header pointers.
 	const struct sniff_ethernet *ethernet; /* The ethernet header */
@@ -715,8 +724,10 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		// If this is TCP packet.
 		if (ip->ip_p == IPPROTO_TCP)
 		{
+			#if _MSC_VER > 1500 || defined __linux__ || defined __CYGWIN__
 			cout << "Recieved a TCP packet at: " << ctime((const time_t*)&header->ts.tv_sec);
-		
+			#endif
+
 			/* define/compute tcp payload (segment) offset */
 			//payload = (packet + SIZE_ETHERNET + size_ip + size_tcp);
 			/* compute tcp payload (segment) size */
@@ -755,8 +766,10 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		// UDP packet.
 		else
 		{
+			#if _MSC_VER > 1500 || defined __linux__ || defined __CYGWIN__
 			cout << "Recieved a UDP packet at: " << ctime((const time_t*)&header->ts.tv_sec);
-		
+			#endif
+
 			/* define/compute tcp payload (segment) offset */
 			//payload = (packet + SIZE_ETHERNET + size_ip + size_tcp);
 			/* compute tcp payload (segment) size */
