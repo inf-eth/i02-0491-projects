@@ -21,6 +21,7 @@
 
 1. Requirements.
 2. Compilation and Execution.
+3. Server and Client Modes.
 
 1. Requirements:
 - Linux:
@@ -55,6 +56,22 @@
     - To compile in debug mode add 'dbg=1' to make command, e.g. 'make dbg=1'
   - 'make run' will run the default executible. Adding 'make run dbg=1' will run the debug exe.
   - To pass arguments to executible use 'make run ARG="arg1 argument2 arg3"' etc.
-    For Example, 'make run ARG="wlan0 tcp"' will capture only tcp packets on wifi.
+    For Example, 'make run ARG="wlan0 tcp 6002"' will capture only tcp packets on wifi with server mode and port 6002.
 - Windows:
   Open the VS2010 solution file provided.
+
+3. Server and Client Modes:
+- There are two modes of operation, Server and Client.
+  - In Server mode packets are processed by Server and Content Prevalence/Address Dispersion Tables are maintained locally.
+  - Server can collect signatures from Clients and process them accordingly.
+  - In Client mode only signatures are collected and sent to Server for processing.
+- Server or Client mode is determined by the number of arguments.
+  - Can provide none, 3 or 5 additional arguments.
+  - No arguments: Default capture device, filter "tcp||udp", 6011 server port. Operating in server mode.
+  - 3 arguments: Specified capture device, filter and server port. Operating in server mode.
+  - 5 arguments: Specified capture device, filter, server port, client port and server IP. Operating in client mode.
+    1. Device to sniff on: e.g. "eth0", 'wlan0". Can be passed as 'NULL' for autoselection.
+    2. Filter string: For example, "tcp||udp" captures tcp and udp packets, "ip" will capture ip packets etc.
+    3. Server port
+    4. Client port (Client mode only)
+    5. Server IP (Client mode only)
