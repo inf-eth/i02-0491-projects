@@ -14,10 +14,11 @@ char* Encrypt(unsigned char *keydata, char *plaintext, int Length)
 {
 	char *encrypted = new char[Length+1];
 	RC4_KEY key;
-	RC4_set_key(&key, 8, keydata);
+	RC4_set_key(&key, strlen((const char*)keydata), keydata);
 
 	// Encryption
 	RC4(&key, Length, (const unsigned char*)plaintext, (unsigned char*)encrypted);
+	encrypted[Length] = '\0';
 
 	return encrypted;
 }
