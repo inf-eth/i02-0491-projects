@@ -14,26 +14,46 @@ CLZ77::~CLZ77()
 {
 }
 
+int CLZ77::SearchDictionary (vector<char> SearchWindow)
+{
+	for (int i=0; i<(int)Dictionary.size(); i++)
+	{
+		if (Dictionary[i].Phrase.size() != SearchWindow.size())
+			continue;
+		for (int j=0; j<(int)Dictionary[i].Phrase.size(); j++)
+		{
+			if (Dictionary[i].Phrase[j] != SearchWindow[j])
+				break;
+			if (j == Dictionary[i].Phrase.size()-1)
+				return i;
+		}
+	}
+	return -1;
+}
+
 void CLZ77::Encode (char *InFilename, char *OutFilename)
 {
 	fstream InFile (InFilename, std::ios::in);
 	if (!InFile)
 		cerr << "ERROR: Openining file: " << InFilename << endl;
 	InFile.seekg(0, std::ios::end);
-	unsigned int InFileSize = (unsigned int)InFile.tellg();
+	int InFileSize = (int)InFile.tellg();
+	cout << "Encoding " << InFilename << endl;
 	cout << "InFile size: " << InFileSize << endl;
 	InFile.seekg(std::ios::beg);
 
-	Window.resize(1);
+	Dictionary.clear();
 	int SearchIndex;
-	unsigned int CurrentPosition = 0;
+	int CurrentPosition = 0;
 	char Buffer;
 	DictionaryEntry temp;
 
 	while (true)
 	{
-		//if (CurrentPosition == InFileSize)
-			//break;
+		cout << "      \r" << (float)100.f*CurrentPosition/InFileSize << "%";
+		if (CurrentPosition == InFileSize)
+			break;
+
 		Window.clear();
 
 		// Read block;
@@ -74,32 +94,77 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 			Dictionary.push_back(temp);
 		}
 	}
+	cout << endl;
 	InFile.close();
 
 	// Write onto file.
-	fstream OutFile(OutFilename, std::ios::out);
+	fstream OutFile(OutFilename, std::ios::out|std::ios::binary);
 	for (int i=0; i<(int)Dictionary.size(); i++)
 	{
-		for (int j=0; j<(int)Dictionary[i].Phrase.size(); j++)
-			OutFile << Dictionary[i].Phrase[j];
-		OutFile << " " << Dictionary[i].Encoding.Reference << "," << Dictionary[i].Encoding.Character << endl;
+		//for (int j=0; j<(int)Dictionary[i].Phrase.size(); j++)
+			//OutFile << Dictionary[i].Phrase[j];
+		//OutFile << " " << Dictionary[i].Encoding.Reference << "," << Dictionary[i].Encoding.Character << endl;
+		OutFile.write((char *)&Dictionary[i].Encoding.Reference, sizeof(short int));
+		OutFile.write((char *)&Dictionary[i].Encoding.Character, sizeof(char));
 	}
 	OutFile.close();
 }
 
-int CLZ77::SearchDictionary (vector<char> SearchWindow)
+void CLZ77::Decode (char *InFilename, char *OutFilename)
 {
-	for (int i=0; i<(int)Dictionary.size(); i++)
+	fstream InFile (InFilename, std::ios::in|std::ios::binary);
+	if (!InFile)
+		cerr << "ERROR: Openining file: " << InFilename << endl;
+	InFile.seekg(0, std::ios::end);
+	int InFileSize = (int)InFile.tellg();
+	cout << "Decoding " << InFilename << endl;
+	cout << "InFile size: " << InFileSize << endl;
+	InFile.seekg(std::ios::beg);
+
+	fstream OutFile(OutFilename, std::ios::out);
+	if (!OutFile)
+		cerr << "ERROR: Openining file: " << OutFilename << endl;
+	
+	Dictionary.clear();
+	int CurrentPosition = 0;
+	short int ShortBuffer;
+	char Buffer;
+	DictionaryEntry temp;
+
+	while (true)
 	{
-		if (Dictionary[i].Phrase.size() != SearchWindow.size())
-			continue;
-		for (int j=0; j<(int)Dictionary[i].Phrase.size(); j++)
+		cout << "                                        \r" << (float)100.f*CurrentPosition/InFileSize << "%: Dictionary size  = " << Dictionary.size();
+		if (CurrentPosition >= InFileSize || InFile.eof())
+			break;
+
+		Window.clear();
+		InFile.read((char *)&ShortBuffer, sizeof(short int));
+		InFile.read((char *)&Buffer, sizeof(char));
+		CurrentPosition+=3;
+
+		if (ShortBuffer == -1)
 		{
-			if (Dictionary[i].Phrase[j] != SearchWindow[j])
-				break;
-			if (j == Dictionary[i].Phrase.size()-1)
-				return i;
+			Window.push_back(Buffer);
+			temp.Reference = Dictionary.size();
+			temp.Phrase = Window;
+			temp.Encoding.Reference = ShortBuffer;
+			temp.Encoding.Character = Buffer;
+			Dictionary.push_back(temp);
+			OutFile.write((char *)&Window[0], sizeof(char));
+		}
+		else
+		{
+			Window = Dictionary[ShortBuffer].Phrase;
+			Window.push_back(Buffer);
+			temp.Reference = Dictionary.size();
+			temp.Phrase = Window;
+			temp.Encoding.Character = Buffer;
+			temp.Encoding.Reference = ShortBuffer;
+			Dictionary.push_back(temp);
+			for (int i=0; i<(int)Window.size(); i++)
+				OutFile.write((char *)&Window[i], sizeof(char));
 		}
 	}
-	return -1;
+	InFile.close();
+	OutFile.close();
 }
