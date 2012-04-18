@@ -6,13 +6,13 @@ using std::vector;
 
 struct EncodingPair
 {
-	short int Reference;
+	int Reference;
 	char Character;
 };
 
 struct DictionaryEntry
 {
-	short int Reference;
+	int Reference;
 	vector<char> Phrase;
 	EncodingPair Encoding;
 };

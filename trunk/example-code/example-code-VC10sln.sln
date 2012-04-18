@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+# Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "alarm", "examples\alarm\alarm.vcxproj", "{10C152FA-E60E-41AF-8D4F-7AD16FE78EED}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bitset", "examples\bitset\bitset.vcxproj", "{ADC1781B-11AF-432B-B2A5-5DD0F3AA1B87}"
@@ -42,6 +42,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MD5", "examples\Hashing\MD5\MD5.vcxproj", "{24EC29B9-73C6-4308-B185-E7E030FBB9BA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SHA", "examples\Hashing\SHA\SHA.vcxproj", "{CA897855-F85B-4761-8CB1-F277A9069062}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LZ77", "examples\LZ77\LZ77.vcxproj", "{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -199,6 +201,14 @@ Global
 		{CA897855-F85B-4761-8CB1-F277A9069062}.Release|Win32.ActiveCfg = Release|Win32
 		{CA897855-F85B-4761-8CB1-F277A9069062}.Release|Win32.Build.0 = Release|Win32
 		{CA897855-F85B-4761-8CB1-F277A9069062}.Release|x64.ActiveCfg = Release|Win32
+		{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}.Debug|Win32.Build.0 = Debug|Win32
+		{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}.Debug|x64.ActiveCfg = Debug|x64
+		{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}.Debug|x64.Build.0 = Debug|x64
+		{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}.Release|Win32.ActiveCfg = Release|Win32
+		{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}.Release|Win32.Build.0 = Release|Win32
+		{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}.Release|x64.ActiveCfg = Release|x64
+		{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
