@@ -42,6 +42,8 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 	cout << "InFile size: " << InFileSize << endl;
 	InFile.seekg(std::ios::beg);
 
+	fstream OutFile(OutFilename, std::ios::out|std::ios::binary);
+
 	Dictionary.clear();
 	unsigned short int SearchIndex;
 	int CurrentPosition = 0;
@@ -75,15 +77,19 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 			temp.Encoding.Reference = SearchIndex;
 			temp.Encoding.Character = '\x00';
 			Dictionary.push_back(temp);
+			OutFile.write((char *)&temp.Encoding.Reference, sizeof(unsigned short int));
+			OutFile.write((char *)&temp.Encoding.Character, sizeof(char));
 			break;
 		}
-		if (Window.size() == 1)	// If single character.
+		else if (Window.size() == 1)	// If single character.
 		{
 			temp.Reference = Dictionary.size()+1U;
 			temp.Phrase = Window;
 			temp.Encoding.Reference = 0U;
 			temp.Encoding.Character = Window[0];
 			Dictionary.push_back(temp);
+			OutFile.write((char *)&temp.Encoding.Reference, sizeof(unsigned short int));
+			OutFile.write((char *)&temp.Encoding.Character, sizeof(char));
 		}
 		else // 
 		{
@@ -92,13 +98,15 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 			Window.pop_back();
 			temp.Encoding.Reference = SearchDictionary(Window);
 			Dictionary.push_back(temp);
+			OutFile.write((char *)&temp.Encoding.Reference, sizeof(unsigned short int));
+			OutFile.write((char *)&temp.Encoding.Character, sizeof(char));
 		}
 	}
 	cout << endl;
 	InFile.close();
 
 	// Write onto file.
-	fstream OutFile(OutFilename, std::ios::out|std::ios::binary);
+	/*
 	for (unsigned short int i=0; i<(unsigned short int)Dictionary.size(); i++)
 	{
 		//for (int j=0; j<(int)Dictionary[i].Phrase.size(); j++)
@@ -106,7 +114,7 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 		//OutFile << " " << Dictionary[i].Encoding.Reference << "," << Dictionary[i].Encoding.Character << endl;
 		OutFile.write((char *)&Dictionary[i].Encoding.Reference, sizeof(unsigned short int));
 		OutFile.write((char *)&Dictionary[i].Encoding.Character, sizeof(char));
-	}
+	}*/
 	OutFile.close();
 }
 
