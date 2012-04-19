@@ -6,23 +6,23 @@ using std::vector;
 
 struct EncodingPair
 {
-	int Reference;
+	unsigned short int Reference;
 	char Character;
 };
 
 struct DictionaryEntry
 {
-	int Reference;
+	unsigned short int Reference;
 	vector<char> Phrase;
 	EncodingPair Encoding;
 };
 
 class CLZ77
 {
+	int MaxDictionarySize;
 	vector<char> Window;
-	//unsigned int WindowSize;
 	vector<DictionaryEntry> Dictionary;
-	int SearchDictionary (vector<char>);
+	unsigned short int SearchDictionary (vector<char>);
 
 public:
 	CLZ77();
