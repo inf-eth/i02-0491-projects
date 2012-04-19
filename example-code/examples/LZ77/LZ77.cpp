@@ -1,10 +1,14 @@
-#include "LZ77.h"
-#include <iostream>
+#include <LZ77.h>
 #include <fstream>
+#include <iostream>
+#include <iomanip>
+
 using std::fstream;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::setw;
+using std::setfill;
 
 CLZ77::CLZ77(): MaxDictionarySize(256)
 {
@@ -61,9 +65,14 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 
 	while (true)
 	{
-		cout << "      \r" << (float)100.f*(CurrentPosition+1)/InFileSize << "%";
+		cout << setw(40) << setfill(' ') << "\r";
+		cout << (float)100.f*CurrentPosition/InFileSize << "%";
 		if (CurrentPosition == InFileSize)
+		{
+			cout << "\r" << setw(40) << setfill(' ') << "\r";
+			cout << "Encoding complete!" << endl;
 			break;
+		}
 
 		Window.clear();
 
@@ -88,7 +97,6 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 			Dictionary.push_back(temp);
 			OutFile.write((char *)&temp.Encoding.Reference, sizeof(unsigned short int));
 			OutFile.write((char *)&temp.Encoding.Character, sizeof(char));
-			break;
 		}
 		else if (Window.size() == 1)	// If single character.
 		{
@@ -111,7 +119,6 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 			OutFile.write((char *)&temp.Encoding.Character, sizeof(char));
 		}
 	}
-	cout << endl;
 	InFile.close();
 	OutFile.close();
 }
@@ -146,9 +153,14 @@ void CLZ77::Decode (char *InFilename, char *OutFilename)
 
 	while (true)
 	{
-		cout << "                                        \r" << (float)100.f*CurrentPosition/InFileSize << "%: Dictionary size  = " << Dictionary.size();
+		cout << setw(40) << setfill(' ') << "\r";
+		cout << (float)100.f*CurrentPosition/InFileSize << "%: Dictionary size  = " << Dictionary.size();
 		if (CurrentPosition >= InFileSize || InFile.eof())
+		{
+			cout << "\r" << setw(40) << setfill(' ') << "\r";
+			cout << "Decoding complete!" << endl;
 			break;
+		}
 
 		Window.clear();
 		InFile.read((char *)&ShortBuffer, sizeof(unsigned short int));
