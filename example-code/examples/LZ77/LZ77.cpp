@@ -1,4 +1,5 @@
 #include <LZ77.h>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -47,7 +48,7 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 	}
 
 	cout << "Encoding " << InFilename << endl;
-	cout << "InFile size: " << InFileSize << endl;
+	cout << "InFile size: " << InFileSize << " bytes." << endl;
 	InFile.seekg(std::ios::beg);
 
 	fstream OutFile(OutFilename, std::ios::out|std::ios::binary);
@@ -135,7 +136,7 @@ void CLZ77::Decode (char *InFilename, char *OutFilename)
 	}
 
 	cout << "Decoding " << InFilename << endl;
-	cout << "InFile size: " << InFileSize << endl;
+	cout << "InFile size: " << InFileSize << " bytes." << endl;
 	InFile.seekg(std::ios::beg);
 
 	fstream OutFile(OutFilename, std::ios::out|std::ios::binary);
