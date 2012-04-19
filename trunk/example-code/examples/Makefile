@@ -15,6 +15,7 @@ SUBDIR:= 	alarm\
 		VLI64bit\
 		HighPrecisionTimer\
 		Dynamic2DArray\
-		SymmetricEncryption
+		SymmetricEncryption\
+		LZ77
 
 include rules.mk

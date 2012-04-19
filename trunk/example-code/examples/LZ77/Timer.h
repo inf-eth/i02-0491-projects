@@ -19,8 +19,6 @@
 // There are a large number of options you can set with gprof. If you're interested,
 // there is more information in the man pages or through Google.
 
-#define NULL 0
-
 #if defined __linux__ || defined __CYGWIN__
 #define __int64 long long
 #include <sys/time.h>
