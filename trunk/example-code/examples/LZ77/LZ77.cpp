@@ -34,15 +34,24 @@ unsigned short int CLZ77::SearchDictionary (vector<char> SearchWindow)
 void CLZ77::Encode (char *InFilename, char *OutFilename)
 {
 	fstream InFile (InFilename, std::ios::in|std::ios::binary);
-	if (!InFile)
-		cerr << "ERROR: Openining file: " << InFilename << endl;
 	InFile.seekg(0, std::ios::end);
 	int InFileSize = (int)InFile.tellg();
+	if (!InFile || InFileSize < 0)
+	{
+		cerr << "ERROR: Openining file: " << InFilename << endl;
+		exit(-1);
+	}
+
 	cout << "Encoding " << InFilename << endl;
 	cout << "InFile size: " << InFileSize << endl;
 	InFile.seekg(std::ios::beg);
 
 	fstream OutFile(OutFilename, std::ios::out|std::ios::binary);
+	if (!OutFile)
+	{
+		cerr << "ERROR: Openining file: " << OutFilename << endl;
+		exit(-1);
+	}
 
 	Dictionary.clear();
 	unsigned short int SearchIndex;
@@ -72,7 +81,7 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 		if (CurrentPosition == InFileSize)	// End of file insertion
 		{
 			// Matched insertion.
-			temp.Reference = Dictionary.size()+1U;
+			temp.Reference = (unsigned short int)(Dictionary.size()+1U);
 			temp.Phrase = Window;
 			temp.Encoding.Reference = SearchIndex;
 			temp.Encoding.Character = '\x00';
@@ -83,7 +92,7 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 		}
 		else if (Window.size() == 1)	// If single character.
 		{
-			temp.Reference = Dictionary.size()+1U;
+			temp.Reference = (unsigned short int)Dictionary.size()+1U;
 			temp.Phrase = Window;
 			temp.Encoding.Reference = 0U;
 			temp.Encoding.Character = Window[0];
@@ -104,35 +113,31 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 	}
 	cout << endl;
 	InFile.close();
-
-	// Write onto file.
-	/*
-	for (unsigned short int i=0; i<(unsigned short int)Dictionary.size(); i++)
-	{
-		//for (int j=0; j<(int)Dictionary[i].Phrase.size(); j++)
-			//OutFile << Dictionary[i].Phrase[j];
-		//OutFile << " " << Dictionary[i].Encoding.Reference << "," << Dictionary[i].Encoding.Character << endl;
-		OutFile.write((char *)&Dictionary[i].Encoding.Reference, sizeof(unsigned short int));
-		OutFile.write((char *)&Dictionary[i].Encoding.Character, sizeof(char));
-	}*/
 	OutFile.close();
 }
 
 void CLZ77::Decode (char *InFilename, char *OutFilename)
 {
 	fstream InFile (InFilename, std::ios::in|std::ios::binary);
-	if (!InFile)
-		cerr << "ERROR: Openining file: " << InFilename << endl;
 	InFile.seekg(0, std::ios::end);
 	int InFileSize = (int)InFile.tellg();
+	if (!InFile || InFileSize < 0)
+	{
+		cerr << "ERROR: Openining file: " << InFilename << endl;
+		exit(-1);
+	}
+
 	cout << "Decoding " << InFilename << endl;
 	cout << "InFile size: " << InFileSize << endl;
 	InFile.seekg(std::ios::beg);
 
 	fstream OutFile(OutFilename, std::ios::out|std::ios::binary);
 	if (!OutFile)
+	{
 		cerr << "ERROR: Openining file: " << OutFilename << endl;
-	
+		exit(-1);
+	}
+
 	Dictionary.clear();
 	int CurrentPosition = 0;
 	unsigned short int ShortBuffer;
