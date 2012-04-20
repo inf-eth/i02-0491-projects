@@ -1,21 +1,22 @@
-// RadixTreeDictionary.cpp: implementation of the CRadixTreeDictionary class.
+// RadixTree.cpp: implementation of the CRadixTree class.
 //
 //////////////////////////////////////////////////////////////////////
+
 #include <RadixTree.h>
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CRadixTreeDictionary::CRadixTreeDictionary()
+CRadixTree::CRadixTree()
 {
 	RootPTR = NULL;
-	ShashkahPTR = NULL;
 	NoOfNodes = NULL;
 }
 
-CRadixTreeDictionary::~CRadixTreeDictionary()
+CRadixTree::~CRadixTree()
 {
-	DeleteTree ( RootPTR );
+	DeleteTree(RootPTR);
 	RootPTR = NULL;
 	NoOfNodes = 0;
 }
@@ -24,639 +25,317 @@ CRadixTreeDictionary::~CRadixTreeDictionary()
 // ****************** Radix Tree Dictionary's Function Implementation **************
 // *********************************************************************************
 
-void CRadixTreeDictionary::CreateTree ( )
+void CRadixTree::CreateTree()
 {
-	RootPTR = new RadixTreeDictionaryNode;
+	RootPTR = new RadixTreeNode;
 
 	(*RootPTR).Label = 'R';
 	(*RootPTR).NoOfNodes = 0;
 	(*RootPTR).Status = -1;
-	(*RootPTR).Meaning = _T("");
+	(*RootPTR).Payload = NULL;
 	(*RootPTR).ParentPTR = NULL;
 	(*RootPTR).Width = 1;
-	(*RootPTR).RedFlag = '0';
 
-	for ( int i = 0; i < 256; i++ )
+	for (int i=0; i<256; i++)
 		(*RootPTR).NextNodePTRS[i] = NULL;
 
-	ShashkahPTR = RootPTR;
 	NoOfNodes = 0;
 }
 
 // *** Insertion in the Radix Tree ***
-int CRadixTreeDictionary::Insert ( const CString &Word, const CString& Meaning )
+int CRadixTree::Insert(const char *WordArray, int Length, void* Payload)
 {
+	//CString LocalWord = Word;
+	//int Length = LocalWord.GetLength ( );
+	//char *WordArray;
+	//WordArray = LocalWord.GetBuffer ( 256 );
+	RadixTreeNode *TempPTR = RootPTR;
 
-	CString LocalWord = Word;
-	int Length = LocalWord.GetLength ( );
-	char *WordArray;
-
-	WordArray = LocalWord.GetBuffer ( 256 );
-
-
-	RadixTreeDictionaryNode *TempPTR = RootPTR;
-
-	for ( int i = 0; i < Length; i++ )
+	for (int i=0; i<Length; i++)
 	{
-
-		if ( i == (Length - 1) )
+		if (i == (Length-1))
 		{
-			
-			if (  (*TempPTR).NextNodePTRS[ (int)WordArray[i] ] == NULL )
+			if ((*TempPTR).NextNodePTRS[(int)WordArray[i]] == NULL)
 			{
-				
-				RadixTreeDictionaryNode *NewNode = new RadixTreeDictionaryNode;
-				
+				RadixTreeNode *NewNode = new RadixTreeNode;
 				(*NewNode).Label = WordArray[i];
-
 				(*NewNode).NoOfNodes = 0;
-				(*NewNode).RedFlag = '0';
 				(*NewNode).Status = 1;
-				(*NewNode).Meaning = Meaning;
+				(*NewNode).Payload = Payload;
 				(*NewNode).ParentPTR = TempPTR;
 				(*TempPTR).NoOfNodes++;
-				
-				for ( int j = 0; j < 256; j++ )
-				{
-					
+
+				for (int j=0; j<256; j++)
 					(*NewNode).NextNodePTRS[j] = NULL;
 
-				}
-
-				(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] = NewNode;
-
-				SetWidthForNewNode ( NewNode );
-
+				(*TempPTR).NextNodePTRS[(int)WordArray[i]] = NewNode;
+				SetWidthForNewNode(NewNode);
 				NoOfNodes++;
-				
-				if ( ( *(*NewNode).ParentPTR).Status == 1 )
-				{
 
+				if ((*(*NewNode).ParentPTR).Status == 1)
 					( *(*NewNode).ParentPTR).Status = 2;
 
-				}
-				
-
-				return 1;
-
+				return 0;
 			}
-			
 			else
 			{
+				(*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Payload = Payload;
+				if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Status == 0 )
+					(*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Status = 2;
 
-				( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Meaning = Meaning;
-				
-				if ( ( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Status == 0 )
-				{
-					
-					( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Status = 2;
-
-				}
-
-				return 1;
-
+				return 0;
 			}
-
 		}
-
 		else
 		{
-
-			if ( (*TempPTR).NextNodePTRS[ (int)WordArray[i] ] == NULL )
+			if ((*TempPTR).NextNodePTRS[(int)WordArray[i]] == NULL)
 			{
-
-				RadixTreeDictionaryNode *NewNode = new RadixTreeDictionaryNode;
-				
+				RadixTreeNode *NewNode = new RadixTreeNode;
 				(*NewNode).Label = WordArray[i];
 
 				(*NewNode).NoOfNodes = 0;
-				(*NewNode).RedFlag = '0';
 				(*NewNode).Status = 0;
-				(*NewNode).Meaning = _T("");
+				(*NewNode).Payload = NULL;
 				(*NewNode).ParentPTR = TempPTR;
 				(*TempPTR).NoOfNodes++;
 				
-				for ( int k = 0; k < 256; k++ )
-				{
-					
+				for (int k=0; k<256; k++)
 					(*NewNode).NextNodePTRS[k] = NULL;
 
-				}
-
-				(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] = NewNode;
-
-				SetWidthForNewNode ( NewNode );
-
+				(*TempPTR).NextNodePTRS[(int)WordArray[i]] = NewNode;
+				SetWidthForNewNode(NewNode);
 				NoOfNodes++;
 				
-				TempPTR = (*TempPTR).NextNodePTRS[ (int)WordArray[i] ];
+				TempPTR = (*TempPTR).NextNodePTRS[(int)WordArray[i]];
 
-				if ( ( *(*NewNode).ParentPTR).Status == 1 )
-				{
-
-					( *(*NewNode).ParentPTR).Status = 2;
-
-				}
-
+				if ((*(*NewNode).ParentPTR).Status == 1)
+					(*(*NewNode).ParentPTR).Status = 2;
 			}
-
 			else
-			{
-			
-				TempPTR = (*TempPTR).NextNodePTRS[ (int)WordArray[i] ];
-
-			}
-			
+				TempPTR = (*TempPTR).NextNodePTRS[(int)WordArray[i]];
 		}
-
-		
-
-
 	}
-
-	return 0;
-
+	return -1;
 }
 
 // *** Search in the Radix Tree ***
-
-int CRadixTreeDictionary::Search ( const CString &Word, DictionaryEntry &Temp, int &ComparisonCounter )
+void* CRadixTree::Search(const char* WordArray, int Length, int &ComparisonCounter)
 {
+	//CString LocalWord = Word;
+	//int Length = LocalWord.GetLength();
+	//char *WordArray;
+	//WordArray = LocalWord.GetBuffer(256);
+	RadixTreeNode *TempPTR = RootPTR;
+	void *Temp = NULL;
 
-	CString LocalWord = Word;
-	int Length = LocalWord.GetLength ( );
-	char *WordArray;
-
-	WordArray = LocalWord.GetBuffer ( 256 );
-
-
-	RadixTreeDictionaryNode *TempPTR = RootPTR;
-
-	for ( int i = 0; i < Length; i++ )
+	for (int i=0; i<Length; i++)
 	{
-
 		ComparisonCounter++;
+		if ((*TempPTR).NextNodePTRS[(int)WordArray[i]] == NULL)
+			return NULL;
 
-		if ( (*TempPTR).NextNodePTRS[ (int)WordArray[i] ] == NULL )
+		if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Label != WordArray[i])
+			return NULL;
+
+		if (i == Length-1)
 		{
-
-			return 0;
-
+			if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Status == 1 || (*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Status == 2)
+				//Temp.Word = LocalWord;
+				return (*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Payload;
 		}
 
-		if ( ( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Label != WordArray[i] )
-		{
-
-			return 0;
-
-		}
-
-		if ( i == Length - 1 )
-		{
-
-			if ( ( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Status == 1 || ( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Status == 2 )
-			{
-
-				Temp.Word = LocalWord;
-				Temp.Meaning = ( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Meaning;
-
-				return 1;
-
-			}
-
-		}
-
-		if ( ( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Label == WordArray[i] )
-		{
-
-			TempPTR = (*TempPTR).NextNodePTRS[ (int)WordArray[i] ];
-
-		}
-
+		if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Label == WordArray[i])
+			TempPTR = (*TempPTR).NextNodePTRS[(int)WordArray[i]];
 		else
-		{
-
-			return 0;
-		}
-
+			return NULL;
 	}
-	
-	return 0;
-
+	return NULL;
 }
 
 // *** Deletion in the Radix Tree ***
-
-int CRadixTreeDictionary::Delete ( const CString &Word )
+int CRadixTree::Delete(const char* WordArray, int Length)
 {
+	//CString LocalWord = Word;
+	//int Length = LocalWord.GetLength ( );
+	//char *WordArray;
+	//WordArray = LocalWord.GetBuffer ( 256 );
+	RadixTreeNode *TempPTR = RootPTR;
 
-	CString LocalWord = Word;
-	int Length = LocalWord.GetLength ( );
-	char *WordArray;
-
-	WordArray = LocalWord.GetBuffer ( 256 );
-
-	RadixTreeDictionaryNode *TempPTR = RootPTR;
-
-	for ( int i = 0; i < Length; i++ )
+	for (int i=0; i<Length; i++)
 	{
+		if ((*TempPTR).NextNodePTRS[(int)WordArray[i]] == NULL)
+			return -1;
 
-		if ( (*TempPTR).NextNodePTRS[ (int)WordArray[i] ] == NULL )
+		if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Label != WordArray[i])
+			return -1;
+
+		if (i == Length-1)
 		{
-
-			return 0;
-
-		}
-
-		if ( ( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Label != WordArray[i] )
-		{
-
-			return 0;
-
-		}
-
-		if ( i == Length - 1 )
-		{
-
-			if ( ( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Status == 1 || ( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Status == 2 )
+			if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Status == 1 || (*(*TempPTR).NextNodePTRS[(int)WordArray[i]] ).Status == 2)
 			{
-
 				/*
 				Call the delete this node function
 				*/
-
-				RadixTreeDictionaryNode *DELTempPTR;
-				TempPTR = (*TempPTR).NextNodePTRS[ (int)WordArray[i] ];
+				RadixTreeNode *DELTempPTR;
+				TempPTR = (*TempPTR).NextNodePTRS[(int)WordArray[i]];
 
 				if ( (*TempPTR).Status == 2 )
 				{
-
-					(*TempPTR).Meaning = _T("");
+					if ((*TempPTR).Payload != NULL)
+						//delete (*TempPTR).Payload;
+					(*TempPTR).Payload = NULL;
 					(*TempPTR).Status = 0;
-					
-					return 1;
-
+					return 0;
 				}
-
-				else if ( (*TempPTR).Status == 1 )
+				else if ((*TempPTR).Status == 1)
 				{
-
-					while ( TempPTR != RootPTR && (*TempPTR).Status != 2 && (*TempPTR).NoOfNodes == 0 )
+					while (TempPTR != RootPTR && (*TempPTR).Status != 2 && (*TempPTR).NoOfNodes == 0)
 					{
-						
 						DELTempPTR = TempPTR;
-						( *(*TempPTR).ParentPTR ).NoOfNodes--;
-						( *(*TempPTR).ParentPTR ).NextNodePTRS[ (int)(*TempPTR).Label ] = NULL;
+						(*(*TempPTR).ParentPTR ).NoOfNodes--;
+						(*(*TempPTR).ParentPTR ).NextNodePTRS[(int)(*TempPTR).Label] = NULL;
 
 						TempPTR = (*TempPTR).ParentPTR;
-						
+						if (DELTempPTR->Payload != NULL)
+							//delete DELTempPTR->Payload;
 						delete DELTempPTR;
 						NoOfNodes--;
 
-						SetWidthForNewNode ( TempPTR );
-						
-
+						SetWidthForNewNode (TempPTR);
 					}
-
 					if ( (*TempPTR).Status == 2 )
-					{
-
 						(*TempPTR).Status = 1; 
 
-					}
-
-					return 1;
-
+					return 0;
 				}
-
-				return 1;
-
+				return 0;
 			}
-
 		}
 
-		if ( ( *(*TempPTR).NextNodePTRS[ (int)WordArray[i] ] ).Label == WordArray[i] )
-		{
-
-			TempPTR = (*TempPTR).NextNodePTRS[ (int)WordArray[i] ];
-
-		}
-
+		if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Label == WordArray[i] )
+			TempPTR = (*TempPTR).NextNodePTRS[(int)WordArray[i]];
 		else
-		{
-
-			return 0;
-		}
-
+			return -1;
 	}
-	
-	return 0;
+	return -1;
 }
 
 // *** Reset the Radix Tree ***
-
-void CRadixTreeDictionary::ResetTree ( )
+void CRadixTree::ResetTree()
 {
-
-	if ( RootPTR == NULL )
-	{
-
+	if (RootPTR == NULL)
 		return;
 
-	}
-
-	for ( int i = 0; i < 256; i++ )
+	for (int i=0; i<256; i++)
 	{
-		if ( (*RootPTR).NextNodePTRS[i] != NULL )
-		{
-
-			DeleteTree ( (*RootPTR).NextNodePTRS[i] );
-
-		}
-
+		if ((*RootPTR).NextNodePTRS[i] != NULL)
+			DeleteTree((*RootPTR).NextNodePTRS[i]);
 	}
-
 }
+
 // ***********************************************************************************
 // ************************** Private Mutator Functions ******************************	
 // ***********************************************************************************
-
-void CRadixTreeDictionary::SetWidthForNewNode ( RadixTreeDictionaryNode *NodePTR )
+void CRadixTree::SetWidthForNewNode(RadixTreeNode *NodePTR)
 {
+	RadixTreeNode *TempPTR = NodePTR;
 
-	RadixTreeDictionaryNode *TempPTR = NodePTR;
-	//RadixTreeDictionaryNode *XTempPTR;
-	
-	while ( TempPTR != NULL )
+	while (TempPTR != NULL)
 	{
-
-		//XTempPTR = TempPTR;
-		(*TempPTR).Width = CalculateWidth ( TempPTR );
+		(*TempPTR).Width = CalculateWidth(TempPTR);
 		TempPTR = (*TempPTR).ParentPTR;
-
 	}
-
 }
 
-
-RadixTreeDictionaryNode* CRadixTreeDictionary::GetMaximumNodeChild ( RadixTreeDictionaryNode *NodePTR )
+RadixTreeNode* CRadixTree::GetMaximumNodeChild(RadixTreeNode *NodePTR)
 {
-
-	RadixTreeDictionaryNode *TempPTR = NULL; 
+	RadixTreeNode *TempPTR = NULL; 
 	int Max = 1;
 
-	if ( NodePTR == NULL )
-	{
-
+	if (NodePTR == NULL)
 		return TempPTR;
 
-	}
-
-	if ( (*NodePTR).NoOfNodes == 0 )
-	{
-
+	if ((*NodePTR).NoOfNodes == 0)
 		return TempPTR;
-
-	}
-
 	else
 	{
-
-		for ( int i = 0; i < 256; i++ )
+		for (int i=0; i<256; i++)
 		{
-
-			if ( (*NodePTR).NextNodePTRS[i] != NULL )
+			if ((*NodePTR).NextNodePTRS[i] != NULL)
 			{
-
-				if ( ( *(*NodePTR).NextNodePTRS[i] ).NoOfNodes > Max )
+				if ((*(*NodePTR).NextNodePTRS[i] ).NoOfNodes > Max)
 				{
-					
-					Max = ( *(*NodePTR).NextNodePTRS[i] ).NoOfNodes;
+					Max = (*(*NodePTR).NextNodePTRS[i]).NoOfNodes;
 					TempPTR = (*NodePTR).NextNodePTRS[i];
-
 				}
-
 			}
-
 		}
-
 		return TempPTR;
-
 	}
-
 	return TempPTR;
-
 }
 
-int CRadixTreeDictionary::CalculateWidth ( RadixTreeDictionaryNode* NodePTR )
+int CRadixTree::CalculateWidth(RadixTreeNode* NodePTR)
 {
-
-	if ( (*NodePTR).NoOfNodes == 0 )
-	{
-		
+	if ((*NodePTR).NoOfNodes == 0)
 		return 1;
-
-	}
-
 	else
 	{
-
 		int Temp = 0;
-		
-		for ( int i = 0; i < 256; i++ )
+		for (int i=0; i<256; i++)
 		{
-
-			if ( (*NodePTR).NextNodePTRS[i] != NULL )
-			{
-
-				Temp = Temp + ( *(*NodePTR).NextNodePTRS[i] ).Width;
-
-			}
-
+			if ((*NodePTR).NextNodePTRS[i] != NULL)
+				Temp = Temp + (*(*NodePTR).NextNodePTRS[i]).Width;
 		}
-		
-		return Temp;		
-
+		return Temp;
 	}
-
 	return 1;
-
 }
 
-void CRadixTreeDictionary::DeleteTree ( RadixTreeDictionaryNode *RootPTR1 )
+void CRadixTree::DeleteTree(RadixTreeNode *RootPTR1)
 {
-
 	// Base Cases.
-
 	if ( RootPTR1 == NULL )
-	{
-
 		return;
 
-	}
-
-	if ( (*RootPTR1).NoOfNodes == 0 )
+	if ((*RootPTR1).NoOfNodes == 0)
 	{
-
-		if ( (*RootPTR1).ParentPTR == NULL )
+		if ((*RootPTR1).ParentPTR == NULL)
 		{
-
 			NoOfNodes--;
-
-			if ( ShashkahPTR == RootPTR1 )
-			{
-				ResetShashkahPTR ( );
-			}
-
+			if ((*RootPTR1).Payload != NULL)
+				//delete (*RootPTR1).Payload;
 			delete RootPTR1;
+
 			return;
-
 		}
-
 		else
 		{
-
-			( *(*RootPTR1).ParentPTR ).NextNodePTRS[ (int)(*RootPTR1).Label ] = NULL;
-			( *(*RootPTR1).ParentPTR ).NoOfNodes--;
-			SetWidthForNewNode ( (*RootPTR1).ParentPTR );
+			(*(*RootPTR1).ParentPTR).NextNodePTRS[(int)(*RootPTR1).Label] = NULL;
+			(*(*RootPTR1).ParentPTR).NoOfNodes--;
+			SetWidthForNewNode((*RootPTR1).ParentPTR);
 
 			NoOfNodes--;
-
-			if ( ShashkahPTR == RootPTR1 )
-			{
-				ResetShashkahPTR ( );
-			}
-
+			if ((*RootPTR1).Payload != NULL)
+				//delete (*RootPTR1).Payload;
 			delete RootPTR1;
+
 			return;
-
 		}
-
 	}
-
 	// Else if it is not the base case.
 	else
 	{
-
-		for ( int i = 0; i < 256; i++ )
+		for (int i=0; i<256; i++)
 		{
-
-			if ( (*RootPTR1).NextNodePTRS[i] != NULL )
-			{
-
-				DeleteTree ( (*RootPTR1).NextNodePTRS[i] );
-
-			}
-
+			if ((*RootPTR1).NextNodePTRS[i] != NULL)
+				DeleteTree((*RootPTR1).NextNodePTRS[i]);
 		}
-
-		DeleteTree ( RootPTR1 );
-		
+		DeleteTree(RootPTR1);
 		return;
-
 	}
-
 }
-
-
-
-
-
 
 // ***********************************************************************************
-// ************************ Private Mutator Functions End ****************************	
+// ************************ Private Mutator Functions End ****************************
 // ***********************************************************************************
-
-void CRadixTreeDictionary::ResetShashkahFlags ( const CString &SearchString, CString &Meaning )
-{
-
-	ResetShashkahPTR ( );
-
-	CString LocalWord = SearchString;
-	int Length = LocalWord.GetLength ( );
-	char *WordArray;
-
-	WordArray = LocalWord.GetBuffer ( 256 );
-
-	RadixTreeDictionaryNode *TempPTR;
-
-	for ( int i = 0; i < Length; i++ )
-	{
-
-		if ( (*ShashkahPTR).NextNodePTRS[ (int)WordArray[i] ] == NULL )
-		{
-
-			ResetShashkahPTR ( );
-			return;
-
-		}
-
-		if ( ( *(*ShashkahPTR).NextNodePTRS[ (int)WordArray[i] ] ).Label != WordArray[i] )
-		{
-
-			ResetShashkahPTR ( );
-			return;
-
-		}
-
-		if ( i == Length - 1 )
-		{
-
-			if ( ( *(*ShashkahPTR).NextNodePTRS[ (int)WordArray[i] ] ).Status == 1 || ( *(*ShashkahPTR).NextNodePTRS[ (int)WordArray[i] ] ).Status == 2 )
-			{
-
-				Meaning = ( *(*ShashkahPTR).NextNodePTRS[ (int)WordArray[i] ] ).Meaning;
-
-				( *(*ShashkahPTR).NextNodePTRS[ (int)WordArray[i] ] ).RedFlag = 'R';
-				
-				TempPTR = ShashkahPTR;
-
-				ShashkahPTR = (*ShashkahPTR).NextNodePTRS[ (int)WordArray[i] ]; 
-
-				while ( TempPTR != RootPTR  )
-				{
-
-					(*TempPTR).RedFlag = 'R';
-					TempPTR = (*TempPTR).ParentPTR;
-
-				}
-				return;
-
-			}
-
-		}
-
-		if ( ( *(*ShashkahPTR).NextNodePTRS[ (int)WordArray[i] ] ).Label == WordArray[i] )
-		{
-
-			( *(*ShashkahPTR).NextNodePTRS[ (int)WordArray[i] ] ).RedFlag = 'G';
-			ShashkahPTR = (*ShashkahPTR).NextNodePTRS[ (int)WordArray[i] ];
-
-		}
-
-		else
-		{
-
-			ResetShashkahPTR ( );
-			return;
-
-		}
-
-	}
-	
-
-}
-
-void CRadixTreeDictionary::ResetShashkahPTR ( )
-{
-	
-	while ( ShashkahPTR != RootPTR )
-	{
-
-		(*ShashkahPTR).RedFlag = '0';
-		ShashkahPTR = (*ShashkahPTR).ParentPTR;
-
-	}
-
-
-}
