@@ -61,7 +61,7 @@ private:
 template<class T> CRadixTree<T>::CRadixTree()
 {
 	RootPTR = NULL;
-	NoOfNodes = NULL;
+	NoOfNodes = 0;
 }
 
 template<class T> CRadixTree<T>::~CRadixTree()
@@ -82,7 +82,6 @@ template<class T> void CRadixTree<T>::CreateTree()
 	(*RootPTR).Label = 'R';
 	(*RootPTR).NoOfNodes = 0;
 	(*RootPTR).Status = -1;
-	(*RootPTR).Payload = NULL;
 	(*RootPTR).ParentPTR = NULL;
 	(*RootPTR).Width = 1;
 
@@ -145,7 +144,6 @@ template<class T> int CRadixTree<T>::Insert(const char *WordArray, int Length, T
 
 				(*NewNode).NoOfNodes = 0;
 				(*NewNode).Status = 0;
-				(*NewNode).Payload = NULL;
 				(*NewNode).ParentPTR = TempPTR;
 				(*TempPTR).NoOfNodes++;
 				
@@ -207,7 +205,7 @@ template<class T> int CRadixTree<T>::Delete(const char* WordArray, int Length)
 	//int Length = LocalWord.GetLength ( );
 	//char *WordArray;
 	//WordArray = LocalWord.GetBuffer ( 256 );
-	RadixTreeNode *TempPTR = RootPTR;
+	RadixTreeNode<T> *TempPTR = RootPTR;
 
 	for (int i=0; i<Length; i++)
 	{
@@ -224,7 +222,7 @@ template<class T> int CRadixTree<T>::Delete(const char* WordArray, int Length)
 				/*
 				Call the delete this node function
 				*/
-				RadixTreeNode *DELTempPTR;
+				RadixTreeNode<T> *DELTempPTR;
 				TempPTR = (*TempPTR).NextNodePTRS[(int)WordArray[i]];
 
 				if ( (*TempPTR).Status == 2 )
@@ -351,8 +349,6 @@ template<class T> void CRadixTree<T>::DeleteTree(RadixTreeNode<T> *RootPTR1)
 		if ((*RootPTR1).ParentPTR == NULL)
 		{
 			NoOfNodes--;
-			if ((*RootPTR1).Payload != NULL)
-				//delete (*RootPTR1).Payload;
 			delete RootPTR1;
 
 			return;
@@ -364,8 +360,6 @@ template<class T> void CRadixTree<T>::DeleteTree(RadixTreeNode<T> *RootPTR1)
 			SetWidthForNewNode((*RootPTR1).ParentPTR);
 
 			NoOfNodes--;
-			if ((*RootPTR1).Payload != NULL)
-				//delete (*RootPTR1).Payload;
 			delete RootPTR1;
 
 			return;
