@@ -11,16 +11,16 @@ int main(int argc, char **argv)
 	Tree.CreateTree();
 
 	int paytest = 3;
-	int paysearch;
+	int *paysearch;
 	int ComparisonCounter = 0;
 
 	Tree.Insert("testword", strlen("testword"), paytest);
-	paysearch = *Tree.Search("testword", strlen("testword"), ComparisonCounter);
+	paysearch = Tree.Search("testword", strlen("testword"), ComparisonCounter);
 
 	if (paysearch == NULL)
 		cout << "Search unsuccessful." << endl;
 	else
-		cout << "Found value of testword: " << paysearch << endl;
+		cout << "Found value of testword: " << *paysearch << endl;
 
 	Tree.ResetTree();
 	return 0;

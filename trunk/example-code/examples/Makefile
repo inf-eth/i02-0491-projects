@@ -16,6 +16,7 @@ SUBDIR:= 	alarm\
 		HighPrecisionTimer\
 		Dynamic2DArray\
 		SymmetricEncryption\
-		LZ77
+		LZ77\
+		RadixTree
 
 include rules.mk
