@@ -1,58 +1,52 @@
-// RadixTreeDictionary.h: interface for the CRadixTreeDictionary class.
+// RadixTree.h: interface for the CRadixTree class.
 //
 //////////////////////////////////////////////////////////////////////
+#include <cstdlib>
 
 // The Standard Radix Tree Node.
-struct RadixTreeDictionaryNode
+struct RadixTreeNode
 {
 	char Label;
-	char RedFlag;
-	short  NoOfNodes;
-	short  Status;
-	short  Width;
-	CString Meaning;
+	short NoOfNodes;
+	short Status;
+	short Width;
+	void* Payload;
 
 	// Pointers.
-	RadixTreeDictionaryNode *ParentPTR;
-	RadixTreeDictionaryNode *NextNodePTRS[256];
+	RadixTreeNode *ParentPTR;
+	RadixTreeNode *NextNodePTRS[256];
 };
 
 // *** The Radix Tree Dictionary Class Definition ***
-class CRadixTreeDictionary  
+class CRadixTree
 {
 public:
-	RadixTreeDictionaryNode *RootPTR;
+	RadixTreeNode *RootPTR;
 
 	// *** Constructor/Destructor ***
-	CRadixTreeDictionary();
-	virtual ~CRadixTreeDictionary();
+	CRadixTree();
+	virtual ~CRadixTree();
 
 	// ************************ Public Functions **************************
-	void CreateTree ( );
-	void ResetTree ( );
+	void CreateTree();
+	void ResetTree();
 	
 	// *** Dictionary Functions ***
-	int Insert ( const CString&, const CString& );
-	int Search ( const CString&, DictionaryEntry&, int& );
-	int Delete ( const CString& );
+	int Insert(const char *, int, void *);
+	void* Search(const char *, int, int&);
+	int Delete(const char *, int);
 	// ****************************
-
-	void ResetShashkahFlags ( const CString&, CString& );
 	// ********************************************************************
 private:
 	int NoOfNodes;
 
-	RadixTreeDictionaryNode *ShashkahPTR;
-
 	// *** Private Mutator ( Whatever ) Functions ***
-	void SetWidthForNewNode ( RadixTreeDictionaryNode* );
-	RadixTreeDictionaryNode*  GetMaximumNodeChild ( RadixTreeDictionaryNode* );
-	int  CalculateWidth ( RadixTreeDictionaryNode* );
+	void SetWidthForNewNode(RadixTreeNode*);
+	RadixTreeNode* GetMaximumNodeChild(RadixTreeNode*);
+	int  CalculateWidth(RadixTreeNode*);
 
-	void DeleteTree ( RadixTreeDictionaryNode* );
-	void DeleteNode ( RadixTreeDictionaryNode* );
-
-	void ResetShashkahPTR ( );	
+	void DeleteTree(RadixTreeNode*);
+	void DeleteNode(RadixTreeNode*);
 	// **********************************************
 	/*int Width;*/	// Maybe I will need this. Maybe not.
 	/*int Height*/	// Same as above.
