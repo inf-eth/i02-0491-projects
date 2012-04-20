@@ -109,7 +109,7 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 			OutFile.write((char *)&temp.Encoding.Reference, sizeof(unsigned short int));
 			OutFile.write((char *)&temp.Encoding.Character, sizeof(char));
 		}
-		else // 
+		else
 		{
 			temp.Phrase = Window;
 			temp.Encoding.Character = Window[Window.size()-1];

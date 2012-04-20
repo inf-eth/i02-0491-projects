@@ -14,8 +14,8 @@ int main(int argc, char **argv)
 	int *paysearch;
 	int ComparisonCounter = 0;
 
-	Tree.Insert("testword", strlen("testword"), paytest);
-	paysearch = Tree.Search("testword", strlen("testword"), ComparisonCounter);
+	Tree.Insert((const unsigned char *)"testword", strlen("testword"), paytest);
+	paysearch = Tree.Search((const unsigned char *)"testword", strlen("testword"), ComparisonCounter);
 
 	if (paysearch == NULL)
 		cout << "Search unsuccessful." << endl;
