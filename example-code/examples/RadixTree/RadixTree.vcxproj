@@ -139,7 +139,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="RadixTree.cpp" />
     <ClCompile Include="RadixTreeMain.cpp" />
   </ItemGroup>
   <ItemGroup>
