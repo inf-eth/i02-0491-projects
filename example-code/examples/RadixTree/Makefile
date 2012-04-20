@@ -12,7 +12,7 @@
 CC=g++
 DEPS=-I.
 SRCDIR=.
-CPPFILES=RadixTree RadixTreeMain
+CPPFILES=RadixTreeMain
 TARGET=RadixTree
 LIBS=
 
