@@ -1133,13 +1133,20 @@ THREAD_RETURN_TYPE Logger (void *arg)
 		#endif
 		// Writing logs.
 		fstream ContentPrevalenceTableLog("ContentPrevalenceTable.log", std::ios::out);
+		fstream ContentPrevalenceTableTxt("ContentPrevalenceTable.txt", std::ios::out);		// Special format for Radix tree display.
 		for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
 		{
+			ContentPrevalenceTableTxt << "<";
 			for (int j=0; j<KEY_LENGTH; j++)
+			{
 				ContentPrevalenceTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec << (j==9 ? " " : "");
+				ContentPrevalenceTableTxt << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec;
+			}
 			ContentPrevalenceTableLog << ": " << PacketCapture.ContentPrevalenceTable[i].Count << endl;
+			ContentPrevalenceTableTxt << "><Count: " << PacketCapture.ContentPrevalenceTable[i].Count << ">" << endl;
 		}
 		ContentPrevalenceTableLog.close();
+		ContentPrevalenceTableTxt.close();
 
 		fstream AddressDispersionTableLog("AddressDispersionTable.log", std::ios::out);
 		for (int i=0; i < (int)PacketCapture.AddressDispersionTable.size(); i++)

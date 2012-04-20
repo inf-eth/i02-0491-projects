@@ -8,7 +8,7 @@
 template<class T> class RadixTreeNode
 {
 public:
-	char Label;
+	unsigned char Label;
 	short NoOfNodes;
 	short Status;
 	short Width;
@@ -19,7 +19,7 @@ public:
 	RadixTreeNode<T> *NextNodePTRS[256];
 };
 
-// *** The Radix Tree Dictionary Class Definition ***
+// *** The Radix Tree Class Definition ***
 template<class T> class CRadixTree
 {
 public:
@@ -33,10 +33,10 @@ public:
 	void CreateTree();
 	void ResetTree();
 	
-	// *** Dictionary Functions ***
-	int Insert(const char *, int, T&);
-	T* Search(const char *, int, int&);
-	int Delete(const char *, int);
+	// *** Container Functions ***
+	int Insert(const unsigned char *, int, T&);
+	T* Search(const unsigned char *, int, int&);
+	int Delete(const unsigned char *, int);
 	// ****************************
 	// ********************************************************************
 private:
@@ -50,8 +50,6 @@ private:
 	void DeleteTree(RadixTreeNode<T> *);
 	void DeleteNode(RadixTreeNode<T> *);
 	// **********************************************
-	/*int Width;*/	// Maybe I will need this. Maybe not.
-	/*int Height*/	// Same as above.
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -92,19 +90,15 @@ template<class T> void CRadixTree<T>::CreateTree()
 }
 
 // *** Insertion in the Radix Tree ***
-template<class T> int CRadixTree<T>::Insert(const char *WordArray, int Length, T &Payload)
+template<class T> int CRadixTree<T>::Insert(const unsigned char *WordArray, int Length, T &Payload)
 {
-	//CString LocalWord = Word;
-	//int Length = LocalWord.GetLength ( );
-	//char *WordArray;
-	//WordArray = LocalWord.GetBuffer ( 256 );
 	RadixTreeNode<T> *TempPTR = RootPTR;
 
 	for (int i=0; i<Length; i++)
 	{
 		if (i == (Length-1))
 		{
-			if ((*TempPTR).NextNodePTRS[(int)WordArray[i]] == NULL)
+			if ((*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]] == NULL)
 			{
 				RadixTreeNode<T> *NewNode = new RadixTreeNode<T>;
 				(*NewNode).Label = WordArray[i];
@@ -117,7 +111,7 @@ template<class T> int CRadixTree<T>::Insert(const char *WordArray, int Length, T
 				for (int j=0; j<256; j++)
 					(*NewNode).NextNodePTRS[j] = NULL;
 
-				(*TempPTR).NextNodePTRS[(int)WordArray[i]] = NewNode;
+				(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]] = NewNode;
 				SetWidthForNewNode(NewNode);
 				NoOfNodes++;
 
@@ -128,16 +122,16 @@ template<class T> int CRadixTree<T>::Insert(const char *WordArray, int Length, T
 			}
 			else
 			{
-				(*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Payload = Payload;
-				if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Status == 0 )
-					(*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Status = 2;
+				(*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]]).Payload = Payload;
+				if ((*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]]).Status == 0 )
+					(*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]]).Status = 2;
 
 				return 0;
 			}
 		}
 		else
 		{
-			if ((*TempPTR).NextNodePTRS[(int)WordArray[i]] == NULL)
+			if ((*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]] == NULL)
 			{
 				RadixTreeNode<T> *NewNode = new RadixTreeNode<T>;
 				(*NewNode).Label = WordArray[i];
@@ -150,48 +144,44 @@ template<class T> int CRadixTree<T>::Insert(const char *WordArray, int Length, T
 				for (int k=0; k<256; k++)
 					(*NewNode).NextNodePTRS[k] = NULL;
 
-				(*TempPTR).NextNodePTRS[(int)WordArray[i]] = NewNode;
+				(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]] = NewNode;
 				SetWidthForNewNode(NewNode);
 				NoOfNodes++;
 				
-				TempPTR = (*TempPTR).NextNodePTRS[(int)WordArray[i]];
+				TempPTR = (*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]];
 
 				if ((*(*NewNode).ParentPTR).Status == 1)
 					(*(*NewNode).ParentPTR).Status = 2;
 			}
 			else
-				TempPTR = (*TempPTR).NextNodePTRS[(int)WordArray[i]];
+				TempPTR = (*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]];
 		}
 	}
 	return -1;
 }
 
 // *** Search in the Radix Tree ***
-template<class T> T* CRadixTree<T>::Search(const char* WordArray, int Length, int &ComparisonCounter)
+template<class T> T* CRadixTree<T>::Search(const unsigned char* WordArray, int Length, int &ComparisonCounter)
 {
-	//CString LocalWord = Word;
-	//int Length = LocalWord.GetLength();
-	//char *WordArray;
-	//WordArray = LocalWord.GetBuffer(256);
 	RadixTreeNode<T> *TempPTR = RootPTR;
 
 	for (int i=0; i<Length; i++)
 	{
 		ComparisonCounter++;
-		if ((*TempPTR).NextNodePTRS[(int)WordArray[i]] == NULL)
+		if ((*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]] == NULL)
 			return NULL;
 
-		if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Label != WordArray[i])
+		if ((*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]]).Label != WordArray[i])
 			return NULL;
 
 		if (i == Length-1)
 		{
-			if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Status == 1 || (*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Status == 2)
-				return &(*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Payload;
+			if ((*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]]).Status == 1 || (*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]]).Status == 2)
+				return &(*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]]).Payload;
 		}
 
-		if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Label == WordArray[i])
-			TempPTR = (*TempPTR).NextNodePTRS[(int)WordArray[i]];
+		if ((*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]]).Label == WordArray[i])
+			TempPTR = (*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]];
 		else
 			return NULL;
 	}
@@ -199,31 +189,27 @@ template<class T> T* CRadixTree<T>::Search(const char* WordArray, int Length, in
 }
 
 // *** Deletion in the Radix Tree ***
-template<class T> int CRadixTree<T>::Delete(const char* WordArray, int Length)
+template<class T> int CRadixTree<T>::Delete(const unsigned char* WordArray, int Length)
 {
-	//CString LocalWord = Word;
-	//int Length = LocalWord.GetLength ( );
-	//char *WordArray;
-	//WordArray = LocalWord.GetBuffer ( 256 );
 	RadixTreeNode<T> *TempPTR = RootPTR;
 
 	for (int i=0; i<Length; i++)
 	{
-		if ((*TempPTR).NextNodePTRS[(int)WordArray[i]] == NULL)
+		if ((*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]] == NULL)
 			return -1;
 
-		if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Label != WordArray[i])
+		if ((*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]]).Label != WordArray[i])
 			return -1;
 
 		if (i == Length-1)
 		{
-			if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Status == 1 || (*(*TempPTR).NextNodePTRS[(int)WordArray[i]] ).Status == 2)
+			if ((*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]]).Status == 1 || (*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]] ).Status == 2)
 			{
 				/*
 				Call the delete this node function
 				*/
 				RadixTreeNode<T> *DELTempPTR;
-				TempPTR = (*TempPTR).NextNodePTRS[(int)WordArray[i]];
+				TempPTR = (*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]];
 
 				if ( (*TempPTR).Status == 2 )
 				{
@@ -258,8 +244,8 @@ template<class T> int CRadixTree<T>::Delete(const char* WordArray, int Length)
 			}
 		}
 
-		if ((*(*TempPTR).NextNodePTRS[(int)WordArray[i]]).Label == WordArray[i] )
-			TempPTR = (*TempPTR).NextNodePTRS[(int)WordArray[i]];
+		if ((*(*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]]).Label == WordArray[i] )
+			TempPTR = (*TempPTR).NextNodePTRS[(unsigned short)WordArray[i]];
 		else
 			return -1;
 	}
