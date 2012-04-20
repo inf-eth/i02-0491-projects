@@ -45,6 +45,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SHA", "examples\Hashing\SHA
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LZ77", "examples\LZ77\LZ77.vcxproj", "{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RadixTree", "examples\RadixTree\RadixTree.vcxproj", "{3AB67608-C90F-4C0C-90F0-64AD59373CCE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -209,6 +211,12 @@ Global
 		{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}.Release|Win32.Build.0 = Release|Win32
 		{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}.Release|x64.ActiveCfg = Release|x64
 		{E2027BC8-34F2-4821-B8E4-40C82F9FF0B8}.Release|x64.Build.0 = Release|x64
+		{3AB67608-C90F-4C0C-90F0-64AD59373CCE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3AB67608-C90F-4C0C-90F0-64AD59373CCE}.Debug|Win32.Build.0 = Debug|Win32
+		{3AB67608-C90F-4C0C-90F0-64AD59373CCE}.Debug|x64.ActiveCfg = Debug|Win32
+		{3AB67608-C90F-4C0C-90F0-64AD59373CCE}.Release|Win32.ActiveCfg = Release|x64
+		{3AB67608-C90F-4C0C-90F0-64AD59373CCE}.Release|Win32.Build.0 = Release|x64
+		{3AB67608-C90F-4C0C-90F0-64AD59373CCE}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
