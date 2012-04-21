@@ -251,6 +251,7 @@ struct AddressDispersionEntry
 	unsigned char Key[KEY_LENGTH];
 	vector<in_addr> SrcIPs;
 	vector<in_addr> DstIPs;
+	int AlarmCount;
 };
 
 // Packet capturing and manipulation class.
