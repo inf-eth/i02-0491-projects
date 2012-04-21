@@ -832,6 +832,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 				memncpy ((char *)&temp.ip_dst, (const char *)&ip->ip_dst, sizeof(in_addr));
 				SafeCallAssert (NumOfBytesSent = sendto (SocketFD, (char *)&temp, sizeof(SignatureData), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()", sizeof(SignatureData));
 			}
+			delete []GeneratedKey; // Cleanup.
 			// Substring processing.
 			if (SUBSTRING_PROCESSING == true && size_payload > SUBSTRING_WINDOW)
 			{
@@ -869,6 +870,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 						memncpy ((char *)&temp.ip_dst, (const char *)&ip->ip_dst, sizeof(in_addr));
 						SafeCallAssert (NumOfBytesSent = sendto (SocketFD, (char *)&temp, sizeof(SignatureData), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()", sizeof(SignatureData));
 					}
+					delete []GeneratedSubstringKey; // Cleanup.
 				}
 			} // Substring Processing.
 		}
