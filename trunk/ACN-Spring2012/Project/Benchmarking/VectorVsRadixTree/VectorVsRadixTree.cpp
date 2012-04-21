@@ -1,5 +1,5 @@
-#include <Timing.h>
 #include <RadixTree.h>
+#include <Timing.h>
 
 #include <cstdlib>
 #include <cstring>
