@@ -797,6 +797,13 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		}
 		cout << "*************************" << endl;
 
+		// Morror condition for client.
+		if ((ip->ip_p == IPPROTO_UDP && ServerAddress.sin_port == udp->th_dport && size_payload == 32) && PacketCapture.Get_Mode() == MODE_CLIENT)
+		{
+			SafeCallAssert (NumOfBytesSent = sendto (SocketFD, (char *)payload, 32, 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()", 32);
+			return;
+		}
+		
 		// Key generation. Only generate signatures for packets with non-zero payload.
 		if (size_payload != 0 && !(ip->ip_p == IPPROTO_UDP && ServerAddress.sin_port == udp->th_dport && size_payload == 32))
 		{
