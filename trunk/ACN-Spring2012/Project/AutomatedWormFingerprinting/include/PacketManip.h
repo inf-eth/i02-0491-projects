@@ -222,6 +222,8 @@ using std::vector;
 
 #define KEY_LENGTH	20
 
+#define SUBSTRING_PROCESSING			true
+#define SUBSTRING_WINDOW				40
 #define CONTENT_PREVALENCE_TIMEOUT		300.
 #define CONTENT_PREVALENCE_THRESHOLD	20
 #define SRC_IP_DISPERSION_THRESHOOLD	10
@@ -303,7 +305,7 @@ public:
 	vector<AddressDispersionEntry> AddressDispersionTable;
 
 	// Generate Key (sha1 hash) from protocol, destination port and payload.
-	unsigned char * GenerateKey (unsigned char, unsigned short, unsigned char *, unsigned int);
+	unsigned char * GenerateKey (unsigned char *, unsigned int);
 
 	// Search Key in Content Prevalence Table.
 	int SearchContentPrevalenceTable (unsigned char *);
