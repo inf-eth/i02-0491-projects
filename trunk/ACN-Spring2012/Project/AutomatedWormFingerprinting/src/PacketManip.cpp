@@ -212,9 +212,10 @@
 ****************************************************************************
 *
 */
+
+// TODO: Substring fingerprinting.
 // TODO: Processing time calculations for different code sections.
 // TODO: Space calculations for network traffic and storage with respect to container classes.
-// TODO: Alarm trigger count.
 
 #include <PacketManip.h>
 #include <Timing.h>
