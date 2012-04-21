@@ -798,7 +798,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		cout << "*************************" << endl;
 
 		// Key generation. Only generate signatures for packets with non-zero payload.
-		if (size_payload != 0)
+		if (size_payload != 0 && !(ip->ip_p == IPPROTO_UDP && ServerAddress.sin_port == udp->th_dport && size_payload == 32))
 		{
 			unsigned char *GeneratedKey = PacketCapture.GenerateKey ((unsigned char *)payload, size_payload);
 
@@ -840,13 +840,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 				for (int i=0; i<(int)NumberOfSubstrings; i++)
 				{
 					unsigned char *GeneratedSubstringKey = PacketCapture.GenerateKey ((unsigned char *)(payload+i), SUBSTRING_WINDOW);
-					// Printing key.
-					cout << "Key: ";
-					for (int i=0; i<KEY_LENGTH; i++)
-					{
-						cout << hex << setfill('0') << setw(2) << (int)GeneratedSubstringKey[i] << dec << " ";
-					}
-					cout << endl;
+
 					// If this is Server then process the packet. Otherwise send signature data to Server.
 					if (PacketCapture.Get_Mode() == MODE_SERVER)
 					{
@@ -1121,7 +1115,7 @@ THREAD_RETURN_TYPE GarbageCollector (void *arg)
 		#endif
 		for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
 		{
-			// Check if an entry has persisted for 15 seconds without an increase in prevalence count then decrease its prevalence count.
+			// Check if an entry has persisted for CONTENT_PREVALENCE_TIMEOUT seconds without an increase in prevalence count then decrease its prevalence count.
 			if (((double)(Current-PacketCapture.ContentPrevalenceTable[i].InsertionTime))/(1000000.) > CONTENT_PREVALENCE_TIMEOUT)
 			{
 				// Decrease prevalence count.
@@ -1166,7 +1160,7 @@ THREAD_RETURN_TYPE Receiver (void *arg)
 	#endif
 }
 
-// Tables are logged every 5 seconds.
+// Tables are logged every LOGGING_INTERVAL seconds.
 THREAD_RETURN_TYPE Logger (void *arg)
 {
 	__int64 Start = GetTimeus64();
@@ -1183,7 +1177,6 @@ THREAD_RETURN_TYPE Logger (void *arg)
 		cout << "Elapsed time = " << ((double)(Current-Start))/(1000000.) << " seconds." << endl;
 		cout << "Writing logs..." << endl;
 
-		//  Garbage Collection.
 		#ifdef WIN32
 		WaitForSingleObject (MutexLock, INFINITE);
 		#else
