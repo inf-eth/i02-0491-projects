@@ -881,7 +881,6 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 	// Check key entry in Address Dispersion Table.
 	if ( (SearchIndex = PacketCapture.SearchAddressDispersionTable (GeneratedKey)) != -1)
 	{
-		cout << "Key already exists in Address Dispersion Table..." << endl;
 		if (PacketCapture.SearchSrcIPs (SearchIndex, ip_src) == false)
 		{
 			PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.push_back (ip_src);
