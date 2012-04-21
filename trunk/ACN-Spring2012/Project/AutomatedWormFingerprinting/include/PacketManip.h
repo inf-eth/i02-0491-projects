@@ -250,7 +250,9 @@ struct AddressDispersionEntry
 {
 	unsigned char Key[KEY_LENGTH];
 	vector<in_addr> SrcIPs;
+	vector<unsigned short> SrcPorts;
 	vector<in_addr> DstIPs;
+	vector<unsigned short> DstPorts;
 	int AlarmCount;
 };
 

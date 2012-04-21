@@ -857,11 +857,13 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 		if (PacketCapture.SearchSrcIPs (SearchIndex, ip_src) == false)
 		{
 			PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.push_back (ip_src);
+			PacketCapture.AddressDispersionTable[SearchIndex].SrcPorts.push_back (th_sport);
 			PacketCapture.AddressDispersionTable[SearchIndex].AlarmCount++;
 		}
 		if (PacketCapture.SearchDstIPs (SearchIndex, ip_dst) == false)
 		{
 			PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.push_back (ip_dst);
+			PacketCapture.AddressDispersionTable[SearchIndex].DstPorts.push_back (th_dport);
 			PacketCapture.AddressDispersionTable[SearchIndex].AlarmCount++;
 		}
 
@@ -885,11 +887,11 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 
 			AlarmLog << "Src IPs List:" << endl;
 			for (int i=0; i<(int)PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size(); i++)
-				AlarmLog << inet_ntoa(PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs[i]) << endl;
+				AlarmLog << inet_ntoa(PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs[i]) << ":" << ntohs(PacketCapture.AddressDispersionTable[SearchIndex].SrcPorts[i]) << endl;
 
 			AlarmLog << "Dst IPs List:" << endl;
 			for (int i=0; i<(int)PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size(); i++)
-				AlarmLog << inet_ntoa(PacketCapture.AddressDispersionTable[SearchIndex].DstIPs[i]) << endl;
+				AlarmLog << inet_ntoa(PacketCapture.AddressDispersionTable[SearchIndex].DstIPs[i]) << ":" << ntohs(PacketCapture.AddressDispersionTable[SearchIndex].DstPorts[i]) << endl;
 
 			AlarmLog.close();
 		}
@@ -913,7 +915,9 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 			AddressDispersionEntry temp;
 			memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
 			temp.SrcIPs.push_back (ip_src);
+			temp.SrcPorts.push_back (th_sport);
 			temp.DstIPs.push_back (ip_dst);
+			temp.DstPorts.push_back (th_dport);
 			temp.AlarmCount = 2;
 
 			// Insert into Address Dispersion table.
