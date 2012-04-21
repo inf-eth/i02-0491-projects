@@ -213,7 +213,6 @@
 *
 */
 
-// TODO: Substring fingerprinting.
 // TODO: Processing time calculations for different code sections.
 // TODO: Space calculations for network traffic and storage with respect to container classes.
 
@@ -280,7 +279,7 @@ pthread_mutex_t MutexLock = PTHREAD_MUTEX_INITIALIZER;
 // Network related.
 // ****************************************** #Defintions ***********************************************
 #define  MAXBUFFERSIZE		512		// Maximum default buffersize.
-#define  SERVERPORT		   6011		// Server will be listening on this port by default.
+#define  SERVERPORT			6011	// Server will be listening on this port by default.
 // ******************************************************************************************************
 
 // *********************************************** Globals ************************************************
@@ -574,17 +573,10 @@ void CPacketManip::Loop ()
 }
 
 // Generate Key (sha1 hash) from protocol, destination port and payload.
-unsigned char * CPacketManip::GenerateKey (unsigned char pip_p, unsigned short pth_dport, unsigned char *ppayload, unsigned int psize_payload)
+unsigned char * CPacketManip::GenerateKey (unsigned char *pString, unsigned int pSize)
 {
 	unsigned char *Key = new unsigned char[KEY_LENGTH];
-	unsigned char *Input = new unsigned char[psize_payload + 3];
-	Input[0] = pip_p;
-	Input[1] = *(unsigned char*)(&pth_dport);
-	Input[2] = *((unsigned char*)(&pth_dport)+1);
-	for (unsigned int i=0; i<psize_payload; i++)
-		Input[3+i] = ppayload[i];
-
-	SHA1(Input, psize_payload+3, Key);
+	SHA1(pString, pSize, Key);
 	return Key;
 }
 
@@ -808,7 +800,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		// Key generation. Only generate signatures for packets with non-zero payload.
 		if (size_payload != 0)
 		{
-			unsigned char *GeneratedKey = PacketCapture.GenerateKey (ip->ip_p, (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), (unsigned char *)payload, size_payload);
+			unsigned char *GeneratedKey = PacketCapture.GenerateKey ((unsigned char *)payload, size_payload);
 
 			// Printing key.
 			cout << "Key: ";
@@ -840,6 +832,45 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 				memncpy ((char *)&temp.ip_dst, (const char *)&ip->ip_dst, sizeof(in_addr));
 				SafeCallAssert (NumOfBytesSent = sendto (SocketFD, (char *)&temp, sizeof(SignatureData), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()", sizeof(SignatureData));
 			}
+			// Substring processing.
+			if (SUBSTRING_PROCESSING == true && size_payload > SUBSTRING_WINDOW)
+			{
+				unsigned int NumberOfSubstrings = size_payload - SUBSTRING_WINDOW + 1;
+				for (int i=0; i<(int)NumberOfSubstrings; i++)
+				{
+					unsigned char *GeneratedSubstringKey = PacketCapture.GenerateKey ((unsigned char *)(payload+i), SUBSTRING_WINDOW);
+					// Printing key.
+					cout << "Key: ";
+					for (int i=0; i<KEY_LENGTH; i++)
+					{
+						cout << hex << setfill('0') << setw(2) << (int)GeneratedSubstringKey[i] << dec << " ";
+					}
+					cout << endl;
+					// If this is Server then process the packet. Otherwise send signature data to Server.
+					if (PacketCapture.Get_Mode() == MODE_SERVER)
+					{
+						#ifdef WIN32
+						WaitForSingleObject (MutexLock, INFINITE);
+						ProcessPacket (GeneratedSubstringKey, (ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport), (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), ip->ip_src, ip->ip_dst);
+						ReleaseMutex (MutexLock);
+						#else
+						pthread_mutex_lock (&MutexLock);
+						ProcessPacket (GeneratedSubstringKey, (ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport), (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), ip->ip_src, ip->ip_dst);
+						pthread_mutex_unlock (&MutexLock);
+						#endif
+					}
+					else
+					{
+						SignatureData temp;
+						memncpy ((char *)temp.Key, (const char *)GeneratedSubstringKey, KEY_LENGTH);
+						temp.th_sport = ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport;
+						temp.th_dport = ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport;
+						memncpy ((char *)&temp.ip_src, (const char *)&ip->ip_src, sizeof(in_addr));
+						memncpy ((char *)&temp.ip_dst, (const char *)&ip->ip_dst, sizeof(in_addr));
+						SafeCallAssert (NumOfBytesSent = sendto (SocketFD, (char *)&temp, sizeof(SignatureData), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()", sizeof(SignatureData));
+					}
+				}
+			} // Substring Processing.
 		}
 		cout << endl;
 	}
