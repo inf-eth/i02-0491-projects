@@ -212,6 +212,9 @@
 ****************************************************************************
 *
 */
+// TODO: Processing time calculations for different code sections.
+// TODO: Space calculations for network traffic and storage with respect to container classes.
+// TODO: Alarm trigger count.
 
 #include <PacketManip.h>
 #include <Timing.h>
@@ -852,26 +855,42 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 	{
 		cout << "Key already exists in Address Dispersion Table..." << endl;
 		if (PacketCapture.SearchSrcIPs (SearchIndex, ip_src) == false)
+		{
 			PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.push_back (ip_src);
+			PacketCapture.AddressDispersionTable[SearchIndex].AlarmCount++;
+		}
 		if (PacketCapture.SearchDstIPs (SearchIndex, ip_dst) == false)
+		{
 			PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.push_back (ip_dst);
+			PacketCapture.AddressDispersionTable[SearchIndex].AlarmCount++;
+		}
 
 		// Checking alarm thresholds.
-		if ((int)PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size() > PacketCapture.GetSrcAddressDispersionThreshold() && (int)PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size() > PacketCapture.GetDstAddressDispersionThreshold())
+		if ((int)PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size() > PacketCapture.GetSrcAddressDispersionThreshold() && (int)PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size() > PacketCapture.GetDstAddressDispersionThreshold() && (int)PacketCapture.AddressDispersionTable[SearchIndex].AlarmCount > (PacketCapture.GetSrcAddressDispersionThreshold()+PacketCapture.GetDstAddressDispersionThreshold()))
 		{
+			PacketCapture.AddressDispersionTable[SearchIndex].AlarmCount = 0;	// Reset Alarm count.
 			fstream AlarmLog("Alarm.log", std::ios::out | std::ios::app);
 			AlarmLog << "######################## Alarm ########################" << endl;
 
 			time_t rawtime;
 			time ( &rawtime );
-			AlarmLog << "Date/Time: " << asctime (localtime (&rawtime)) << endl;
+			AlarmLog << "Date/Time: " << asctime (localtime (&rawtime));
 
 			AlarmLog << "Key: ";
 			for (int i=0; i<KEY_LENGTH; i++)
 				AlarmLog << hex << setfill('0') << setw(2) << (int)PacketCapture.AddressDispersionTable[SearchIndex].Key[i] << dec << (i==9 ? " " : "");
 
-			AlarmLog << "SrcIPCount = " << PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size() << ", DstIPCount = " << PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size() << endl;
+			AlarmLog << endl << "SrcIPCount = " << PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size() << ", DstIPCount = " << PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size() << endl;
 			AlarmLog << "Src Port = " << ntohs(th_sport) << ", Dst Port = " << ntohs(th_dport) << endl;
+
+			AlarmLog << "Src IPs List:" << endl;
+			for (int i=0; i<(int)PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size(); i++)
+				AlarmLog << inet_ntoa(PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs[i]) << endl;
+
+			AlarmLog << "Dst IPs List:" << endl;
+			for (int i=0; i<(int)PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size(); i++)
+				AlarmLog << inet_ntoa(PacketCapture.AddressDispersionTable[SearchIndex].DstIPs[i]) << endl;
+
 			AlarmLog.close();
 		}
 	}
@@ -895,6 +914,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 			memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
 			temp.SrcIPs.push_back (ip_src);
 			temp.DstIPs.push_back (ip_dst);
+			temp.AlarmCount = 2;
 
 			// Insert into Address Dispersion table.
 			PacketCapture.AddressDispersionTable.push_back (temp);
