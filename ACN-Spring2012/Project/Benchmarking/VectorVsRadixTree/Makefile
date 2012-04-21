@@ -14,7 +14,7 @@ DEPS=-I.
 SRCDIR=.
 CPPFILES=VectorVsRadixTree
 TARGET=VectorVsRadixTree
-LIBS=
+LIBS=-lssl -lcrypto
 
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
@@ -58,4 +58,4 @@ run: $(BINDIR)/$(TARGET)
 .PHONY: clean
 
 clean:
-	rm -rf obj ../../bin/debug/$(TARGET) ../../bin/release/$(TARGET)
+	rm -rf obj ../bin/debug/$(TARGET) ../bin/release/$(TARGET)
