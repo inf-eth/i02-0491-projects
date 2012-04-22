@@ -331,20 +331,20 @@ CPacketManip::CPacketManip ():
 								ContentPrevalenceThreshold(-1),
 								SrcAddressDispersionThreshold(-1),
 								DstAddressDispersionThreshold(-1),
-#if HASHING_SCHEME == 0
+								#if HASHING_SCHEME == 0
 								rabin32(RabinHashFunction32(RABIN_POLY)),
-#endif
-#if HASHING_SCHEME == 1
+								#endif
+								#if HASHING_SCHEME == 1
 								rabin32_1(RabinHashFunction32(RABIN_POLY1)),
 								rabin32_2(RabinHashFunction32(RABIN_POLY2)),
-#endif
-#if HASHING_SCHEME == 2
+								#endif
+								#if HASHING_SCHEME == 2
 								rabin64(RabinHashFunction64(RABIN_POLY)),
-#endif
-#if HASHING_SCHEME == 3
+								#endif
+								#if HASHING_SCHEME == 3
 								rabin64_1(RabinHashFunction64(RABIN_POLY1)),
 								rabin64_2(RabinHashFunction64(RABIN_POLY2)),
-#endif
+								#endif
 								Mode(MODE_SERVER)
 {
 }
@@ -507,18 +507,6 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 
 		// bind()
 		SafeCall (bind (SocketFD, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "bind()");
-		/*
-		// recvfrom() is blocking and will wait for any messages from client.
-		socklen_t ClientAddressSize = sizeof (ClientAddress);
-		NumOfBytesReceived = recvfrom (ServerSocketFD, Buffer, MAXBUFFERSIZE-1, 0, (sockaddr *)&ClientAddress, &ClientAddressSize);
-
-		Buffer[NumOfBytesReceived] = '\0';
-		cout << "Server got packet from " << inet_ntoa (ClientAddress.sin_addr) << " on socket " << ServerSocketFD << endl;
-		cout << "Client says: " << Buffer << endl;
-
-		// sendto()
-		char ServerMessage[] = "Hello from Server. Now bye!";
-		NumOfBytesSent = sendto (ServerSocketFD, ServerMessage, strlen (ServerMessage), 0, (sockaddr *)&ClientAddress, sizeof (ClientAddress));*/
 	}
 	// If running in client mode.
 	else if (pargc == 6)
@@ -549,18 +537,6 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 		ServerAddress.sin_addr = *((in_addr *)(*he).h_addr);	// Server name/IP.
 		ServerAddress.sin_port = htons (atoi (pServerPort));			// Server port provided as argument.
 		fill ((char*)&(ServerAddress.sin_zero), (char*)&(ServerAddress.sin_zero)+8, '\0');
-
-		/*
-		// sendto()
-		char ClientMessage[] = "Hello from client.";
-		NumOfBytesSent = sendto (ClientSocketFD, ClientMessage, strlen (ClientMessage), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress));
-
-		// recvfrom() is blocking and will wait for any messages.
-		socklen_t ServerAddressSize = sizeof (ServerAddress);
-		NumOfBytesReceived = recvfrom (ClientSocketFD, Buffer, MAXBUFFERSIZE-1, 0, (sockaddr *)&ServerAddress, &ServerAddressSize);		// Blocking.
-
-		Buffer[NumOfBytesReceived] = '\0';
-		cout << "Server says: " << Buffer << endl;*/
 	}
 
 	// Initializing thresholds.
