@@ -1,4 +1,4 @@
-#include "rabinhash-c++.h"
+#include <rabinhash32.h>
 
 
 RabinHashFunction32::RabinHashFunction32(const int vP):P(vP)
