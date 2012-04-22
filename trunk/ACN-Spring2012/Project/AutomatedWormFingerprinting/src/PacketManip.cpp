@@ -326,6 +326,11 @@ void ProcessPacket (unsigned char *, unsigned short, unsigned short, in_addr, in
 
 // Default constructor.
 CPacketManip::CPacketManip ():
+								dev(NULL),
+								descr(NULL),
+								ContentPrevalenceThreshold(-1),
+								SrcAddressDispersionThreshold(-1),
+								DstAddressDispersionThreshold(-1),
 #if HASHING_SCHEME == 0
 								rabin32(RabinHashFunction32(RABIN_POLY)),
 #endif
@@ -340,11 +345,6 @@ CPacketManip::CPacketManip ():
 								rabin64_1(RabinHashFunction64(RABIN_POLY1)),
 								rabin64_2(RabinHashFunction64(RABIN_POLY2)),
 #endif
-								dev(NULL),
-								descr(NULL),
-								ContentPrevalenceThreshold(-1),
-								SrcAddressDispersionThreshold(-1),
-								DstAddressDispersionThreshold(-1),
 								Mode(MODE_SERVER)
 {
 }
