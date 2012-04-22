@@ -231,16 +231,16 @@ using std::vector;
 // 5: SHA1
 // 6: SHA256
 
-#define HASHING_SCHEME	0
+#define HASHING_SCHEME					3
 
 #define SUBSTRING_PROCESSING			true
 #define SUBSTRING_WINDOW				30
-#define CONTENT_PREVALENCE_TIMEOUT		100.
+#define CONTENT_PREVALENCE_TIMEOUT		120.	// seconds
 #define CONTENT_PREVALENCE_THRESHOLD	20
 #define SRC_IP_DISPERSION_THRESHOOLD	10
 #define DST_IP_DISPERSION_THRESHOOLD	10
-#define GARBAGE_COLLECTION_INTERVAL		60
-#define LOGGING_INTERVAL				30
+#define GARBAGE_COLLECTION_INTERVAL		60		// seconds
+#define LOGGING_INTERVAL				30		// seconds
 
 #if HASHING_SCHEME == 0
 #define HASHING_METHOD	RABIN32
@@ -323,9 +323,6 @@ private:
 	int SrcAddressDispersionThreshold;
 	int DstAddressDispersionThreshold;
 
-	// Working as server or client?
-	MODE_OF_OPERATION Mode;		// Default mode is MODE_SERVER.
-
 	// Rabin Schemes.
 #if HASHING_SCHEME == 0
 	RabinHashFunction32 rabin32;
@@ -342,6 +339,9 @@ private:
 	RabinHashFunction64 rabin64_2;
 #endif
 
+	// Working as server or client?
+	MODE_OF_OPERATION Mode;		// Default mode is MODE_SERVER.
+	
 public:
 	CPacketManip ();
 	CPacketManip (char *, char *);					// takes device name and filter program as arguments.
