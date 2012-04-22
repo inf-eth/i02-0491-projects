@@ -215,12 +215,23 @@
 
 #define HAVE_REMOTE
 #include <PacketHeaders.h>
+#include <rabinhash32.h>
+#include <rabinhash64.h>
 #include <pcap.h>
 #include <vector>
 
 using std::vector;
 
-#define KEY_LENGTH	20
+// HASHING_SCHEMES
+// 0: Rabin 32bit
+// 1: Rabin 32bit interleaved
+// 2: Rabin 64bit
+// 3: Rabin 64bit interleaved
+// 4: MD5
+// 5: SHA1
+// 6: SHA256
+
+#define HASHING_SCHEME	0
 
 #define SUBSTRING_PROCESSING			true
 #define SUBSTRING_WINDOW				30
@@ -230,6 +241,41 @@ using std::vector;
 #define DST_IP_DISPERSION_THRESHOOLD	10
 #define GARBAGE_COLLECTION_INTERVAL		60
 #define LOGGING_INTERVAL				30
+
+#if HASHING_SCHEME == 0
+#define HASHING_METHOD	RABIN32
+#define KEY_LENGTH		4
+#define RABIN_POLY		0x4D96487B
+#endif
+#if HASHING_SCHEME == 1
+#define HASHING_METHOD	RABIN32_INTERLEAVED
+#define KEY_LENGTH		8
+#define RABIN_POLY1		0x4D96487B
+#define RABIN_POLY2		0x2DC7EEB3
+#endif
+#if HASHING_SCHEME == 2
+#define HASHING_METHOD	RABIN64
+#define KEY_LENGTH		8
+#define RABIN_POLY		0x460C880810028043
+#endif
+#if HASHING_SCHEME == 3
+#define HASHING_METHOD	RABIN64_INTERLEAVED
+#define KEY_LENGTH		16
+#define RABIN_POLY1		0x460C880810028043
+#define RABIN_POLY2		0x7523C013A96DD7FF
+#endif
+#if HASHING_SCHEME == 4
+#define HASHING_METHOD	MD5
+#define KEY_LENGTH		16
+#endif
+#if HASHING_SCHEME == 5
+#define HASHING_METHOD	SHA1
+#define KEY_LENGTH		20
+#endif
+#if HASHING_SCHEME == 6
+#define HASHING_METHOD	SHA256
+#define KEY_LENGTH		32
+#endif
 
 #ifndef WIN32
 #define __int64 long long
@@ -278,7 +324,23 @@ private:
 	int DstAddressDispersionThreshold;
 
 	// Working as server or client?
-	MODE_OF_OPERATION Mode;		// Default mode is server.
+	MODE_OF_OPERATION Mode;		// Default mode is MODE_SERVER.
+
+	// Rabin Schemes.
+#if HASHING_SCHEME == 0
+	RabinHashFunction32 rabin32;
+#endif
+#if HASHING_SCHEME == 1
+	RabinHashFunction32 rabin32_1;
+	RabinHashFunction32 rabin32_2;
+#endif
+#if HASHING_SCHEME == 2
+	RabinHashFunction64 rabin64;
+#endif
+#if HASHING_SCHEME == 3
+	RabinHashFunction64 rabin64_1;
+	RabinHashFunction64 rabin64_2;
+#endif
 
 public:
 	CPacketManip ();
