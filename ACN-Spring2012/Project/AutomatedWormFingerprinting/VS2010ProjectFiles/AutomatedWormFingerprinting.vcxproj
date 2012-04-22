@@ -82,11 +82,15 @@
   <ItemGroup>
     <ClInclude Include="..\include\PacketHeaders.h" />
     <ClInclude Include="..\include\PacketManip.h" />
+    <ClInclude Include="..\include\rabinhash32.h" />
+    <ClInclude Include="..\include\rabinhash64.h" />
     <ClInclude Include="..\include\Timing.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\AutomatedWormFingerprinting.cpp" />
     <ClCompile Include="..\src\PacketManip.cpp" />
+    <ClCompile Include="..\src\rabinhash32.cpp" />
+    <ClCompile Include="..\src\rabinhash64.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

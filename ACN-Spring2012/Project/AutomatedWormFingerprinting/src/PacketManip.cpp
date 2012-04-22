@@ -225,6 +225,7 @@
 #include <bitset>
 #include <iomanip>
 #include <cctype>
+#include <openssl/md5.h>	// MD5()
 #include <openssl/sha.h>	// SHA1()
 
 #ifdef WIN32
@@ -325,6 +326,20 @@ void ProcessPacket (unsigned char *, unsigned short, unsigned short, in_addr, in
 
 // Default constructor.
 CPacketManip::CPacketManip ():
+#if HASHING_SCHEME == 0
+								rabin32(RabinHashFunction32(RABIN_POLY)),
+#endif
+#if HASHING_SCHEME == 1
+								rabin32_1(RabinHashFunction32(RABIN_POLY1)),
+								rabin32_2(RabinHashFunction32(RABIN_POLY2)),
+#endif
+#if HASHING_SCHEME == 2
+								rabin64(RabinHashFunction64(RABIN_POLY)),
+#endif
+#if HASHING_SCHEME == 3
+								rabin64_1(RabinHashFunction64(RABIN_POLY1)),
+								rabin64_2(RabinHashFunction64(RABIN_POLY2)),
+#endif
 								dev(NULL),
 								descr(NULL),
 								ContentPrevalenceThreshold(-1),
@@ -576,7 +591,51 @@ void CPacketManip::Loop ()
 unsigned char * CPacketManip::GenerateKey (unsigned char *pString, unsigned int pSize)
 {
 	unsigned char *Key = new unsigned char[KEY_LENGTH];
+
+	#if HASHING_SCHEME == 0
+	int Rabin32Hash = rabin32.hash((const char*)pString, pSize);
+	memncpy((char *)Key, (const char *)&Rabin32Hash, KEY_LENGTH);
+	#endif
+	#if HASHING_SCHEME == 1
+	int Rabin32Hash1 = rabin32_1.hash((const char*)pString, pSize);
+	int Rabin32Hash2 = rabin32_2.hash((const char*)pString, pSize);
+	unsigned char SubKey1[KEY_LENGTH/2];
+	unsigned char SubKey2[KEY_LENGTH/2];
+	memncpy((char *)SubKey1, (const char *)&Rabin32Hash1, KEY_LENGTH/2);
+	memncpy((char *)SubKey2, (const char *)&Rabin32Hash2, KEY_LENGTH/2);
+	for (int i=0; i<KEY_LENGTH/2; i++)
+	{
+		Key[i*2] = SubKey1[i];
+		Key[i*2+1] = SubKey2[i];
+	}
+	#endif
+	#if HASHING_SCHEME == 2
+	long long Rabin64Hash = rabin64.hash((const char*)pString, pSize);
+	memncpy((char *)Key, (const char *)&Rabin64Hash, KEY_LENGTH);
+	#endif
+	#if HASHING_SCHEME == 3
+	long long Rabin64Hash1 = rabin64_1.hash((const char*)pString, pSize);
+	long long Rabin64Hash2 = rabin64_2.hash((const char*)pString, pSize);
+	unsigned char SubKey1[KEY_LENGTH/2];
+	unsigned char SubKey2[KEY_LENGTH/2];
+	memncpy((char *)SubKey1, (const char *)&Rabin64Hash1, KEY_LENGTH/2);
+	memncpy((char *)SubKey2, (const char *)&Rabin64Hash2, KEY_LENGTH/2);
+	for (int i=0; i<KEY_LENGTH/2; i++)
+	{
+		Key[i*2] = SubKey1[i];
+		Key[i*2+1] = SubKey2[i];
+	}
+	#endif
+	#if HASHING_SCHEME == 4
+	MD5(pString, pSize, Key);
+	#endif
+	#if HASHING_SCHEME == 5
 	SHA1(pString, pSize, Key);
+	#endif
+	#if HASHING_SCHEME == 6
+	SHA256(pString, pSize, Key);
+	#endif
+
 	return Key;
 }
 
@@ -631,9 +690,15 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 	// TODO: Comment this to stop some spam onscreen or set the appropriate filter program in main() if running on network.
 	// Compile time check for Visual Studio 2008 Version (#if _MSC_VER = 1500)
 	#if _MSC_VER > 1500 || defined __linux__ || defined __CYGWIN__
-	cout << "Recieved a packet at: " << ctime((const time_t*)&header->ts.tv_sec);
+		#ifdef WIN32 
+		char TimeBuffer[64];
+		ctime_s(TimeBuffer, 64, (const time_t*)&header->ts.tv_sec);
+		cout << "Recieved a packet at: " << TimeBuffer << endl;
+		#else
+		cout << "Recieved a packet at: " << ctime((const time_t*)&header->ts.tv_sec);
+		#endif
 	#endif
-
+	
 	// Header pointers.
 	const struct sniff_ethernet *ethernet; /* The ethernet header */
 	const struct sniff_ip *ip;			/* The IP header */
@@ -721,7 +786,13 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		if (ip->ip_p == IPPROTO_TCP)
 		{
 			#if _MSC_VER > 1500 || defined __linux__ || defined __CYGWIN__
-			cout << "Recieved a TCP packet at: " << ctime((const time_t*)&header->ts.tv_sec);
+				#ifdef WIN32 
+				char TimeBuffer[64];
+				ctime_s(TimeBuffer, 64, (const time_t*)&header->ts.tv_sec);
+				cout << "Recieved a TCP packet at: " << TimeBuffer << endl;
+				#else
+				cout << "Recieved a TCP packet at: " << ctime((const time_t*)&header->ts.tv_sec);
+				#endif
 			#endif
 
 			/* define/compute tcp payload (segment) offset */
@@ -763,7 +834,13 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		else
 		{
 			#if _MSC_VER > 1500 || defined __linux__ || defined __CYGWIN__
-			cout << "Recieved a UDP packet at: " << ctime((const time_t*)&header->ts.tv_sec);
+			#ifdef WIN32 
+				char TimeBuffer[64];
+				ctime_s(TimeBuffer, 64, (const time_t*)&header->ts.tv_sec);
+				cout << "Recieved a UDP packet at: " << TimeBuffer << endl;
+				#else
+				cout << "Recieved a UDP packet at: " << ctime((const time_t*)&header->ts.tv_sec);
+				#endif
 			#endif
 
 			/* define/compute tcp payload (segment) offset */
@@ -798,14 +875,14 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		cout << "*************************" << endl;
 
 		// Morror condition for client.
-		if ((ip->ip_p == IPPROTO_UDP && ServerAddress.sin_port == udp->th_dport && size_payload == 32) && PacketCapture.Get_Mode() == MODE_CLIENT)
+		if ((ip->ip_p == IPPROTO_UDP && ServerAddress.sin_port == udp->th_dport && size_payload == sizeof(SignatureData)) && PacketCapture.Get_Mode() == MODE_CLIENT)
 		{
-			SafeCallAssert (NumOfBytesSent = sendto (SocketFD, (char *)payload, 32, 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()", 32);
+			SafeCallAssert (NumOfBytesSent = sendto (SocketFD, (char *)payload, sizeof(SignatureData), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()", sizeof(SignatureData));
 			return;
 		}
 		
 		// Key generation. Only generate signatures for packets with non-zero payload.
-		if (size_payload != 0 && !(ip->ip_p == IPPROTO_UDP && ServerAddress.sin_port == udp->th_dport && size_payload == 32))
+		if (size_payload != 0 && !(ip->ip_p == IPPROTO_UDP && ServerAddress.sin_port == udp->th_dport && size_payload == sizeof(SignatureData)))
 		{
 			unsigned char *GeneratedKey = PacketCapture.GenerateKey ((unsigned char *)payload, size_payload);
 
@@ -910,11 +987,19 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 
 			time_t rawtime;
 			time ( &rawtime );
+			#ifdef WIN32
+			char LocalTimeBuffer[64];
+			tm TM;
+			localtime_s(&TM, &rawtime);
+			asctime_s(LocalTimeBuffer, 64, &TM);
+			AlarmLog << "Date/Time: " << LocalTimeBuffer << endl;
+			#else
 			AlarmLog << "Date/Time: " << asctime (localtime (&rawtime));
-
+			#endif
+			
 			AlarmLog << "Key: ";
 			for (int i=0; i<KEY_LENGTH; i++)
-				AlarmLog << hex << setfill('0') << setw(2) << (int)PacketCapture.AddressDispersionTable[SearchIndex].Key[i] << dec << (i==9 ? " " : "");
+				AlarmLog << hex << setfill('0') << setw(2) << (int)PacketCapture.AddressDispersionTable[SearchIndex].Key[i] << dec << (i==(KEY_LENGTH/2-1) ? " " : "");
 
 			AlarmLog << endl << "SrcIPCount = " << PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size() << ", DstIPCount = " << PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size() << endl;
 			AlarmLog << "Src Port = " << ntohs(th_sport) << ", Dst Port = " << ntohs(th_dport) << endl;
@@ -1196,7 +1281,7 @@ THREAD_RETURN_TYPE Logger (void *arg)
 			ContentPrevalenceTableTxt << "<";
 			for (int j=0; j<KEY_LENGTH; j++)
 			{
-				ContentPrevalenceTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec << (j==9 ? " " : "");
+				ContentPrevalenceTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec << (j==(KEY_LENGTH/2-1) ? " " : "");
 				ContentPrevalenceTableTxt << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec;
 			}
 			ContentPrevalenceTableLog << ": " << PacketCapture.ContentPrevalenceTable[i].Count << endl;
@@ -1209,7 +1294,7 @@ THREAD_RETURN_TYPE Logger (void *arg)
 		for (int i=0; i < (int)PacketCapture.AddressDispersionTable.size(); i++)
 		{
 			for (int j=0; j<KEY_LENGTH; j++)
-				AddressDispersionTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.AddressDispersionTable[i].Key[j] << dec << (j==9 ? " " : "");
+				AddressDispersionTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.AddressDispersionTable[i].Key[j] << dec << (j==(KEY_LENGTH/2-1) ? " " : "");
 			AddressDispersionTableLog << ": SrcIPCount=" << PacketCapture.AddressDispersionTable[i].SrcIPs.size() << ", DstIPCount=" << PacketCapture.AddressDispersionTable[i].DstIPs.size() << endl;
 		}
 		AddressDispersionTableLog.close();
