@@ -1,0 +1,105 @@
+\documentclass{beamer}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usetheme{Warsaw}
+
+\title{Automated Worm Fingerprinting\\Semester Project}
+\author{Awais Aslam \and Attique dawood}
+\institute{FAST, Islamabad}
+\date{\today}
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+%\tableofcontents
+
+% Introductory slide or table of contents.
+\section{Organization}
+\begin{frame}{Organization}
+	\begin{itemize}
+	\item Introduction to worm fingerprinting
+	\item Implementation details
+		\begin{itemize}
+		\item Sub-string processing and Rabin fingerprinting
+		\end{itemize}
+	\item Computational Analysis
+	\item Advanced Features
+	\item Further improvements
+	\end{itemize}
+\end{frame}
+
+% First slide in the introduction.
+\section{Introduction to Worm Fingerprinting}
+\begin{frame}{Introduction to Worm Fingerprinting}
+	\begin{itemize}
+	\item<1->What \emph{is}?
+	\item<2->How?
+	\item<3->When?
+		\begin{itemize}
+		\item Content Invariance
+		\item Content Prevalence
+		\item Address Dispersion
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+% Implementation Details
+\section{Implementation Details}
+\begin{frame}{Implementation Details}
+	\begin{itemize}
+	\item Packet capturing
+	\item Only TCP and UDP processing
+	\item Server and Client Modes
+	\item Threads:
+		\begin{itemize}
+		\item Receiver Thread
+		\item Garbage Collector
+		\item Logger
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\subsection{Sub-string Processing and Rabin Fingerprinting}
+\begin{frame}{Sub-string Processing and Rabin Fingerprinting}
+	\begin{itemize}
+	\item Four hashing schemes
+		\begin{itemize}
+		\item Rabin32: 4 byte keys
+		\item Rabin32 Interleaved: 8 byte interleaved keys
+		\item Rabin64: 8 byte keys
+		\item Rabin64 Interleaved: 16 byte interleaved keys
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\section{Computational Analysis}
+\begin{frame}{Computational Analysis}
+	\begin{itemize}
+	\item Computational Analysis
+	\end{itemize}
+\end{frame}
+
+\section{Advanced features}
+\begin{frame}{Advanced features}
+	\begin{itemize}
+	\item Subversion (version control)
+	\item Distributed Computing
+	\end{itemize}
+\end{frame}
+
+\section{Further improvements}
+\begin{frame}{Further improvements}
+	\begin{itemize}
+	\item A better interleaving scheme.
+	\end{itemize}
+\end{frame}
+
+\section{References}
+\begin{frame}{References}
+	\nocite{*}
+	\bibliographystyle{ieeetr} %plain, ieeetr
+	\bibliography{Wormref}
+\end{frame}
+\end{document}
