@@ -18,15 +18,21 @@
     <ClCompile Include="HashingAlgorithms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rabinhash-c++.cpp">
+    <ClCompile Include="rabinhash32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rabinhash64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="rabinhash-c++.h">
+    <ClInclude Include="Timing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Timing.h">
+    <ClInclude Include="rabinhash32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rabinhash64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

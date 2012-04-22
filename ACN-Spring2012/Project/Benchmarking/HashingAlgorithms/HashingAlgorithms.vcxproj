@@ -144,10 +144,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="HashingAlgorithms.cpp" />
-    <ClCompile Include="rabinhash-c++.cpp" />
+    <ClCompile Include="rabinhash32.cpp" />
+    <ClCompile Include="rabinhash64.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="rabinhash-c++.h" />
+    <ClInclude Include="rabinhash32.h" />
+    <ClInclude Include="rabinhash64.h" />
     <ClInclude Include="Timing.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
