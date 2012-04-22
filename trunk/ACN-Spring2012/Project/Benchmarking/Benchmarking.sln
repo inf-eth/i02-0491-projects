@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VectorVsRadixTree", "VectorVsRadixTree\VectorVsRadixTree.vcxproj", "{9BF084D0-8E9B-4FBB-B8DE-1B25BEA45653}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HashingAlgorithms", "HashingAlgorithms\HashingAlgorithms.vcxproj", "{ECB26B9F-B89E-4FCB-82A4-09CAE69A87CD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,12 @@ Global
 		{9BF084D0-8E9B-4FBB-B8DE-1B25BEA45653}.Release|Win32.Build.0 = Release|Win32
 		{9BF084D0-8E9B-4FBB-B8DE-1B25BEA45653}.Release|x64.ActiveCfg = Release|x64
 		{9BF084D0-8E9B-4FBB-B8DE-1B25BEA45653}.Release|x64.Build.0 = Release|x64
+		{ECB26B9F-B89E-4FCB-82A4-09CAE69A87CD}.Debug|Win32.ActiveCfg = Debug|x64
+		{ECB26B9F-B89E-4FCB-82A4-09CAE69A87CD}.Debug|Win32.Build.0 = Debug|x64
+		{ECB26B9F-B89E-4FCB-82A4-09CAE69A87CD}.Debug|x64.ActiveCfg = Debug|Win32
+		{ECB26B9F-B89E-4FCB-82A4-09CAE69A87CD}.Release|Win32.ActiveCfg = Release|Win32
+		{ECB26B9F-B89E-4FCB-82A4-09CAE69A87CD}.Release|Win32.Build.0 = Release|Win32
+		{ECB26B9F-B89E-4FCB-82A4-09CAE69A87CD}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
