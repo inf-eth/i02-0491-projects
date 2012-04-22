@@ -1,4 +1,5 @@
 DEPTH:=..
-SUBDIR:= 	VectorVsRadixTree
+SUBDIR:= 	VectorVsRadixTree\
+			HashingAlgorithms
 
 include rules.mk
