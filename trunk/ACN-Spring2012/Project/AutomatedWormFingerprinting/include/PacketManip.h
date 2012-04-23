@@ -217,8 +217,10 @@
 #include <rabinhash32.h>
 #include <rabinhash64.h>
 #include <pcap.h>
+#include <iostream>
 #include <vector>
 
+using std::ostream;
 using std::vector;
 
 // HASHING_SCHEMES
@@ -230,7 +232,7 @@ using std::vector;
 // 5: SHA1
 // 6: SHA256
 
-#define HASHING_SCHEME					3
+#define HASHING_SCHEME					1
 
 #define LOG_NETWORK_STATS				1		// Log network statistics? 1=Yes, 0=No
 #define LOG_PORT_NETWORK_STATS			1		// If logging network stats, also log port-based network statistics? 1=Yes, 0=No.
@@ -326,6 +328,7 @@ public:
 
 	CNetworkStats();
 	void UpdateStats(long long, unsigned char, unsigned short, unsigned short, in_addr, in_addr, unsigned int, unsigned int);
+	friend ostream& operator <<(ostream &, const CNetworkStats &);
 };
 
 #if LOG_PORT_NETWORK_STATS == 1

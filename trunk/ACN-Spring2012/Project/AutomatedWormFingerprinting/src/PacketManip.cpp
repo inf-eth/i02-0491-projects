@@ -222,6 +222,8 @@
 #include <ctime>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <string>
 #include <bitset>
 #include <iomanip>
 #include <cctype>
@@ -243,6 +245,9 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::fstream;
+using std::stringstream;
+using std::string;
+using std::ostream;
 using std::bitset;
 using std::hex;
 using std::dec;
@@ -382,7 +387,7 @@ void CPacketManip::UpdatePortsNetworkStats(long long ptCurrent, unsigned char pP
 			{
 				temp.Port = ntohs(pSrcPort);
 				temp.NetworkStats.UpdateStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
-				PortsNetworkStats.push_back(temp);
+				PortsNetworkStats.insert(PortsNetworkStats.begin()+i, temp);
 			}
 			return;
 		}
@@ -416,7 +421,7 @@ void CPacketManip::UpdateHostsNetworkStats(long long ptCurrent, unsigned char pP
 				#if LOG_PORT_NETWORK_STATS == 1 && LOG_HOST_NETWORK_STATS == 1 && LOG_HOST_PORT_NETWORK_STATS == 1
 				temp.UpdatePortsNetworkStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
 				#endif
-				HostsNetworkStats.push_back(temp);
+				HostsNetworkStats.insert(HostsNetworkStats.begin()+i, temp);
 			}
 			return;
 		}
@@ -445,7 +450,7 @@ void HostNetworkStats::UpdatePortsNetworkStats(long long ptCurrent, unsigned cha
 			{
 				temp.Port = ntohs(pSrcPort);
 				temp.NetworkStats.UpdateStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
-				PortsNetworkStats.push_back(temp);
+				PortsNetworkStats.insert(PortsNetworkStats.begin()+i, temp);
 			}
 			return;
 		}
@@ -456,6 +461,20 @@ void HostNetworkStats::UpdatePortsNetworkStats(long long ptCurrent, unsigned cha
 }
 #endif
 
+ostream& operator <<(ostream &StreamOut, const CNetworkStats &NetworkStats)
+{
+	StreamOut << "Elapsed Time  : " << ((double)(NetworkStats.tCurrent-NetworkStats.tStart))/(1000000.) << " seconds." << endl
+			  << "Total Packets : " << NetworkStats.TotalPackets << endl
+			  << "TCP Packets   : " << NetworkStats.TCPPackets << endl
+			  << "UDP Packets   : " << NetworkStats.UDPPackets << endl
+			  << "Total traffic volume       : " << setw(12) << NetworkStats.TotalTraffic << " B, " << setw(12) << NetworkStats.TotalTraffic / 1024 << " KB, " << setw(12) << (double)NetworkStats.TotalTraffic/(1024*1024) << " MB" << endl
+			  << "Payload traffic volume     : " << setw(12) << NetworkStats.TotalTrafficPayload << " B, " << setw(12) << NetworkStats.TotalTrafficPayload / 1024 << " KB, " << setw(12) << (double)NetworkStats.TotalTrafficPayload / (1024*1024) << " MB" << endl
+			  << "TCP traffic volume         : " << setw(12) << NetworkStats.TotalTrafficTCP << " B, " << setw(12) << NetworkStats.TotalTrafficTCP / 1024 << " KB, " << setw(12) << (double)NetworkStats.TotalTrafficTCP / (1024*1024) << " MB" << endl
+			  << "UDP traffic volume         : " << setw(12) << NetworkStats.TotalTrafficUDP << " B, " << setw(12) << NetworkStats.TotalTrafficUDP / 1024 << " KB, " << setw(12) << (double)NetworkStats.TotalTrafficUDP / (1024*1024) << " MB" << endl
+			  << "TCP Payload traffic volume : " << setw(12) << NetworkStats.TotalTrafficTCPPayload << " B, " << setw(12) << NetworkStats.TotalTrafficTCPPayload / 1024 << " KB, " << setw(12) << (double)NetworkStats.TotalTrafficTCPPayload / (1024*1024) << " MB" << endl
+			  << "UDP Payload traffic volume : " << setw(12) << NetworkStats.TotalTrafficUDPPayload << " B, " << setw(12) << NetworkStats.TotalTrafficUDPPayload / 1024 << " KB, " << setw(12) << (double)NetworkStats.TotalTrafficUDPPayload / (1024*1024) << " MB" << endl;
+	return StreamOut;
+}
 #endif
 
 // Default constructor.
@@ -1480,24 +1499,49 @@ THREAD_RETURN_TYPE Logger (void *arg)
 
 		#if LOG_NETWORK_STATS == 1
 		fstream NetworkStatsLog("NetworkStats.log", std::ios::out);
-		NetworkStatsLog << "============================== Network Stats ==============================" << endl
-						<< "Elapsed Time  : " << ((double)(PacketCapture.NetworkStats.tCurrent-PacketCapture.NetworkStats.tStart))/(1000000.) << " seconds." << endl
-						<< "Total Packets : " << PacketCapture.NetworkStats.TotalPackets << endl
-						<< "TCP Packets   : " << PacketCapture.NetworkStats.TCPPackets << endl
-						<< "UDP Packets   : " << PacketCapture.NetworkStats.UDPPackets << endl
-						<< "Total traffic volume       : " << PacketCapture.NetworkStats.TotalTraffic << " B, " << PacketCapture.NetworkStats.TotalTraffic / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTraffic / (1024*1024) << " MB." << endl
-						<< "Payload traffic volume     : " << PacketCapture.NetworkStats.TotalTrafficPayload << " B, " << PacketCapture.NetworkStats.TotalTrafficPayload / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTrafficPayload / (1024*1024) << " MB." << endl
-						<< "TCP traffic volume         : " << PacketCapture.NetworkStats.TotalTrafficTCP << " B, " << PacketCapture.NetworkStats.TotalTrafficTCP / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTrafficTCP / (1024*1024) << " MB." << endl
-						<< "UDP traffic volume         : " << PacketCapture.NetworkStats.TotalTrafficUDP << " B, " << PacketCapture.NetworkStats.TotalTrafficUDP / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTrafficUDP / (1024*1024) << " MB." << endl
-						<< "TCP Payload traffic volume : " << PacketCapture.NetworkStats.TotalTrafficTCPPayload << " B, " << PacketCapture.NetworkStats.TotalTrafficTCPPayload / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTrafficTCPPayload / (1024*1024) << " MB." << endl
-						<< "UDP Payload traffic volume : " << PacketCapture.NetworkStats.TotalTrafficUDPPayload << " B, " << PacketCapture.NetworkStats.TotalTrafficUDPPayload / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTrafficUDPPayload / (1024*1024) << " MB." << endl
-						<< "==========================================================================" << endl;
+		NetworkStatsLog << "=============================== Network Stats ===============================" << endl
+						<< PacketCapture.NetworkStats
+						<< "=============================================================================" << endl;
+
 		#if LOG_PORT_NETWORK_STATS == 1
-		//PacketCapture.UpdatePortsNetworkStats(GetTimeus64(), ip->ip_p, (ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport), (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), ip->ip_src, ip->ip_dst, PacketSize, size_payload);
+		NetworkStatsLog << "================================ Port Stats =================================" << endl;
+		for (int i=0; i<(int)PacketCapture.PortsNetworkStats.size(); i++)
+		{
+			NetworkStatsLog << "-----------------------------------------------------------------------------" << endl
+							<< "Port: " << PacketCapture.PortsNetworkStats[i].Port << endl
+							<< PacketCapture.PortsNetworkStats[i].NetworkStats
+							<< "-----------------------------------------------------------------------------" << endl;
+		}
+		NetworkStatsLog << "=============================================================================" << endl;
 		#endif
 
 		#if LOG_HOST_NETWORK_STATS == 1
-		//PacketCapture.UpdateHostsNetworkStats(GetTimeus64(), ip->ip_p, (ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport), (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), ip->ip_src, ip->ip_dst, PacketSize, size_payload);
+		stringstream HostNetworkStatsStream;
+		string temp;
+		for (int i=0; i<(int)PacketCapture.HostsNetworkStats.size(); i++)
+		{
+			HostNetworkStatsStream.clear();
+			HostNetworkStatsStream << "HostNetworkStats." << inet_ntoa(PacketCapture.HostsNetworkStats[i].IP) << ".log";
+			HostNetworkStatsStream >> temp;
+			fstream HostNetworkStatsLog(temp.c_str(), std::ios::out);
+			HostNetworkStatsLog << "=============================== Network Stats ===============================" << endl
+								<< "Host IP: " << inet_ntoa(PacketCapture.HostsNetworkStats[i].IP) << endl
+								<< PacketCapture.HostsNetworkStats[i].NetworkStats
+								<< "=============================================================================" << endl;
+			#if LOG_PORT_NETWORK_STATS == 1 && LOG_HOST_NETWORK_STATS == 1 && LOG_HOST_PORT_NETWORK_STATS == 1
+			HostNetworkStatsLog << "================================ Port Stats =================================" << endl;
+			for (int j=0; j<(int)PacketCapture.HostsNetworkStats[i].PortsNetworkStats.size(); j++)
+			{
+				HostNetworkStatsLog << "-----------------------------------------------------------------------------" << endl
+									<< "Port: " << PacketCapture.HostsNetworkStats[i].PortsNetworkStats[j].Port << endl
+									<< PacketCapture.HostsNetworkStats[i].PortsNetworkStats[j].NetworkStats
+									<< "-----------------------------------------------------------------------------" << endl;
+			}
+			HostNetworkStatsLog << "=============================================================================" << endl;
+			#endif
+			HostNetworkStatsLog.close();
+
+		}
 		#endif
 
 		NetworkStatsLog.close();
