@@ -324,37 +324,28 @@ public:
 	unsigned long long TotalTrafficUDP;
 	unsigned long long TotalTrafficUDPPayload;
 
-	CNetworkStats():
-						tStart(0),
-						tCurrent(0),
-						TotalPackets(0),
-						TCPPackets(0),
-						UDPPackets(0),
-						TotalTraffic(0),
-						TotalTrafficPayload(0),
-						TotalTrafficTCP(0),
-						TotalTrafficTCPPayload(0),
-						TotalTrafficUDP(0),
-						TotalTrafficUDPPayload(0)
-	{
-	}
+	CNetworkStats();
+	void UpdateStats(long long, unsigned char, unsigned short, unsigned short, in_addr, in_addr, unsigned int, unsigned int);
 };
 
 #if LOG_PORT_NETWORK_STATS == 1
-struct PortNetworkStats
+class PortNetworkStats
 {
+public:
 	CNetworkStats NetworkStats;
 	unsigned short Port;
 };
 #endif
 
 #if LOG_HOST_NETWORK_STATS == 1
-struct HostNetworkStats
+class HostNetworkStats
 {
+public:
 	CNetworkStats NetworkStats;
 	in_addr IP;
 	#if LOG_PORT_NETWORK_STATS == 1 && LOG_HOST_NETWORK_STATS == 1 && LOG_HOST_PORT_NETWORK_STATS == 1
 	vector<PortNetworkStats> PortsNetworkStats;
+	void UpdatePortsNetworkStats(long long, unsigned char, unsigned short, unsigned short, in_addr, in_addr, unsigned int, unsigned int);
 	#endif
 };
 #endif
@@ -374,16 +365,6 @@ private:
 	struct bpf_program fp;      /* hold compiled program     */
 	bpf_u_int32 maskp;          /* subnet mask               */
 	bpf_u_int32 netp;           /* ip                        */
-
-	#if LOG_NETWORK_STATS == 1
-	CNetworkStats NetworkStats;
-	#if LOG_HOST_NETWORK_STATS == 1
-	vector<HostNetworkStats> HostsNetworkStats;
-	#endif
-	#if LOG_PORT_NETWORK_STATS == 1
-	vector<PortNetworkStats> PortsNetworkStats;
-	#endif
-	#endif
 
 	// Thresholds.
 	int ContentPrevalenceThreshold;
@@ -446,6 +427,23 @@ public:
 	bool SearchSrcIPs (int, in_addr);
 	// Search Dst IPs for a match.
 	bool SearchDstIPs (int, in_addr);
+
+	// Stats logging.
+	#if LOG_NETWORK_STATS == 1
+	CNetworkStats NetworkStats;
+
+	#if LOG_PORT_NETWORK_STATS == 1
+	vector<PortNetworkStats> PortsNetworkStats;
+	void UpdatePortsNetworkStats(long long, unsigned char, unsigned short, unsigned short, in_addr, in_addr, unsigned int, unsigned int);
+	#endif
+
+	#if LOG_HOST_NETWORK_STATS == 1
+	vector<HostNetworkStats> HostsNetworkStats;
+	void UpdateHostsNetworkStats(long long, unsigned char, unsigned short, unsigned short, in_addr, in_addr, unsigned int, unsigned int);
+	#endif
+
+	#endif
+
 };
 
 // Compare two blocks of memory and returns true if they match else returns false.
