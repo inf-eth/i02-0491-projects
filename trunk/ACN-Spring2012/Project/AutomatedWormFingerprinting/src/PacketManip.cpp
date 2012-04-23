@@ -270,11 +270,13 @@ HANDLE tGarbageCollector;
 HANDLE tReceiver;
 HANDLE tLogger;
 HANDLE MutexLock = CreateMutex (NULL, FALSE, NULL);
+HANDLE StatsLock = CreateMutex (NULL, FALSE, NULL);
 #else
 pthread_t tGarbageCollector;
 pthread_t tReceiver;
 pthread_t tLogger;
 pthread_mutex_t MutexLock = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t StatsLock = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
 // Network related.
@@ -323,6 +325,138 @@ void packet_capture_callback(u_char *, const struct pcap_pkthdr*, const u_char*)
 
 // ProcessPacket() is called everytime a packet is received with non-zero payload.
 void ProcessPacket (unsigned char *, unsigned short, unsigned short, in_addr, in_addr);
+
+#if LOG_NETWORK_STATS == 1
+// Network Stats.
+CNetworkStats::CNetworkStats():
+								tStart(GetTimeus64()),
+								tCurrent(GetTimeus64()),
+								TotalPackets(0),
+								TCPPackets(0),
+								UDPPackets(0),
+								TotalTraffic(0),
+								TotalTrafficPayload(0),
+								TotalTrafficTCP(0),
+								TotalTrafficTCPPayload(0),
+								TotalTrafficUDP(0),
+								TotalTrafficUDPPayload(0)
+{
+}
+void CNetworkStats::UpdateStats(long long ptCurrent, unsigned char pProtocol, unsigned short pSrcPort, unsigned short pDstPort, in_addr SrcIP, in_addr DstIP, unsigned int pPacketSize, unsigned int pPayloadSize)
+{
+	tCurrent = ptCurrent;
+	TotalPackets++;
+	TotalTraffic += (unsigned long long)pPacketSize;
+	TotalTrafficPayload += (unsigned long long)pPayloadSize;
+
+	switch(pProtocol)
+	{
+		case IPPROTO_TCP:
+		{
+			TCPPackets++;
+			TotalTrafficTCP += (unsigned long long)pPacketSize;
+			TotalTrafficTCPPayload += (unsigned long long)pPayloadSize;
+			break;
+		}
+		case IPPROTO_UDP:
+		{
+			UDPPackets++;
+			TotalTrafficUDP += (unsigned long long)pPacketSize;
+			TotalTrafficUDPPayload += (unsigned long long)pPayloadSize;
+			break;
+		}
+	}
+}
+#if LOG_PORT_NETWORK_STATS == 1
+// vector<PortNetworkStats> PortsNetworkStats;
+void CPacketManip::UpdatePortsNetworkStats(long long ptCurrent, unsigned char pProtocol, unsigned short pSrcPort, unsigned short pDstPort, in_addr SrcIP, in_addr DstIP, unsigned int pPacketSize, unsigned int pPayloadSize)
+{
+	PortNetworkStats temp;
+	for (int i=0; i<(int)PortsNetworkStats.size(); i++)
+	{
+		if (ntohs(pSrcPort) <= PortsNetworkStats[i].Port)
+		{
+			if (ntohs(pSrcPort) == PortsNetworkStats[i].Port)
+				PortsNetworkStats[i].NetworkStats.UpdateStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+			else
+			{
+				temp.Port = ntohs(pSrcPort);
+				temp.NetworkStats.UpdateStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+				PortsNetworkStats.push_back(temp);
+			}
+			return;
+		}
+	}
+	temp.Port = ntohs(pSrcPort);
+	temp.NetworkStats.UpdateStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+	PortsNetworkStats.push_back(temp);
+}
+#endif
+
+#if LOG_HOST_NETWORK_STATS == 1
+// vector<HostNetworkStats> HostsNetworkStats;
+void CPacketManip::UpdateHostsNetworkStats(long long ptCurrent, unsigned char pProtocol, unsigned short pSrcPort, unsigned short pDstPort, in_addr SrcIP, in_addr DstIP, unsigned int pPacketSize, unsigned int pPayloadSize)
+{
+	HostNetworkStats temp;
+	for (int i=0; i<(int)HostsNetworkStats.size(); i++)
+	{
+		if (ntohl(SrcIP.s_addr) <= ntohl(HostsNetworkStats[i].IP.s_addr))
+		{
+			if (ntohl(SrcIP.s_addr) == ntohl(HostsNetworkStats[i].IP.s_addr))
+			{
+				HostsNetworkStats[i].NetworkStats.UpdateStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+				#if LOG_PORT_NETWORK_STATS == 1 && LOG_HOST_NETWORK_STATS == 1 && LOG_HOST_PORT_NETWORK_STATS == 1
+				HostsNetworkStats[i].UpdatePortsNetworkStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+				#endif
+			}
+			else
+			{
+				temp.IP = SrcIP;
+				temp.NetworkStats.UpdateStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+				#if LOG_PORT_NETWORK_STATS == 1 && LOG_HOST_NETWORK_STATS == 1 && LOG_HOST_PORT_NETWORK_STATS == 1
+				temp.UpdatePortsNetworkStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+				#endif
+				HostsNetworkStats.push_back(temp);
+			}
+			return;
+		}
+	}
+	temp.IP = SrcIP;
+	temp.NetworkStats.UpdateStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+	#if LOG_PORT_NETWORK_STATS == 1 && LOG_HOST_NETWORK_STATS == 1 && LOG_HOST_PORT_NETWORK_STATS == 1
+	temp.UpdatePortsNetworkStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+	#endif
+	HostsNetworkStats.push_back(temp);
+}
+#endif
+
+#if LOG_PORT_NETWORK_STATS == 1 && LOG_HOST_NETWORK_STATS == 1 && LOG_HOST_PORT_NETWORK_STATS == 1
+// vector<PortNetworkStats> PortsNetworkStats;
+void HostNetworkStats::UpdatePortsNetworkStats(long long ptCurrent, unsigned char pProtocol, unsigned short pSrcPort, unsigned short pDstPort, in_addr SrcIP, in_addr DstIP, unsigned int pPacketSize, unsigned int pPayloadSize)
+{
+	PortNetworkStats temp;
+	for (int i=0; i<(int)PortsNetworkStats.size(); i++)
+	{
+		if (ntohs(pSrcPort) <= PortsNetworkStats[i].Port)
+		{
+			if (ntohs(pSrcPort) == PortsNetworkStats[i].Port)
+				PortsNetworkStats[i].NetworkStats.UpdateStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+			else
+			{
+				temp.Port = ntohs(pSrcPort);
+				temp.NetworkStats.UpdateStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+				PortsNetworkStats.push_back(temp);
+			}
+			return;
+		}
+	}
+	temp.Port = ntohs(pSrcPort);
+	temp.NetworkStats.UpdateStats(ptCurrent, pProtocol, pSrcPort, pDstPort, SrcIP, DstIP, pPacketSize, pPayloadSize);
+	PortsNetworkStats.push_back(temp);
+}
+#endif
+
+#endif
 
 // Default constructor.
 CPacketManip::CPacketManip ():
@@ -740,6 +874,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		if (size_udp < 8)
 		{
 			cerr << "ERROR: Invalid UDP header length: " << size_udp << " bytes." << endl;
+			return;
 		}
 		payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_udp);	// Payload or data in packet.
 	}
@@ -833,6 +968,27 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 				 << "Length:              " << ntohs(udp->th_len) << endl
 				 << "Checksum:            " << ntohs(udp->th_sum) << endl;
 		}
+
+		#ifdef WIN32
+		WaitForSingleObject (StatsLock, INFINITE);
+		#else
+		pthread_mutex_lock (&StatsLock);
+		#endif
+		// Stats logging.
+		#if LOG_NETWORK_STATS == 1
+		PacketCapture.NetworkStats.UpdateStats(GetTimeus64(), ip->ip_p, (ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport), (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), ip->ip_src, ip->ip_dst, PacketSize, size_payload);
+		#if LOG_PORT_NETWORK_STATS == 1
+		PacketCapture.UpdatePortsNetworkStats(GetTimeus64(), ip->ip_p, (ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport), (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), ip->ip_src, ip->ip_dst, PacketSize, size_payload);
+		#endif
+		#if LOG_HOST_NETWORK_STATS == 1
+		PacketCapture.UpdateHostsNetworkStats(GetTimeus64(), ip->ip_p, (ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport), (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), ip->ip_src, ip->ip_dst, PacketSize, size_payload);
+		#endif
+		#endif
+		#ifdef WIN32
+		ReleaseMutex (StatsLock);
+		#else
+		pthread_mutex_unlock (&StatsLock);
+		#endif
 
 		// Displaying payload data.
 		if (size_payload != 0)
@@ -1314,6 +1470,43 @@ THREAD_RETURN_TYPE Logger (void *arg)
 		ReleaseMutex (MutexLock);
 		#else
 		pthread_mutex_unlock (&MutexLock);
+		#endif
+
+		#ifdef WIN32
+		WaitForSingleObject (StatsLock, INFINITE);
+		#else
+		pthread_mutex_lock (&StatsLock);
+		#endif
+
+		#if LOG_NETWORK_STATS == 1
+		fstream NetworkStatsLog("NetworkStats.log", std::ios::out);
+		NetworkStatsLog << "============================== Network Stats ==============================" << endl
+						<< "Elapsed Time  : " << ((double)(PacketCapture.NetworkStats.tCurrent-PacketCapture.NetworkStats.tStart))/(1000000.) << " seconds." << endl
+						<< "Total Packets : " << PacketCapture.NetworkStats.TotalPackets << endl
+						<< "TCP Packets   : " << PacketCapture.NetworkStats.TCPPackets << endl
+						<< "UDP Packets   : " << PacketCapture.NetworkStats.UDPPackets << endl
+						<< "Total traffic volume       : " << PacketCapture.NetworkStats.TotalTraffic << " B, " << PacketCapture.NetworkStats.TotalTraffic / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTraffic / (1024*1024) << " MB." << endl
+						<< "Payload traffic volume     : " << PacketCapture.NetworkStats.TotalTrafficPayload << " B, " << PacketCapture.NetworkStats.TotalTrafficPayload / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTrafficPayload / (1024*1024) << " MB." << endl
+						<< "TCP traffic volume         : " << PacketCapture.NetworkStats.TotalTrafficTCP << " B, " << PacketCapture.NetworkStats.TotalTrafficTCP / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTrafficTCP / (1024*1024) << " MB." << endl
+						<< "UDP traffic volume         : " << PacketCapture.NetworkStats.TotalTrafficUDP << " B, " << PacketCapture.NetworkStats.TotalTrafficUDP / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTrafficUDP / (1024*1024) << " MB." << endl
+						<< "TCP Payload traffic volume : " << PacketCapture.NetworkStats.TotalTrafficTCPPayload << " B, " << PacketCapture.NetworkStats.TotalTrafficTCPPayload / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTrafficTCPPayload / (1024*1024) << " MB." << endl
+						<< "UDP Payload traffic volume : " << PacketCapture.NetworkStats.TotalTrafficUDPPayload << " B, " << PacketCapture.NetworkStats.TotalTrafficUDPPayload / 1024 << " KB, " << PacketCapture.NetworkStats.TotalTrafficUDPPayload / (1024*1024) << " MB." << endl
+						<< "==========================================================================" << endl;
+		#if LOG_PORT_NETWORK_STATS == 1
+		//PacketCapture.UpdatePortsNetworkStats(GetTimeus64(), ip->ip_p, (ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport), (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), ip->ip_src, ip->ip_dst, PacketSize, size_payload);
+		#endif
+
+		#if LOG_HOST_NETWORK_STATS == 1
+		//PacketCapture.UpdateHostsNetworkStats(GetTimeus64(), ip->ip_p, (ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport), (ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport), ip->ip_src, ip->ip_dst, PacketSize, size_payload);
+		#endif
+
+		NetworkStatsLog.close();
+		#endif
+
+		#ifdef WIN32
+		ReleaseMutex (StatsLock);
+		#else
+		pthread_mutex_unlock (&StatsLock);
 		#endif
 	}
 	#ifndef WIN32
