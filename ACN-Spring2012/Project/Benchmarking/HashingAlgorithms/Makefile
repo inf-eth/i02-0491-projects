@@ -12,7 +12,7 @@
 CC=g++
 DEPS=-I.
 SRCDIR=.
-CPPFILES=HashingAlgorithms rabinhash-c++
+CPPFILES=HashingAlgorithms rabinhash32 rabinhash64
 TARGET=HashingAlgorithms
 LIBS=-lssl -lcrypto
 
