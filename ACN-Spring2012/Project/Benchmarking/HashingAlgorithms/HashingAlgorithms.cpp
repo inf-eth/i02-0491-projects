@@ -23,9 +23,12 @@ using std::vector;
 using std::string;
 
 // Compare two blocks of memory and returns true if they match else returns false.
-bool memncmp (const char *, const char *, int);
-// Memcopy.
-void memncpy (char *, const char *, int);
+bool memncmp (const char *, const char *, int);		// Byte stream compare
+void memncpy (char *, const char *, int);			// Byte stream copy
+bool memncmp32 (const char *, const char *, int);	// 32bit word stream comparison
+void memncpy32 (const char *, const char *, int);	// 32bit word stream copy
+bool memncmp64 (const char *, const char *, int);	// 64bit word stream comparison
+void memncpy64 (const char *, const char *, int);	// 64bit word stream copy
 
 #define INSERTIONS 1024*32
 #define REPETITIONS 1024
@@ -36,13 +39,17 @@ __int64 tStart, tEnd;
 vector<char*> MD5_Hashes;
 vector<char*> SHA1_Hashes;
 vector<char*> SHA256_Hashes;
-vector<int*> Rabin_Hashes;
+vector<int*> Rabin32_Hashes;
+vector<char*> Rabin32_Hashes_Interleaved;
 vector<long long*> Rabin64_Hashes;
+vector<char*> Rabin64_Hashes_Interleaved;
 
 int MD5Collisions = 0;
 int SHA1Collisions = 0;
-int RabinCollisions = 0;
+int Rabin32Collisions = 0;
+int Rabin32ICollisions = 0;
 int Rabin64Collisions = 0;
+int Rabin64ICollisions = 0;
 
 int main()
 {
@@ -84,8 +91,9 @@ int main()
 	// 1 1100C021
 	// 1 53BCFEDB
 	// 1 00401003
-	RabinHashFunction32 rabin = RabinHashFunction32(1);
-	Rabin32 = rabin.hash((const char*)ibuf, strlen((const char*)ibuf));
+	RabinHashFunction32 rabin32_1 = RabinHashFunction32(0x4D96487B);
+	RabinHashFunction32 rabin32_2 = RabinHashFunction32(0x2DC7EEB3);
+	Rabin32 = rabin32_1.hash((const char*)ibuf, strlen((const char*)ibuf));
 	cout << "Rabin: " << Rabin32 << dec << endl;
 
 	// Rabin64 example.
@@ -95,8 +103,9 @@ int main()
 	// 1 460C8808 10028043 slow
 	// 1 7523C013 A96DD7FF fast
 	// 1 77FFFFFF FFDFFFBF
-	RabinHashFunction64 rabin1 = RabinHashFunction64(0x7523C013A96DD7FF);
-	Rabin64 = rabin1.hash((const char *)ibuf, strlen((const char *)ibuf));
+	RabinHashFunction64 rabin64_1 = RabinHashFunction64(0x7523C013A96DD7FF);
+	RabinHashFunction64 rabin64_2 = RabinHashFunction64(0x460C880810028043);
+	Rabin64 = rabin64_1.hash((const char *)ibuf, strlen((const char *)ibuf));
 	cout << "Rabin64: " << (unsigned long long)Rabin64 << dec << endl;
 
 	// Random Unique string generation.
@@ -136,11 +145,10 @@ int main()
 			MD5((const unsigned char *)RandomStrings[i].c_str(), RandomStrings[i].size(), temp);
 		for (int j=0; j<(int)MD5_Hashes.size(); j++)
 		{
-			if (memncmp(MD5_Hashes[i], (const char *)temp, 16) == true)
+			if (memncmp64(MD5_Hashes[i], (const char *)temp, 16) == true)
 				MD5Collisions++;
 			MD5_Hashes.push_back((char*)temp);
 		}
-		//delete []temp;
 	}
 	tEnd = GetTimeus64();
 	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " MD5 hashes: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
@@ -155,11 +163,10 @@ int main()
 			SHA1((const unsigned char *)RandomStrings[i].c_str(), RandomStrings[i].size(), temp);
 		for (int j=0; j<(int)SHA1_Hashes.size(); j++)
 		{
-			if (memncmp(SHA1_Hashes[i], (const char *)temp, 20) == true)
+			if (memncmp32(SHA1_Hashes[i], (const char *)temp, 20) == true)
 				SHA1Collisions++;
 			SHA1_Hashes.push_back((char*)temp);
 		}
-		//delete []temp;
 	}
 	tEnd = GetTimeus64();
 	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " SHA1 hashes: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
@@ -171,17 +178,49 @@ int main()
 	{
 		int *Rabintemp = new int;
 		for (int z=0; z<REPETITIONS; z++)
-			*Rabintemp = rabin.hash((const char*)RandomStrings[i].c_str(), RandomStrings[i].size());
-		for (int j=0; j<(int)Rabin_Hashes.size(); j++)
+			*Rabintemp = rabin32_1.hash((const char*)RandomStrings[i].c_str(), RandomStrings[i].size());
+		for (int j=0; j<(int)Rabin32_Hashes.size(); j++)
 		{
-			if (*Rabintemp == *Rabin_Hashes[j])
-				RabinCollisions++;
-			Rabin_Hashes.push_back(Rabintemp);
+			if (*Rabintemp == *Rabin32_Hashes[j])
+				Rabin32Collisions++;
+			Rabin32_Hashes.push_back(Rabintemp);
 		}
 	}
 	tEnd = GetTimeus64();
-	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " Rabin fingerprints: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
-	cout << "Rabin Collisions: " << RabinCollisions << endl;
+	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " Rabin32 fingerprints: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
+	cout << "Rabin32 Collisions: " << Rabin32Collisions << endl;
+
+	// Rabin32 interleaved test.
+	tStart = GetTimeus64();
+	for (int i=0; i<INSERTIONS; i++)
+	{
+		char* Key = new char[8];
+		int Rabin32Hash1;
+		int Rabin32Hash2;
+		for (int z=0; z<REPETITIONS; z++)
+		{
+			Rabin32Hash1 = rabin32_1.hash((const char*)RandomStrings[i].c_str(), RandomStrings[i].size());
+			Rabin32Hash2 = rabin32_2.hash((const char*)RandomStrings[i].c_str(), RandomStrings[i].size());
+		}
+		unsigned char SubKey1[4];
+		unsigned char SubKey2[4];
+		memncpy32((char *)SubKey1, (const char *)&Rabin32Hash1, 4);
+		memncpy32((char *)SubKey2, (const char *)&Rabin32Hash2, 4);
+		for (int x=0; x<4; x++)
+		{
+			Key[x*2] = SubKey1[x];
+			Key[x*2+1] = SubKey2[x];
+		}
+		for (int j=0; j<(int)Rabin32_Hashes_Interleaved.size(); j++)
+		{
+			if (memncmp32(Key, Rabin32_Hashes_Interleaved[j], 8) == true)
+				Rabin32ICollisions++;
+			Rabin32_Hashes_Interleaved.push_back(Key);
+		}
+	}
+	tEnd = GetTimeus64();
+	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " Rabin32 interleaved fingerprints: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
+	cout << "Rabin32I Collisions: " << Rabin32ICollisions << endl;
 
 	// Rabin64 test.
 	tStart = GetTimeus64();
@@ -189,7 +228,7 @@ int main()
 	{
 		long long *Rabin64temp = new long long;
 		for (int z=0; z<REPETITIONS; z++)
-			*Rabin64temp = rabin1.hash((const char*)RandomStrings[i].c_str(), RandomStrings[i].size());
+			*Rabin64temp = rabin64_1.hash((const char*)RandomStrings[i].c_str(), RandomStrings[i].size());
 		for (int j=0; j<(int)Rabin64_Hashes.size(); j++)
 		{
 			if (*Rabin64temp == *Rabin64_Hashes[j])
@@ -200,6 +239,38 @@ int main()
 	tEnd = GetTimeus64();
 	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " Rabin64 fingerprints: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
 	cout << "Rabin64 Collisions: " << Rabin64Collisions << endl;
+
+	// Rabin64 interleaved test.
+	tStart = GetTimeus64();
+	for (int i=0; i<INSERTIONS; i++)
+	{
+		char* Key = new char[16];
+		long long Rabin64Hash1;
+		long long Rabin64Hash2;
+		for (int z=0; z<REPETITIONS; z++)
+		{
+			Rabin64Hash1 = rabin64_1.hash((const char*)RandomStrings[i].c_str(), RandomStrings[i].size());
+			Rabin64Hash2 = rabin64_2.hash((const char*)RandomStrings[i].c_str(), RandomStrings[i].size());
+		}
+		unsigned char SubKey1[8];
+		unsigned char SubKey2[8];
+		memncpy32((char *)SubKey1, (const char *)&Rabin64Hash1, 8);
+		memncpy32((char *)SubKey2, (const char *)&Rabin64Hash2, 8);
+		for (int x=0; x<8; x++)
+		{
+			Key[x*2] = SubKey1[x];
+			Key[x*2+1] = SubKey2[x];
+		}
+		for (int j=0; j<(int)Rabin64_Hashes_Interleaved.size(); j++)
+		{
+			if (memncmp32(Key, Rabin64_Hashes_Interleaved[j], 16) == true)
+				Rabin64ICollisions++;
+			Rabin64_Hashes_Interleaved.push_back(Key);
+		}
+	}
+	tEnd = GetTimeus64();
+	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " Rabin64 interleaved fingerprints: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
+	cout << "Rabin64I Collisions: " << Rabin64ICollisions << endl;
 
 	return 0;
 
@@ -222,3 +293,38 @@ void memncpy (char *dst, const char *src, int size)
 		dst[i] = src[i];
 }
 
+// 32bit word comparison
+bool memncmp32 (const char *block1, const char *block2, int size)
+{
+	for (int i=0; i<size/4; i++)
+	{
+		if (((unsigned int *)block1)[i] != ((unsigned int *)block2)[i])
+			return false;
+	}
+	return true;
+}
+
+// 32bit word copy
+void memncpy32 (const char *dst, const char *src, int size)
+{
+	for (int i=0; i<size/4; i++)
+		((unsigned int *)dst)[i] = ((unsigned int *)src)[i];
+}
+
+// 64bit word comparison
+bool memncmp64 (const char *block1, const char *block2, int size)
+{
+	for (int i=0; i<size/8; i++)
+	{
+		if (((unsigned long long *)block1)[i] != ((unsigned long long *)block2)[i])
+			return false;
+	}
+	return true;
+}
+
+// 64bit word copy
+void memncpy64 (const char *dst, const char *src, int size)
+{
+	for (int i=0; i<size/8; i++)
+		((unsigned long long *)dst)[i] = ((unsigned long long *)src)[i];
+}
