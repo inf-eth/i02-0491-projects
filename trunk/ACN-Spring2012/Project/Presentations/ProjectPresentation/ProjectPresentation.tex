@@ -3,6 +3,24 @@
 \usepackage{amsmath}
 \usetheme{Warsaw}
 
+% ########## Theme modifications ######################################
+\usecolortheme{beaver}
+
+% Title background
+\setbeamercolor{titlelike}{parent=structure,bg=bg=gray!5!white}
+
+% Top-right palette containing sub-sections list
+\setbeamercolor*{palette primary}{fg=darkred!60!black,bg=gray!30!white}
+% Top-left palette containing sections list
+\setbeamercolor*{palette quaternary}{fg=white,bg=black!15!darkred}
+
+% Bullets and enumeration style/colour
+\setbeamertemplate{itemize items}[default]
+\setbeamertemplate{itemize subsitem}[default]
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitems}[default]
+% #####################################################################
+
 \title{Automated Worm Fingerprinting\\Semester Project}
 \author{Awais Aslam \and Attique dawood}
 \institute{FAST, Islamabad}
