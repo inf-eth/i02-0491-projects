@@ -213,7 +213,7 @@ int main()
 		}
 		for (int j=0; j<(int)Rabin32_Hashes_Interleaved.size(); j++)
 		{
-			if (memncmp32(Key, Rabin32_Hashes_Interleaved[j], 8) == true)
+			if (memncmp64(Key, Rabin32_Hashes_Interleaved[j], 8) == true)
 				Rabin32ICollisions++;
 			Rabin32_Hashes_Interleaved.push_back(Key);
 		}
@@ -254,8 +254,8 @@ int main()
 		}
 		unsigned char SubKey1[8];
 		unsigned char SubKey2[8];
-		memncpy32((char *)SubKey1, (const char *)&Rabin64Hash1, 8);
-		memncpy32((char *)SubKey2, (const char *)&Rabin64Hash2, 8);
+		memncpy64((char *)SubKey1, (const char *)&Rabin64Hash1, 8);
+		memncpy64((char *)SubKey2, (const char *)&Rabin64Hash2, 8);
 		for (int x=0; x<8; x++)
 		{
 			Key[x*2] = SubKey1[x];
@@ -263,7 +263,7 @@ int main()
 		}
 		for (int j=0; j<(int)Rabin64_Hashes_Interleaved.size(); j++)
 		{
-			if (memncmp32(Key, Rabin64_Hashes_Interleaved[j], 16) == true)
+			if (memncmp64(Key, Rabin64_Hashes_Interleaved[j], 16) == true)
 				Rabin64ICollisions++;
 			Rabin64_Hashes_Interleaved.push_back(Key);
 		}

@@ -212,7 +212,6 @@
 ****************************************************************************
 *
 */
-
 #define HAVE_REMOTE
 #include <PacketHeaders.h>
 #include <rabinhash32.h>
@@ -233,7 +232,12 @@ using std::vector;
 
 #define HASHING_SCHEME					3
 
-#define SUBSTRING_PROCESSING			true
+#define LOG_NETWORK_STATS				1		// Log network statistics? 1=Yes, 0=No
+#define LOG_HOST_NETWORK_STATS			1		// If logging network stats, also log Host-based network statistics? 1=Yes, 0=No.
+#define LOG_PORT_NETWORK_STATS			1		// If logging network stats, also log port-based network statistics? 1=Yes, 0=No.
+#define LOG_HOST_PORT_NETWORK_STATS		1		// If logging host and port stats, also log port-based network statistics for each host? 1=Yes, 0=No.
+
+#define SUBSTRING_PROCESSING			1
 #define SUBSTRING_WINDOW				30
 #define CONTENT_PREVALENCE_TIMEOUT		120.	// seconds
 #define CONTENT_PREVALENCE_THRESHOLD	20
@@ -304,6 +308,54 @@ struct AddressDispersionEntry
 	int AlarmCount;
 };
 
+#if LOG_NETWORK_STATS == 1
+class CNetworkStats
+{
+public:
+	long long tStart, tCurrent;
+	unsigned long long TotalPackets;
+	unsigned long long TCPPackets;
+	unsigned long long UDPPackets;
+
+	unsigned long long TotalTraffic;
+	unsigned long long TotalTrafficPayload;
+	unsigned long long TotalTrafficTCP;
+	unsigned long long TotalTrafficTCPPayload;
+	unsigned long long TotalTrafficUDP;
+	unsigned long long TotalTrafficUDPPayload;
+
+	CNetworkStats():
+						tStart(0),
+						tCurrent(0),
+						TotalPackets(0),
+						TCPPackets(0),
+						UDPPackets(0),
+						TotalTraffic(0),
+						TotalTrafficPayload(0),
+						TotalTrafficTCP(0),
+						TotalTrafficTCPPayload(0),
+						TotalTrafficUDP(0),
+						TotalTrafficUDPPayload(0)
+	{
+	}
+};
+
+#if LOG_HOST_NETWORK_STATS == 1
+struct HostNetworkStats
+{
+	CNetworkStats NetworkStats;
+	in_addr IP;
+};
+#endif
+#if LOG_PORT_NETWORK_STATS == 1
+struct PortNetworkStats
+{
+	CNetworkStats NetworkStats;
+	unsigned short Port;
+};
+#endif
+#endif
+
 // Packet capturing and manipulation class.
 class CPacketManip
 {
@@ -317,6 +369,16 @@ private:
 	struct bpf_program fp;      /* hold compiled program     */
 	bpf_u_int32 maskp;          /* subnet mask               */
 	bpf_u_int32 netp;           /* ip                        */
+
+	#if LOG_NETWORK_STATS == 1
+	CNetworkStats NetworkStats;
+	#if LOG_HOST_NETWORK_STATS == 1
+	vector<HostNetworkStats> HostsNetworkStats;
+	#endif
+	#if LOG_PORT_NETWORK_STATS == 1
+	vector<PortNetworkStats> PortsNetworkStats;
+	#endif
+	#endif
 
 	// Thresholds.
 	int ContentPrevalenceThreshold;
