@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 #include <cstring>
 #include <openssl/md5.h>
 #include <openssl/sha.h>
@@ -20,6 +21,7 @@ using std::setfill;
 using std::setw;
 using std::endl;
 using std::vector;
+using std::fstream;
 using std::string;
 
 // Compare two blocks of memory and returns true if they match else returns false.
@@ -30,8 +32,9 @@ void memncpy32 (const char *, const char *, int);	// 32bit word stream copy
 bool memncmp64 (const char *, const char *, int);	// 64bit word stream comparison
 void memncpy64 (const char *, const char *, int);	// 64bit word stream copy
 
-#define INSERTIONS 1024*32
-#define REPETITIONS 1024
+#define READ_FILE	0
+#define INSERTIONS	1024*32	// Max: 2151220
+#define REPETITIONS	1
 
 vector<string> RandomStrings;
 __int64 tStart, tEnd;
@@ -111,10 +114,11 @@ int main()
 	// Random Unique string generation.
 	srand((unsigned int)time(NULL));
 
+	#if READ_FILE == 0
 	tStart = GetTimeus64();
 	for (int i=0; i<INSERTIONS; i++)
 	{
-		int size = rand()%48+2;
+		int size = 32;//rand()%48+2;
 		char *temp = new char[size];
 		for (int j=0; j<size; j++)
 			temp[j] = (char)(rand()%25+65);
@@ -132,10 +136,27 @@ int main()
 		if (Insert == true)
 			RandomStrings.push_back(temp);
 		delete []temp;
+		//cout << setw(40) << setfill(' ') << "\r";
+		cout << (float)(100*i/INSERTIONS) << "%    \r";
 	}
+	cout << "\r" << setw(10) << setfill(' ') << "\r";
+	cout << "String generation complete!" << endl;
+
 	tEnd = GetTimeus64();
 	cout << "Time taken for random generation of " << INSERTIONS << " strings: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
-
+	#else
+	tStart = GetTimeus64();
+	fstream PasswordsIn("passwords.txt", std::ios::in);
+	string tempstring;
+	for (unsigned int i=0; i<INSERTIONS; i++)
+	{
+		getline(PasswordsIn, tempstring, '\n');
+		RandomStrings.push_back(tempstring);
+		cout << (float)(100*i/INSERTIONS) << "%    \r";
+	}
+	tEnd = GetTimeus64();
+	cout << "Time taken for reading in " << INSERTIONS << " strings: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
+	#endif
 	// MD5 test.
 	tStart = GetTimeus64();
 	for (int i=0; i<INSERTIONS; i++)
@@ -145,10 +166,10 @@ int main()
 			MD5((const unsigned char *)RandomStrings[i].c_str(), RandomStrings[i].size(), temp);
 		for (int j=0; j<(int)MD5_Hashes.size(); j++)
 		{
-			if (memncmp64(MD5_Hashes[i], (const char *)temp, 16) == true)
+			if (memncmp64((const char *)MD5_Hashes[j], (const char *)temp, 16) == true)
 				MD5Collisions++;
-			MD5_Hashes.push_back((char*)temp);
 		}
+		MD5_Hashes.push_back((char *)temp);
 	}
 	tEnd = GetTimeus64();
 	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " MD5 hashes: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
@@ -163,10 +184,10 @@ int main()
 			SHA1((const unsigned char *)RandomStrings[i].c_str(), RandomStrings[i].size(), temp);
 		for (int j=0; j<(int)SHA1_Hashes.size(); j++)
 		{
-			if (memncmp32(SHA1_Hashes[i], (const char *)temp, 20) == true)
+			if (memncmp32(SHA1_Hashes[j], (const char *)temp, 20) == true)
 				SHA1Collisions++;
-			SHA1_Hashes.push_back((char*)temp);
 		}
+		SHA1_Hashes.push_back((char*)temp);
 	}
 	tEnd = GetTimeus64();
 	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " SHA1 hashes: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
@@ -183,8 +204,8 @@ int main()
 		{
 			if (*Rabintemp == *Rabin32_Hashes[j])
 				Rabin32Collisions++;
-			Rabin32_Hashes.push_back(Rabintemp);
 		}
+		Rabin32_Hashes.push_back(Rabintemp);
 	}
 	tEnd = GetTimeus64();
 	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " Rabin32 fingerprints: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
@@ -215,8 +236,8 @@ int main()
 		{
 			if (memncmp64(Key, Rabin32_Hashes_Interleaved[j], 8) == true)
 				Rabin32ICollisions++;
-			Rabin32_Hashes_Interleaved.push_back(Key);
 		}
+		Rabin32_Hashes_Interleaved.push_back(Key);
 	}
 	tEnd = GetTimeus64();
 	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " Rabin32 interleaved fingerprints: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
@@ -233,8 +254,8 @@ int main()
 		{
 			if (*Rabin64temp == *Rabin64_Hashes[j])
 				Rabin64Collisions++;
-			Rabin64_Hashes.push_back(Rabin64temp);
 		}
+		Rabin64_Hashes.push_back(Rabin64temp);
 	}
 	tEnd = GetTimeus64();
 	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " Rabin64 fingerprints: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
@@ -265,8 +286,8 @@ int main()
 		{
 			if (memncmp64(Key, Rabin64_Hashes_Interleaved[j], 16) == true)
 				Rabin64ICollisions++;
-			Rabin64_Hashes_Interleaved.push_back(Key);
 		}
+		Rabin64_Hashes_Interleaved.push_back(Key);
 	}
 	tEnd = GetTimeus64();
 	cout << "Time taken for computation of " << INSERTIONS << "x" << REPETITIONS << " Rabin64 interleaved fingerprints: " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
