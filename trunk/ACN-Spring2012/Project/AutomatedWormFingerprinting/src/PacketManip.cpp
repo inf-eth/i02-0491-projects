@@ -570,15 +570,15 @@ unsigned char * CPacketManip::GenerateKey (unsigned char *pString, unsigned int 
 
 	#if HASHING_SCHEME == 0
 	int Rabin32Hash = rabin32.hash((const char*)pString, pSize);
-	memncpy((char *)Key, (const char *)&Rabin32Hash, KEY_LENGTH);
+	memncpy32((char *)Key, (const char *)&Rabin32Hash, KEY_LENGTH);
 	#endif
 	#if HASHING_SCHEME == 1
 	int Rabin32Hash1 = rabin32_1.hash((const char*)pString, pSize);
 	int Rabin32Hash2 = rabin32_2.hash((const char*)pString, pSize);
 	unsigned char SubKey1[KEY_LENGTH/2];
 	unsigned char SubKey2[KEY_LENGTH/2];
-	memncpy((char *)SubKey1, (const char *)&Rabin32Hash1, KEY_LENGTH/2);
-	memncpy((char *)SubKey2, (const char *)&Rabin32Hash2, KEY_LENGTH/2);
+	memncpy32((char *)SubKey1, (const char *)&Rabin32Hash1, KEY_LENGTH/2);
+	memncpy32((char *)SubKey2, (const char *)&Rabin32Hash2, KEY_LENGTH/2);
 	for (int i=0; i<KEY_LENGTH/2; i++)
 	{
 		Key[i*2] = SubKey1[i];
@@ -587,15 +587,15 @@ unsigned char * CPacketManip::GenerateKey (unsigned char *pString, unsigned int 
 	#endif
 	#if HASHING_SCHEME == 2
 	long long Rabin64Hash = rabin64.hash((const char*)pString, pSize);
-	memncpy((char *)Key, (const char *)&Rabin64Hash, KEY_LENGTH);
+	memncpy32((char *)Key, (const char *)&Rabin64Hash, KEY_LENGTH);
 	#endif
 	#if HASHING_SCHEME == 3
 	long long Rabin64Hash1 = rabin64_1.hash((const char*)pString, pSize);
 	long long Rabin64Hash2 = rabin64_2.hash((const char*)pString, pSize);
 	unsigned char SubKey1[KEY_LENGTH/2];
 	unsigned char SubKey2[KEY_LENGTH/2];
-	memncpy((char *)SubKey1, (const char *)&Rabin64Hash1, KEY_LENGTH/2);
-	memncpy((char *)SubKey2, (const char *)&Rabin64Hash2, KEY_LENGTH/2);
+	memncpy32((char *)SubKey1, (const char *)&Rabin64Hash1, KEY_LENGTH/2);
+	memncpy32((char *)SubKey2, (const char *)&Rabin64Hash2, KEY_LENGTH/2);
 	for (int i=0; i<KEY_LENGTH/2; i++)
 	{
 		Key[i*2] = SubKey1[i];
@@ -620,7 +620,7 @@ int CPacketManip::SearchContentPrevalenceTable (unsigned char *pKey)
 {
 	for (int i=0; i < (int)ContentPrevalenceTable.size(); i++)
 	{
-		if (memncmp ((const char *)ContentPrevalenceTable[i].Key, (const char *)pKey, KEY_LENGTH) == true)
+		if (memncmp32 ((const char *)ContentPrevalenceTable[i].Key, (const char *)pKey, KEY_LENGTH) == true)
 			return i;
 	}
 	return -1;
@@ -631,7 +631,7 @@ int CPacketManip::SearchAddressDispersionTable (unsigned char *pKey)
 {
 	for (int i=0; i < (int)AddressDispersionTable.size(); i++)
 	{
-		if (memncmp ((const char *)AddressDispersionTable[i].Key, (const char *)pKey, KEY_LENGTH) == true)
+		if (memncmp32 ((const char *)AddressDispersionTable[i].Key, (const char *)pKey, KEY_LENGTH) == true)
 			return i;
 	}
 	return -1;
@@ -643,7 +643,7 @@ bool CPacketManip::SearchSrcIPs (int SearchIndex, in_addr ip_src)
 {
 	for (int i=0; i < (int)AddressDispersionTable[SearchIndex].SrcIPs.size(); i++)
 	{
-		if (memncmp((const char *)&AddressDispersionTable[SearchIndex].SrcIPs[i], (const char *)&ip_src, sizeof(in_addr)) == true)
+		if (memncmp32((const char *)&AddressDispersionTable[SearchIndex].SrcIPs[i], (const char *)&ip_src, sizeof(in_addr)) == true)
 			return true;
 	}
 	return false;
@@ -654,7 +654,7 @@ bool CPacketManip::SearchDstIPs (int SearchIndex, in_addr ip_dst)
 {
 	for (int i=0; i < (int)AddressDispersionTable[SearchIndex].DstIPs.size(); i++)
 	{
-		if (memncmp((const char *)&AddressDispersionTable[SearchIndex].DstIPs[i], (const char *)&ip_dst, sizeof(in_addr)) == true)
+		if (memncmp32((const char *)&AddressDispersionTable[SearchIndex].DstIPs[i], (const char *)&ip_dst, sizeof(in_addr)) == true)
 			return true;
 	}
 	return false;
@@ -885,11 +885,11 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 			else
 			{
 				SignatureData temp;
-				memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
+				memncpy32 ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
 				temp.th_sport = ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport;
 				temp.th_dport = ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport;
-				memncpy ((char *)&temp.ip_src, (const char *)&ip->ip_src, sizeof(in_addr));
-				memncpy ((char *)&temp.ip_dst, (const char *)&ip->ip_dst, sizeof(in_addr));
+				memncpy32 ((char *)&temp.ip_src, (const char *)&ip->ip_src, sizeof(in_addr));
+				memncpy32 ((char *)&temp.ip_dst, (const char *)&ip->ip_dst, sizeof(in_addr));
 				SafeCallAssert (NumOfBytesSent = sendto (SocketFD, (char *)&temp, sizeof(SignatureData), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()", sizeof(SignatureData));
 			}
 			delete []GeneratedKey; // Cleanup.
@@ -917,11 +917,11 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 					else
 					{
 						SignatureData temp;
-						memncpy ((char *)temp.Key, (const char *)GeneratedSubstringKey, KEY_LENGTH);
+						memncpy32 ((char *)temp.Key, (const char *)GeneratedSubstringKey, KEY_LENGTH);
 						temp.th_sport = ip->ip_p == IPPROTO_TCP ? tcp->th_sport : udp->th_sport;
 						temp.th_dport = ip->ip_p == IPPROTO_TCP ? tcp->th_dport : udp->th_dport;
-						memncpy ((char *)&temp.ip_src, (const char *)&ip->ip_src, sizeof(in_addr));
-						memncpy ((char *)&temp.ip_dst, (const char *)&ip->ip_dst, sizeof(in_addr));
+						memncpy32 ((char *)&temp.ip_src, (const char *)&ip->ip_src, sizeof(in_addr));
+						memncpy32 ((char *)&temp.ip_dst, (const char *)&ip->ip_dst, sizeof(in_addr));
 						SafeCallAssert (NumOfBytesSent = sendto (SocketFD, (char *)&temp, sizeof(SignatureData), 0, (sockaddr *)&ServerAddress, sizeof (ServerAddress)), "sendto()", sizeof(SignatureData));
 					}
 					delete []GeneratedSubstringKey; // Cleanup.
@@ -995,7 +995,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 	else if ( (SearchIndex = PacketCapture.SearchContentPrevalenceTable (GeneratedKey)) == -1)
 	{
 		ContentPrevalenceEntry temp;
-		memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
+		memncpy32 ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
 		temp.Count = 1;
 		temp.InsertionTime = GetTimeus64();
 		PacketCapture.ContentPrevalenceTable.push_back(temp);
@@ -1008,7 +1008,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 		{
 			// Check threshold and promote entry into address dispersion table.
 			AddressDispersionEntry temp;
-			memncpy ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
+			memncpy32 ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
 			temp.SrcIPs.push_back (ip_src);
 			temp.SrcPorts.push_back (th_sport);
 			temp.DstIPs.push_back (ip_dst);
@@ -1038,6 +1038,42 @@ void memncpy (char *dst, const char *src, int size)
 {
 	for (int i=0; i<size; i++)
 		dst[i] = src[i];
+}
+
+// 32bit word stream comparison
+bool memncmp32 (const char *block1, const char *block2, int size)
+{
+	for (int i=0; i<size/4; i++)
+	{
+		if (((unsigned int *)block1)[i] != ((unsigned int *)block2)[i])
+			return false;
+	}
+	return true;
+}
+
+// 32bit word stream copy
+void memncpy32 (const char *dst, const char *src, int size)
+{
+	for (int i=0; i<size/4; i++)
+		((unsigned int *)dst)[i] = ((unsigned int *)src)[i];
+}
+
+// 64bit word stream comparison
+bool memncmp64 (const char *block1, const char *block2, int size)
+{
+	for (int i=0; i<size/8; i++)
+	{
+		if (((unsigned long long *)block1)[i] != ((unsigned long long *)block2)[i])
+			return false;
+	}
+	return true;
+}
+
+// 64bit word stream copy
+void memncpy64 (const char *dst, const char *src, int size)
+{
+	for (int i=0; i<size/8; i++)
+		((unsigned long long *)dst)[i] = ((unsigned long long *)src)[i];
 }
 
 /*
