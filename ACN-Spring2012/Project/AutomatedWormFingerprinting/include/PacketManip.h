@@ -382,9 +382,12 @@ public:
 };
 
 // Compare two blocks of memory and returns true if they match else returns false.
-bool memncmp (const char *, const char *, int);
-// Memcopy.
-void memncpy (char *, const char *, int);
+bool memncmp (const char *, const char *, int);		// Byte stream comparison
+void memncpy (char *, const char *, int);			// Byte stream copy
+bool memncmp32 (const char *, const char *, int);	// 32bit word stream comparison
+void memncpy32 (const char *, const char *, int);	// 32bit word stream copy
+bool memncmp64 (const char *, const char *, int);	// 64bit word stream comparison
+void memncpy64 (const char *, const char *, int);	// 64bit word stream copy
 
 void print_hex_ascii_line(const u_char *, int, int);
 void print_payload(const u_char *, int);
