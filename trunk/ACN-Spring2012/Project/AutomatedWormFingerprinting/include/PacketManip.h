@@ -233,8 +233,8 @@ using std::vector;
 #define HASHING_SCHEME					3
 
 #define LOG_NETWORK_STATS				1		// Log network statistics? 1=Yes, 0=No
-#define LOG_HOST_NETWORK_STATS			1		// If logging network stats, also log Host-based network statistics? 1=Yes, 0=No.
 #define LOG_PORT_NETWORK_STATS			1		// If logging network stats, also log port-based network statistics? 1=Yes, 0=No.
+#define LOG_HOST_NETWORK_STATS			1		// If logging network stats, also log Host-based network statistics? 1=Yes, 0=No.
 #define LOG_HOST_PORT_NETWORK_STATS		1		// If logging host and port stats, also log port-based network statistics for each host? 1=Yes, 0=No.
 
 #define SUBSTRING_PROCESSING			1
@@ -340,13 +340,6 @@ public:
 	}
 };
 
-#if LOG_HOST_NETWORK_STATS == 1
-struct HostNetworkStats
-{
-	CNetworkStats NetworkStats;
-	in_addr IP;
-};
-#endif
 #if LOG_PORT_NETWORK_STATS == 1
 struct PortNetworkStats
 {
@@ -354,6 +347,18 @@ struct PortNetworkStats
 	unsigned short Port;
 };
 #endif
+
+#if LOG_HOST_NETWORK_STATS == 1
+struct HostNetworkStats
+{
+	CNetworkStats NetworkStats;
+	in_addr IP;
+	#if LOG_PORT_NETWORK_STATS == 1 && LOG_HOST_NETWORK_STATS == 1 && LOG_HOST_PORT_NETWORK_STATS == 1
+	vector<PortNetworkStats> PortsNetworkStats;
+	#endif
+};
+#endif
+
 #endif
 
 // Packet capturing and manipulation class.
