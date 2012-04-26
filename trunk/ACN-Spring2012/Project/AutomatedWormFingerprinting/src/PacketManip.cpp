@@ -771,12 +771,19 @@ unsigned char * CPacketManip::GenerateKey (unsigned char *pString, unsigned int 
 // Search Key in Content Prevalence Table.
 int CPacketManip::SearchContentPrevalenceTable (unsigned char *pKey)
 {
+	//unsigned char sKey[KEY_LENGTH];
+	vector<unsigned char> sKey(KEY_LENGTH);
+	memncpy32 ((char *)&sKey[0], (const char *)pKey, KEY_LENGTH);
+	/*
 	for (int i=0; i < (int)ContentPrevalenceTable.size(); i++)
 	{
 		if (memncmp32 ((const char *)ContentPrevalenceTable[i].Key, (const char *)pKey, KEY_LENGTH) == true)
 			return i;
-	}
-	return -1;
+	}*/
+	if (ContentPrevalenceTable.find(sKey) == ContentPrevalenceTable.end())
+		return -1;
+	else
+		return 0;
 }
 
 // Search Key in Address Dispersion Table.
@@ -1170,16 +1177,22 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 	else if ( (SearchIndex = PacketCapture.SearchContentPrevalenceTable (GeneratedKey)) == -1)
 	{
 		ContentPrevalenceEntry temp;
-		memncpy32 ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
+		vector<unsigned char> iKey(KEY_LENGTH);
+		memncpy32 ((char *)&iKey[0], (const char *)GeneratedKey, KEY_LENGTH);
 		temp.Count = 1;
 		temp.InsertionTime = GetTimeus64();
-		PacketCapture.ContentPrevalenceTable.push_back(temp);
+		PacketCapture.ContentPrevalenceTable[iKey] = temp;
 	}
 	else
 	{
-		PacketCapture.ContentPrevalenceTable[SearchIndex].Count++;
-		PacketCapture.ContentPrevalenceTable[SearchIndex].InsertionTime = GetTimeus64();
-		if (PacketCapture.ContentPrevalenceTable[SearchIndex].Count > PacketCapture.GetContentPrevalenceThreshold())
+		vector<unsigned char> sKey(KEY_LENGTH);
+		memncpy32 ((char *)&sKey[0], (const char *)GeneratedKey, KEY_LENGTH);
+
+		//PacketCapture.ContentPrevalenceTable[SearchIndex].Count++;
+		PacketCapture.ContentPrevalenceTable[sKey].Count++;
+		PacketCapture.ContentPrevalenceTable[sKey].InsertionTime = GetTimeus64();
+		//PacketCapture.ContentPrevalenceTable[SearchIndex].InsertionTime = GetTimeus64();
+		if (PacketCapture.ContentPrevalenceTable[sKey].Count > PacketCapture.GetContentPrevalenceThreshold())
 		{
 			// Check threshold and promote entry into address dispersion table.
 			AddressDispersionEntry temp;
@@ -1193,7 +1206,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 			// Insert into Address Dispersion table.
 			PacketCapture.AddressDispersionTable.push_back (temp);
 			// Erase from Content Prevalence Table.
-			PacketCapture.ContentPrevalenceTable.erase (PacketCapture.ContentPrevalenceTable.begin() + SearchIndex);
+			PacketCapture.ContentPrevalenceTable.erase (PacketCapture.ContentPrevalenceTable.find(sKey));
 		}
 	}
 }
@@ -1227,7 +1240,7 @@ bool memncmp32 (const char *block1, const char *block2, int size)
 }
 
 // 32bit word stream copy
-void memncpy32 (const char *dst, const char *src, int size)
+void memncpy32 (char *dst, const char *src, int size)
 {
 	for (int i=0; i<size/4; i++)
 		((unsigned int *)dst)[i] = ((unsigned int *)src)[i];
@@ -1245,7 +1258,7 @@ bool memncmp64 (const char *block1, const char *block2, int size)
 }
 
 // 64bit word stream copy
-void memncpy64 (const char *dst, const char *src, int size)
+void memncpy64 (char *dst, const char *src, int size)
 {
 	for (int i=0; i<size/8; i++)
 		((unsigned long long *)dst)[i] = ((unsigned long long *)src)[i];
@@ -1381,18 +1394,21 @@ THREAD_RETURN_TYPE GarbageCollector (void *arg)
 		sleep (GARBAGE_COLLECTION_INTERVAL);
 		#endif
 
-		Current = GetTimeus64();
-		cout << "Elapsed time = " << ((double)(Current-Start))/(1000000.) << " seconds." << endl;
-		cout << "Garbage collection started..." << endl;
-
 		//  Garbage Collection.
 		#ifdef WIN32
 		WaitForSingleObject (MutexLock, INFINITE);
 		#else
 		pthread_mutex_lock (&MutexLock);
 		#endif
-		for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
+		Current = GetTimeus64();
+		cout << "Elapsed time = " << ((double)(Current-Start))/(1000000.) << " seconds." << endl;
+		cout << "Garbage collection started..." << endl;
+
+		map<vector<unsigned char>, ContentPrevalenceEntry>::iterator It;
+		for (It = PacketCapture.ContentPrevalenceTable.begin(); It != PacketCapture.ContentPrevalenceTable.end(); It++)
 		{
+			
+			/*
 			// Check if an entry has persisted for CONTENT_PREVALENCE_TIMEOUT seconds without an increase in prevalence count then decrease its prevalence count.
 			if (((double)(Current-PacketCapture.ContentPrevalenceTable[i].InsertionTime))/(1000000.) > CONTENT_PREVALENCE_TIMEOUT)
 			{
@@ -1402,6 +1418,16 @@ THREAD_RETURN_TYPE GarbageCollector (void *arg)
 				// If Count is zero then erase the entry.
 				if (PacketCapture.ContentPrevalenceTable[i].Count == 0)
 					PacketCapture.ContentPrevalenceTable.erase (PacketCapture.ContentPrevalenceTable.begin()+i);
+			}*/
+			// Check if an entry has persisted for CONTENT_PREVALENCE_TIMEOUT seconds without an increase in prevalence count then decrease its prevalence count.
+			if (((double)(Current-It->second.InsertionTime))/(1000000.) > CONTENT_PREVALENCE_TIMEOUT)
+			{
+				// Decrease prevalence count.
+				It->second.Count--;
+
+				// If Count is zero then erase the entry.
+				if (It->second.Count == 0)
+					PacketCapture.ContentPrevalenceTable.erase (It);
 			}
 		}
 		#ifdef WIN32
@@ -1463,6 +1489,7 @@ THREAD_RETURN_TYPE Logger (void *arg)
 		// Writing logs.
 		fstream ContentPrevalenceTableLog("ContentPrevalenceTable.log", std::ios::out);
 		fstream ContentPrevalenceTableTxt("ContentPrevalenceTable.txt", std::ios::out);		// Special format for Radix tree display.
+		/*
 		for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
 		{
 			ContentPrevalenceTableTxt << "<";
@@ -1473,6 +1500,18 @@ THREAD_RETURN_TYPE Logger (void *arg)
 			}
 			ContentPrevalenceTableLog << ": " << PacketCapture.ContentPrevalenceTable[i].Count << endl;
 			ContentPrevalenceTableTxt << "><Count: " << PacketCapture.ContentPrevalenceTable[i].Count << ">" << endl;
+		}*/
+		map<vector<unsigned char>, ContentPrevalenceEntry>::iterator It;
+		for (It = PacketCapture.ContentPrevalenceTable.begin(); It != PacketCapture.ContentPrevalenceTable.end(); It++)
+		{
+			ContentPrevalenceTableTxt << "<";
+			for (int j=0; j<KEY_LENGTH; j++)
+			{
+				ContentPrevalenceTableLog << hex << setfill('0') << setw(2) << (int)It->first[j] << dec << (j==(KEY_LENGTH/2-1) ? " " : "");
+				ContentPrevalenceTableTxt << hex << setfill('0') << setw(2) << (int)It->first[j] << dec;
+			}
+			ContentPrevalenceTableLog << ": " << It->second.Count << endl;
+			ContentPrevalenceTableTxt << "><Count: " << It->second.Count << ">" << endl;
 		}
 		ContentPrevalenceTableLog.close();
 		ContentPrevalenceTableTxt.close();
