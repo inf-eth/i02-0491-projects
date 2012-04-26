@@ -219,9 +219,11 @@
 #include <pcap.h>
 #include <iostream>
 #include <vector>
+#include <map>
 
 using std::ostream;
 using std::vector;
+using std::map;
 
 // HASHING_SCHEMES
 // 0: Rabin 32bit
@@ -295,7 +297,7 @@ enum MODE_OF_OPERATION
 
 struct ContentPrevalenceEntry
 {
-	unsigned char Key[KEY_LENGTH];
+	//unsigned char Key[KEY_LENGTH];
 	int Count;
 	__int64 InsertionTime;
 };
@@ -413,7 +415,8 @@ public:
 	int GetDstAddressDispersionThreshold () { return DstAddressDispersionThreshold; }
 
 	// Content Prevalence Table
-	vector<ContentPrevalenceEntry> ContentPrevalenceTable;
+	map<vector<unsigned char>, ContentPrevalenceEntry> ContentPrevalenceTable;
+
 	// Address Dispersion Table
 	vector<AddressDispersionEntry> AddressDispersionTable;
 
@@ -453,9 +456,9 @@ public:
 bool memncmp (const char *, const char *, int);		// Byte stream comparison
 void memncpy (char *, const char *, int);			// Byte stream copy
 bool memncmp32 (const char *, const char *, int);	// 32bit word stream comparison
-void memncpy32 (const char *, const char *, int);	// 32bit word stream copy
+void memncpy32 (char *, const char *, int);	// 32bit word stream copy
 bool memncmp64 (const char *, const char *, int);	// 64bit word stream comparison
-void memncpy64 (const char *, const char *, int);	// 64bit word stream copy
+void memncpy64 (char *, const char *, int);	// 64bit word stream copy
 
 void print_hex_ascii_line(const u_char *, int, int);
 void print_payload(const u_char *, int);
