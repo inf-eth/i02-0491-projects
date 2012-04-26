@@ -1401,7 +1401,10 @@ THREAD_RETURN_TYPE GarbageCollector (void *arg)
 
 				// If Count is zero then erase the entry.
 				if (It->second.Count == 0)
+				{
 					PacketCapture.ContentPrevalenceTable.erase (It);
+					It--;
+				}
 			}
 		}
 		#ifdef WIN32
