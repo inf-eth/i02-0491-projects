@@ -297,14 +297,12 @@ enum MODE_OF_OPERATION
 
 struct ContentPrevalenceEntry
 {
-	//unsigned char Key[KEY_LENGTH];
 	int Count;
 	__int64 InsertionTime;
 };
 
 struct AddressDispersionEntry
 {
-	unsigned char Key[KEY_LENGTH];
 	vector<in_addr> SrcIPs;
 	vector<unsigned short> SrcPorts;
 	vector<in_addr> DstIPs;
@@ -418,7 +416,7 @@ public:
 	map<vector<unsigned char>, ContentPrevalenceEntry> ContentPrevalenceTable;
 
 	// Address Dispersion Table
-	vector<AddressDispersionEntry> AddressDispersionTable;
+	map<vector<unsigned char>, AddressDispersionEntry> AddressDispersionTable;
 
 	// Generate Key (sha1 hash) from protocol, destination port and payload.
 	unsigned char * GenerateKey (unsigned char *, unsigned int);
@@ -430,9 +428,9 @@ public:
 	int SearchAddressDispersionTable (unsigned char *);
 
 	// Search Src IPs for a match.
-	bool SearchSrcIPs (int, in_addr);
+	bool SearchSrcIPs (map<vector<unsigned char>, AddressDispersionEntry>::iterator, in_addr);
 	// Search Dst IPs for a match.
-	bool SearchDstIPs (int, in_addr);
+	bool SearchDstIPs (map<vector<unsigned char>, AddressDispersionEntry>::iterator, in_addr);
 
 	// Stats logging.
 	#if LOG_NETWORK_STATS == 1

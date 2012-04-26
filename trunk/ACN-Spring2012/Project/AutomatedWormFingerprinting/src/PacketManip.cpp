@@ -789,38 +789,38 @@ int CPacketManip::SearchContentPrevalenceTable (unsigned char *pKey)
 // Search Key in Address Dispersion Table.
 int CPacketManip::SearchAddressDispersionTable (unsigned char *pKey)
 {
-	for (int i=0; i < (int)AddressDispersionTable.size(); i++)
-	{
-		if (memncmp32 ((const char *)AddressDispersionTable[i].Key, (const char *)pKey, KEY_LENGTH) == true)
-			return i;
-	}
-	return -1;
+	vector<unsigned char> sKey(KEY_LENGTH);
+	memncpy32 ((char *)&sKey[0], (const char *)pKey, KEY_LENGTH);
+
+	if (AddressDispersionTable.find(sKey) == AddressDispersionTable.end())
+		return -1;
+	else
+		return 0;
 }
 
 
 // Search Src IP vector for a match.
-bool CPacketManip::SearchSrcIPs (int SearchIndex, in_addr ip_src)
+bool CPacketManip::SearchSrcIPs (map<vector<unsigned char>, AddressDispersionEntry>::iterator SearchIndex, in_addr ip_src)
 {
-	for (int i=0; i < (int)AddressDispersionTable[SearchIndex].SrcIPs.size(); i++)
+	for (int i=0; i < (int)SearchIndex->second.SrcIPs.size(); i++)
 	{
-		if (memncmp32((const char *)&AddressDispersionTable[SearchIndex].SrcIPs[i], (const char *)&ip_src, sizeof(in_addr)) == true)
+		if (memncmp32((const char *)&SearchIndex->second.SrcIPs[i], (const char *)&ip_src, sizeof(in_addr)) == true)
 			return true;
 	}
 	return false;
 }
 
 // Search Dst IP vector for a match.
-bool CPacketManip::SearchDstIPs (int SearchIndex, in_addr ip_dst)
+bool CPacketManip::SearchDstIPs (map<vector<unsigned char>, AddressDispersionEntry>::iterator SearchIndex, in_addr ip_dst)
 {
-	for (int i=0; i < (int)AddressDispersionTable[SearchIndex].DstIPs.size(); i++)
+	for (int i=0; i < (int)SearchIndex->second.DstIPs.size(); i++)
 	{
-		if (memncmp32((const char *)&AddressDispersionTable[SearchIndex].DstIPs[i], (const char *)&ip_dst, sizeof(in_addr)) == true)
+		if (memncmp32((const char *)&SearchIndex->second.DstIPs[i], (const char *)&ip_dst, sizeof(in_addr)) == true)
 			return true;
 	}
 	return false;
 }
 
-// TODO: All the work needs to be done here.
 void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,const u_char* packet)
 {
 	// TODO: Comment this to stop some spam onscreen or set the appropriate filter program in main() if running on network.
@@ -906,10 +906,6 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 	}
 	// *************************************************************************************
 
-
-	// TODO: Packet capturing condition. Only process packets with the specified protocol, and port numbers.
-	// TODO: Process UDP packets and display their headers.
-	// Default condition is to capture only packets with TCP protocol and source port = 6000 or 6001
 	// ntohs(tcp->th_sport) gives source port
 	// ntohs(tcp->th_dport) gives destination port
 	// Protocols are IPPROTO_IP, IPPROTO_UDP, IPPROTO_ICMP etc.
@@ -980,9 +976,6 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 				#endif
 			#endif
 
-			/* define/compute tcp payload (segment) offset */
-			//payload = (packet + SIZE_ETHERNET + size_ip + size_tcp);
-			/* compute tcp payload (segment) size */
 			size_payload = ntohs(udp->th_len) - 8;
 			PacketSize = size_ip + SIZE_ETHERNET + ntohs(udp->th_len);
 			cout << "Payload size: " << size_payload << endl;
@@ -1020,15 +1013,7 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 		if (size_payload != 0)
 		{
 			cout << "Payload: " << endl;
-			//u_int Payload_Offset = SIZE_ETHERNET + size_ip + size_tcp;
 			print_payload (payload/*packet+Payload_Offset*/, size_payload);
-			/*
-			for (int i=0; i<size_payload; i++)
-			{
-				cout << packet[i + Payload_Offset];
-			}
-			cout << endl;
-			*/
 		}
 		cout << "*************************" << endl;
 
@@ -1119,27 +1104,31 @@ void packet_capture_callback(u_char *useless,const struct pcap_pkthdr* header,co
 // Only Server will process packets.
 void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsigned short th_dport, in_addr ip_src, in_addr ip_dst)
 {
-	int SearchIndex;
+	ContentPrevalenceEntry temp;
+	map<vector<unsigned char>, AddressDispersionEntry>::iterator SearchIndex;
+	vector<unsigned char> sKey(KEY_LENGTH);
+	memncpy32 ((char *)&sKey[0], (const char *)GeneratedKey, KEY_LENGTH);
+	
 	// Check key entry in Address Dispersion Table.
-	if ( (SearchIndex = PacketCapture.SearchAddressDispersionTable (GeneratedKey)) != -1)
+	if ( (SearchIndex = PacketCapture.AddressDispersionTable.find(sKey)) != PacketCapture.AddressDispersionTable.end())
 	{
 		if (PacketCapture.SearchSrcIPs (SearchIndex, ip_src) == false)
 		{
-			PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.push_back (ip_src);
-			PacketCapture.AddressDispersionTable[SearchIndex].SrcPorts.push_back (th_sport);
-			PacketCapture.AddressDispersionTable[SearchIndex].AlarmCount++;
+			SearchIndex->second.SrcIPs.push_back (ip_src);
+			SearchIndex->second.SrcPorts.push_back (th_sport);
+			SearchIndex->second.AlarmCount++;
 		}
 		if (PacketCapture.SearchDstIPs (SearchIndex, ip_dst) == false)
 		{
-			PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.push_back (ip_dst);
-			PacketCapture.AddressDispersionTable[SearchIndex].DstPorts.push_back (th_dport);
-			PacketCapture.AddressDispersionTable[SearchIndex].AlarmCount++;
+			SearchIndex->second.DstIPs.push_back (ip_dst);
+			SearchIndex->second.DstPorts.push_back (th_dport);
+			SearchIndex->second.AlarmCount++;
 		}
 
 		// Checking alarm thresholds.
-		if ((int)PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size() > PacketCapture.GetSrcAddressDispersionThreshold() && (int)PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size() > PacketCapture.GetDstAddressDispersionThreshold() && (int)PacketCapture.AddressDispersionTable[SearchIndex].AlarmCount > (PacketCapture.GetSrcAddressDispersionThreshold()+PacketCapture.GetDstAddressDispersionThreshold()))
+		if ((int)SearchIndex->second.SrcIPs.size() > PacketCapture.GetSrcAddressDispersionThreshold() && (int)SearchIndex->second.DstIPs.size() > PacketCapture.GetDstAddressDispersionThreshold() && (int)SearchIndex->second.AlarmCount > (PacketCapture.GetSrcAddressDispersionThreshold()+PacketCapture.GetDstAddressDispersionThreshold()))
 		{
-			PacketCapture.AddressDispersionTable[SearchIndex].AlarmCount = 0;	// Reset Alarm count.
+			SearchIndex->second.AlarmCount = 0;	// Reset Alarm count.
 			fstream AlarmLog("Alarm.log", std::ios::out | std::ios::app);
 			AlarmLog << "######################## Alarm ########################" << endl;
 
@@ -1157,35 +1146,32 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 			
 			AlarmLog << "Key: ";
 			for (int i=0; i<KEY_LENGTH; i++)
-				AlarmLog << hex << setfill('0') << setw(2) << (int)PacketCapture.AddressDispersionTable[SearchIndex].Key[i] << dec << (i==(KEY_LENGTH/2-1) ? " " : "");
+				AlarmLog << hex << setfill('0') << setw(2) << (int)SearchIndex->first[i] << dec << (i==(KEY_LENGTH/2-1) ? " " : "");
 
-			AlarmLog << endl << "SrcIPCount = " << PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size() << ", DstIPCount = " << PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size() << endl;
+			AlarmLog << endl << "SrcIPCount = " << SearchIndex->second.SrcIPs.size() << ", DstIPCount = " << SearchIndex->second.DstIPs.size() << endl;
 			AlarmLog << "Src Port = " << ntohs(th_sport) << ", Dst Port = " << ntohs(th_dport) << endl;
 
 			AlarmLog << "Src IPs List:" << endl;
-			for (int i=0; i<(int)PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs.size(); i++)
-				AlarmLog << inet_ntoa(PacketCapture.AddressDispersionTable[SearchIndex].SrcIPs[i]) << ":" << ntohs(PacketCapture.AddressDispersionTable[SearchIndex].SrcPorts[i]) << endl;
+			for (int i=0; i<(int)SearchIndex->second.SrcIPs.size(); i++)
+				AlarmLog << inet_ntoa(SearchIndex->second.SrcIPs[i]) << ":" << ntohs(SearchIndex->second.SrcPorts[i]) << endl;
 
 			AlarmLog << "Dst IPs List:" << endl;
-			for (int i=0; i<(int)PacketCapture.AddressDispersionTable[SearchIndex].DstIPs.size(); i++)
-				AlarmLog << inet_ntoa(PacketCapture.AddressDispersionTable[SearchIndex].DstIPs[i]) << ":" << ntohs(PacketCapture.AddressDispersionTable[SearchIndex].DstPorts[i]) << endl;
+			for (int i=0; i<(int)SearchIndex->second.DstIPs.size(); i++)
+				AlarmLog << inet_ntoa(SearchIndex->second.DstIPs[i]) << ":" << ntohs(SearchIndex->second.DstPorts[i]) << endl;
 
 			AlarmLog.close();
 		}
 	}
 	// Check Content Prevalence Table.
-	else if ( (SearchIndex = PacketCapture.SearchContentPrevalenceTable (GeneratedKey)) == -1)
+	else if (PacketCapture.SearchContentPrevalenceTable (GeneratedKey) == -1)
 	{
-		ContentPrevalenceEntry temp;
-		vector<unsigned char> iKey(KEY_LENGTH);
-		memncpy32 ((char *)&iKey[0], (const char *)GeneratedKey, KEY_LENGTH);
+		memncpy32 ((char *)&sKey[0], (const char *)GeneratedKey, KEY_LENGTH);
 		temp.Count = 1;
 		temp.InsertionTime = GetTimeus64();
-		PacketCapture.ContentPrevalenceTable[iKey] = temp;
+		PacketCapture.ContentPrevalenceTable[sKey] = temp;
 	}
 	else
 	{
-		vector<unsigned char> sKey(KEY_LENGTH);
 		memncpy32 ((char *)&sKey[0], (const char *)GeneratedKey, KEY_LENGTH);
 
 		//PacketCapture.ContentPrevalenceTable[SearchIndex].Count++;
@@ -1196,7 +1182,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 		{
 			// Check threshold and promote entry into address dispersion table.
 			AddressDispersionEntry temp;
-			memncpy32 ((char *)temp.Key, (const char *)GeneratedKey, KEY_LENGTH);
+			memncpy32 ((char *)&sKey[0], (const char *)GeneratedKey, KEY_LENGTH);
 			temp.SrcIPs.push_back (ip_src);
 			temp.SrcPorts.push_back (th_sport);
 			temp.DstIPs.push_back (ip_dst);
@@ -1204,7 +1190,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 			temp.AlarmCount = 2;
 
 			// Insert into Address Dispersion table.
-			PacketCapture.AddressDispersionTable.push_back (temp);
+			PacketCapture.AddressDispersionTable[sKey] = temp;
 			// Erase from Content Prevalence Table.
 			PacketCapture.ContentPrevalenceTable.erase (PacketCapture.ContentPrevalenceTable.find(sKey));
 		}
@@ -1407,18 +1393,6 @@ THREAD_RETURN_TYPE GarbageCollector (void *arg)
 		map<vector<unsigned char>, ContentPrevalenceEntry>::iterator It;
 		for (It = PacketCapture.ContentPrevalenceTable.begin(); It != PacketCapture.ContentPrevalenceTable.end(); It++)
 		{
-			
-			/*
-			// Check if an entry has persisted for CONTENT_PREVALENCE_TIMEOUT seconds without an increase in prevalence count then decrease its prevalence count.
-			if (((double)(Current-PacketCapture.ContentPrevalenceTable[i].InsertionTime))/(1000000.) > CONTENT_PREVALENCE_TIMEOUT)
-			{
-				// Decrease prevalence count.
-				PacketCapture.ContentPrevalenceTable[i].Count--;
-
-				// If Count is zero then erase the entry.
-				if (PacketCapture.ContentPrevalenceTable[i].Count == 0)
-					PacketCapture.ContentPrevalenceTable.erase (PacketCapture.ContentPrevalenceTable.begin()+i);
-			}*/
 			// Check if an entry has persisted for CONTENT_PREVALENCE_TIMEOUT seconds without an increase in prevalence count then decrease its prevalence count.
 			if (((double)(Current-It->second.InsertionTime))/(1000000.) > CONTENT_PREVALENCE_TIMEOUT)
 			{
@@ -1489,19 +1463,8 @@ THREAD_RETURN_TYPE Logger (void *arg)
 		// Writing logs.
 		fstream ContentPrevalenceTableLog("ContentPrevalenceTable.log", std::ios::out);
 		fstream ContentPrevalenceTableTxt("ContentPrevalenceTable.txt", std::ios::out);		// Special format for Radix tree display.
-		/*
-		for (int i=0; i < (int)PacketCapture.ContentPrevalenceTable.size(); i++)
-		{
-			ContentPrevalenceTableTxt << "<";
-			for (int j=0; j<KEY_LENGTH; j++)
-			{
-				ContentPrevalenceTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec << (j==(KEY_LENGTH/2-1) ? " " : "");
-				ContentPrevalenceTableTxt << hex << setfill('0') << setw(2) << (int)PacketCapture.ContentPrevalenceTable[i].Key[j] << dec;
-			}
-			ContentPrevalenceTableLog << ": " << PacketCapture.ContentPrevalenceTable[i].Count << endl;
-			ContentPrevalenceTableTxt << "><Count: " << PacketCapture.ContentPrevalenceTable[i].Count << ">" << endl;
-		}*/
 		map<vector<unsigned char>, ContentPrevalenceEntry>::iterator It;
+
 		for (It = PacketCapture.ContentPrevalenceTable.begin(); It != PacketCapture.ContentPrevalenceTable.end(); It++)
 		{
 			ContentPrevalenceTableTxt << "<";
@@ -1517,11 +1480,13 @@ THREAD_RETURN_TYPE Logger (void *arg)
 		ContentPrevalenceTableTxt.close();
 
 		fstream AddressDispersionTableLog("AddressDispersionTable.log", std::ios::out);
-		for (int i=0; i < (int)PacketCapture.AddressDispersionTable.size(); i++)
+		map<vector<unsigned char>, AddressDispersionEntry>::iterator adIt;
+
+		for (adIt = PacketCapture.AddressDispersionTable.begin(); adIt != PacketCapture.AddressDispersionTable.end(); adIt++)
 		{
 			for (int j=0; j<KEY_LENGTH; j++)
-				AddressDispersionTableLog << hex << setfill('0') << setw(2) << (int)PacketCapture.AddressDispersionTable[i].Key[j] << dec << (j==(KEY_LENGTH/2-1) ? " " : "");
-			AddressDispersionTableLog << ": SrcIPCount=" << PacketCapture.AddressDispersionTable[i].SrcIPs.size() << ", DstIPCount=" << PacketCapture.AddressDispersionTable[i].DstIPs.size() << endl;
+				AddressDispersionTableLog << hex << setfill('0') << setw(2) << (int)adIt->first[j] << dec << (j==(KEY_LENGTH/2-1) ? " " : "");
+			AddressDispersionTableLog << ": SrcIPCount=" << adIt->second.SrcIPs.size() << ", DstIPCount=" << adIt->second.DstIPs.size() << endl;
 		}
 		AddressDispersionTableLog.close();
 		#ifdef WIN32
