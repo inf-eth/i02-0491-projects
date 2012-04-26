@@ -694,8 +694,8 @@ void CPacketManip::Initialize (int pargc, const char *pdev, const char *pfilter,
 
 	// Initializing thresholds.
 	SetContentPrevalenceThreshold (CONTENT_PREVALENCE_THRESHOLD);
-	SetSrcAddressDispersionThreshold (SRC_IP_DISPERSION_THRESHOOLD);
-	SetDstAddressDispersionThreshold (DST_IP_DISPERSION_THRESHOOLD);
+	SetSrcAddressDispersionThreshold (SRC_IP_DISPERSION_THRESHOLD);
+	SetDstAddressDispersionThreshold (DST_IP_DISPERSION_THRESHOLD);
 
 	// Create Garbage Collector and Receiver threads.
 	if (PacketCapture.Get_Mode() == MODE_SERVER)

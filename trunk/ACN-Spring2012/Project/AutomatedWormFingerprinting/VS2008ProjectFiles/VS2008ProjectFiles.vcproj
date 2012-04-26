@@ -182,6 +182,14 @@
 				RelativePath="..\src\PacketManip.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\src\rabinhash32.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\rabinhash64.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -194,6 +202,14 @@
 			</File>
 			<File
 				RelativePath="..\include\PacketManip.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\rabinhash32.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\rabinhash64.h"
 				>
 			</File>
 			<File
