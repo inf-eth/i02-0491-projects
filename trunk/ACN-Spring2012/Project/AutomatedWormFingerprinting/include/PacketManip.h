@@ -242,7 +242,7 @@ using std::map;
 #define LOG_HOST_PORT_NETWORK_STATS		1		// If logging host and port stats, also log port-based network statistics for each host? 1=Yes, 0=No.
 
 #define SUBSTRING_PROCESSING			1
-#define SUBSTRING_WINDOW				30
+#define SUBSTRING_WINDOW				32
 #define CONTENT_PREVALENCE_TIMEOUT		120.	// seconds
 #define CONTENT_PREVALENCE_THRESHOLD	20
 #define SRC_IP_DISPERSION_THRESHOLD		5
