@@ -10,6 +10,7 @@ using std::cerr;
 using std::endl;
 using std::setw;
 using std::setfill;
+using std::distance;
 
 CLZ77::CLZ77(): MaxDictionarySize(256)
 {
@@ -19,6 +20,7 @@ CLZ77::~CLZ77()
 {
 }
 
+/*
 unsigned short int CLZ77::SearchDictionary (vector<char> SearchWindow)
 {
 	for (unsigned short int i=0; i<(unsigned short int)Dictionary.size(); i++)
@@ -34,7 +36,7 @@ unsigned short int CLZ77::SearchDictionary (vector<char> SearchWindow)
 		}
 	}
 	return 0U;
-}
+}*/
 
 void CLZ77::Encode (char *InFilename, char *OutFilename)
 {
@@ -59,7 +61,8 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 	}
 
 	Dictionary.clear();
-	unsigned short int SearchIndex;
+	//unsigned short int SearchIndex;
+	map<vector<char>, DictionaryEntry>::iterator sIt;
 	int CurrentPosition = 0;
 	char Buffer;
 	DictionaryEntry temp;
@@ -83,7 +86,8 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 			InFile.read(&Buffer, 1);
 			Window.push_back(Buffer);
 			CurrentPosition++;
-			if ((SearchIndex = SearchDictionary(Window)) == 0U || CurrentPosition == InFileSize)
+			//if ((SearchIndex = SearchDictionary(Window)) == 0U || CurrentPosition == InFileSize)
+			if ((sIt = Dictionary.find(Window)) == Dictionary.end() || CurrentPosition == InFileSize)
 				break;
 		}
 
@@ -92,30 +96,34 @@ void CLZ77::Encode (char *InFilename, char *OutFilename)
 		{
 			// Matched insertion.
 			temp.Reference = (unsigned short int)(Dictionary.size()+1U);
-			temp.Phrase = Window;
-			temp.Encoding.Reference = SearchIndex;
+			//temp.Phrase = Window;
+			//SearchIndex = (unsigned short int)distance(Dictionary.begin(), sIt);
+			temp.Encoding.Reference = (unsigned short int)distance(Dictionary.begin(), sIt);
+			temp.Encoding.Reference++;
 			temp.Encoding.Character = '\x00';
-			Dictionary.push_back(temp);
+			Dictionary[Window] = temp;
 			OutFile.write((char *)&temp.Encoding.Reference, sizeof(unsigned short int));
 			OutFile.write((char *)&temp.Encoding.Character, sizeof(char));
 		}
 		else if (Window.size() == 1)	// If single character.
 		{
 			temp.Reference = (unsigned short int)Dictionary.size()+1U;
-			temp.Phrase = Window;
+			//temp.Phrase = Window;
 			temp.Encoding.Reference = 0U;
 			temp.Encoding.Character = Window[0];
-			Dictionary.push_back(temp);
+			Dictionary[Window] = temp;
 			OutFile.write((char *)&temp.Encoding.Reference, sizeof(unsigned short int));
 			OutFile.write((char *)&temp.Encoding.Character, sizeof(char));
 		}
 		else
 		{
-			temp.Phrase = Window;
+			//temp.Phrase = Window;
+			vector<char> tWindow = Window;
 			temp.Encoding.Character = Window[Window.size()-1];
 			Window.pop_back();
-			temp.Encoding.Reference = SearchDictionary(Window);
-			Dictionary.push_back(temp);
+			temp.Encoding.Reference = (unsigned short int)distance(Dictionary.begin(), Dictionary.find(Window));//SearchDictionary(Window);
+			temp.Encoding.Reference++;
+			Dictionary[tWindow] =temp;
 			OutFile.write((char *)&temp.Encoding.Reference, sizeof(unsigned short int));
 			OutFile.write((char *)&temp.Encoding.Character, sizeof(char));
 		}
@@ -172,22 +180,26 @@ void CLZ77::Decode (char *InFilename, char *OutFilename)
 		{
 			Window.push_back(Buffer);
 			temp.Reference = (unsigned short int)(Dictionary.size()+1U);
-			temp.Phrase = Window;
+			//temp.Phrase = Window;
 			temp.Encoding.Reference = ShortBuffer;
 			temp.Encoding.Character = Buffer;
-			Dictionary.push_back(temp);
+			Dictionary[Window] = temp;
 			OutFile.write((char *)&Window[0], sizeof(char));
 		}
 		else
 		{
-			Window = Dictionary[ShortBuffer-1U].Phrase;
+			//Window = Dictionary[ShortBuffer-1U].Phrase;
+			map<vector<char>, DictionaryEntry>::iterator sIt = Dictionary.begin();
+			for (unsigned short int k=0; k<(ShortBuffer-1U); k++)
+				sIt++;
+			Window = sIt->first;
 			if (Buffer != '\x00')
 				Window.push_back(Buffer);
 			temp.Reference = (unsigned short int)(Dictionary.size()+1U);
-			temp.Phrase = Window;
+			//temp.Phrase = Window;
 			temp.Encoding.Character = Buffer;
 			temp.Encoding.Reference = ShortBuffer;
-			Dictionary.push_back(temp);
+			Dictionary[Window] = temp;
 			for (int i=0; i<(int)Window.size(); i++)
 				OutFile.write((char *)&Window[i], sizeof(char));
 		}

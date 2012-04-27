@@ -1,8 +1,11 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <map>
+
 using std::string;
 using std::vector;
+using std::map;
 
 struct EncodingPair
 {
@@ -13,7 +16,7 @@ struct EncodingPair
 struct DictionaryEntry
 {
 	unsigned short int Reference;
-	vector<char> Phrase;
+	//vector<char> Phrase;
 	EncodingPair Encoding;
 };
 
@@ -21,8 +24,8 @@ class CLZ77
 {
 	int MaxDictionarySize;
 	vector<char> Window;
-	vector<DictionaryEntry> Dictionary;
-	unsigned short int SearchDictionary (vector<char>);
+	map<vector<char>, DictionaryEntry> Dictionary;
+	//unsigned short int SearchDictionary (vector<char>);
 
 public:
 	CLZ77();
