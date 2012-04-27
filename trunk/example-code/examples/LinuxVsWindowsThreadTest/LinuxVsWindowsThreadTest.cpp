@@ -5,7 +5,7 @@
 #else
 #include <process.h>
 #include <Windows.h>
-#include "wintime.h"
+#include <Timer.h>
 #define TRET_TYPE void
 #endif
 

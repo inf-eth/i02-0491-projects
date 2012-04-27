@@ -31,4 +31,3 @@ public:
 	void Encode (char *, char *);
 	void Decode (char *, char *);
 };
-
