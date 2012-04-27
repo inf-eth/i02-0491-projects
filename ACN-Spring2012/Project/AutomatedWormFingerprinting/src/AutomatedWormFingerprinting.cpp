@@ -77,12 +77,7 @@ int main (int argc, char **argv)
 			 << "5. Server IP (Client mode only)" << endl;
 		return -1;
 	}
-	/*
-	if (argc == 3)
-		PacketCapture.Initialize (argv[1], argv[2]);
-	else
-		PacketCapture.Initialize (NULL, "tcp || udp");
-	*/
 	PacketCapture.Loop ();
+
 	return 0;
 }
