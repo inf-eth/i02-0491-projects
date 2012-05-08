@@ -1118,7 +1118,7 @@ void ProcessPacket (unsigned char *GeneratedKey, unsigned short th_sport, unsign
 			SearchIndex->second.SrcPorts.push_back (th_sport);
 			SearchIndex->second.AlarmCount++;
 		}
-		if (PacketCapture.SearchDstIPs (SearchIndex, ip_dst) == false)
+		if (PacketCapture.SearchDstIPs (SearchIndex, ip_dst) == false || strcmp(inet_ntoa(ip_dst), "172.16.20.255") == 0 || strcmp(inet_ntoa(ip_dst), "172.16.30.255") == 0)
 		{
 			SearchIndex->second.DstIPs.push_back (ip_dst);
 			SearchIndex->second.DstPorts.push_back (th_dport);
