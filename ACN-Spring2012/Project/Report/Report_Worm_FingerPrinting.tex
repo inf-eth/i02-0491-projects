@@ -1,0 +1,54 @@
+\documentclass{report}
+\usepackage{pgf}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{url}
+\usepackage{hyperref}	% Clickable links to figures, references and urls.
+
+\begin{document}
+
+\title{Automated Worm Fingerprinting}
+\author{Awais Aslam \and Attique Dawood}
+\maketitle
+
+\begin{abstract}
+Worms propagate by contacting vulnerable hosts and infecting them with malicious payload.
+The destination address space for such attacks would be large. In case of a worm outbreak
+number of infected hosts will grow over time. Some part of worm attack patterns are always
+invariant. Such invariant content can be used as worm signatures by analyzing the frequency
+at which this content appears in network traffic and the variance in source and destination
+addresses. We present an implementation of this method for detecting worms based on the
+EarlyBird prototype~\cite{DBLP:conf/osdi/SinghEVS04}.
+\end{abstract}
+
+\chapter{Introduction}
+\section{Network Intrusion Detection Systems}
+
+Intrusion detection systems monitor network traffic to detect malicious activities. Malicious activities can be an outside attempt to gain control of a host, a worm spreading across the internet or suspicious traffic from a local host etc.
+
+\section{Types of IDS}
+
+IDS are basically either signature--based or anomaly--based. Signature--based IDS need to know specific signatures of malicious content (specific strings or code) beforehand. Anomaly--based IDS identify abnormal patterns in network traffic for detecting suspicious activities.
+
+\section{Automated Signature Generation}
+
+Sumeet et. al.~\cite{DBLP:conf/osdi/SinghEVS04} have presented a method to quickly generate signatures based on anomalous behaviour of worms spreading across the network in order contain them. The method is based on an observation that the probability of unique strings occuring in normal traffic directed to diverse destination is very low.
+
+Intrusion detection techniques used by Snort and Bro rely on vulnerabilities that are well--known by comparing with a database. Automated worm detection assumes that some part of malicious program or code is invariant, i.e. it does not change in order to hide itself. The invariant portion of worm can be used to create signatures since it will occur frequently in network traffic.
+
+The goal of this project is to come up with an efficient implementation of the signature generation algorithm used in EarlyBird prototype~\cite{DBLP:conf/osdi/SinghEVS04}.
+
+\chapter{Worm Detection}
+\section{Characterizing Worm Behaviour}
+
+
+
+\nocite{*}
+\bibliographystyle{ieeetr} %plain, ieeetr
+\bibliography{Wormref}
+
+\end{document}
+
+
+
+
