@@ -1,48 +1,19 @@
-# Makefile for HexPrinting. Portable on windows or linux.
+# Generic Makefile.
+# Input names of cpp files (without .cpp extension) against CPPFILES separated by spaces.
+# Mention output binary filename against TARGET.
+#
+# CC = compiler name
+# DEPS = any additional folders containing header apart from system headers. Default is current directory.
+# SRCDIR = directory containing source files. Default is current directory.
+# CPPFILES = names of cpp files to be compiled.
+# TARGET= output binary file name.
+# LIBS= any libraries to link with (e.g. -lpthread). Default is none.
+
 CC=g++
-DEPS=-I./
-SRCDIR=./
+DEPS=-I.
+SRCDIR=.
+CPPFILES=HexPrinting
 TARGET=HexPrinting
+LIBS=
 
-# debug or release configuration. Default is release.
-# 'make dbg=1' will use debug configuration.
-ifdef dbg
-CFLAGS:=-g3
-BINDIR:=../../bin/debug
-ODIR:=./obj/debug
-else
-CFLAGS:=-O3
-BINDIR:=../../bin/release
-ODIR:=./obj/release
-endif
-
-ifdef m64bit
-CFLAGS+=-m64
-endif
-
-_OBJ=$(TARGET).o
-OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
-
-$(BINDIR)/$(TARGET): $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS)
-
-$(ODIR)/%.o: $(SRCDIR)/%.cpp
-	$(CC) -c -o $@ $< $(DEPS) $(CFLAGS)
-
-# Object and binary files must be placed in obj and bin directories.
-# Create bin and obj directories if they do not exist before compiling.
-
-$(OBJ): | $(ODIR) $(BINDIR)
-
-$(ODIR):
-	mkdir -p $(ODIR)
-$(BINDIR):
-	mkdir -p $(BINDIR)
-
-run: $(BINDIR)/$(TARGET)
-	./$(BINDIR)/$(TARGET)
-
-.PHONY: clean
-
-clean:
-	rm -f ./obj/debug/*.o ./obj/release/*.o ../../bin/debug/$(TARGET) ../../bin/release/$(TARGET)
+include ../rules.mk
