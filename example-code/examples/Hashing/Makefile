@@ -1,4 +1,14 @@
 DEPTH:=../..
 SUBDIR:= 	SHA\
 		MD5
-include rules.mk
+
+all:
+	for dir in $(SUBDIR);\
+		do\
+			$(MAKE) --directory=$$dir;\
+		done
+clean:
+	for dir in $(SUBDIR);\
+		do\
+			$(MAKE) --directory=$$dir clean;\
+		done
