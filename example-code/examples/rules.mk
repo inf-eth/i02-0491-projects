@@ -10,10 +10,10 @@
 # debug or release configuration. Default is release.
 # 'make dbg=1' will use debug configuration.
 ifdef dbg
-CFLAGS:=-g3
+CFLAGS+=-g3
 CONFIGURATION:=debug
 else
-CFLAGS:=-O3
+CFLAGS+=-O3
 CONFIGURATION:=release
 endif
 
