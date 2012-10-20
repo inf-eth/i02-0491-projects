@@ -8,6 +8,7 @@
 # CPPFILES = names of cpp files to be compiled.
 # TARGET= output binary file name.
 # LIBS= any libraries to link with (e.g. -lpthread). Default is none.
+# CFLAGS = additional compiler flags
 
 CC=g++
 DEPS=-I.
@@ -15,5 +16,6 @@ SRCDIR=.
 CPPFILES=LALab12
 TARGET=LALab12
 LIBS=
+CFLAGS=
 
 include ../rules.mk
