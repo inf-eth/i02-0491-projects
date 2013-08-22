@@ -17,7 +17,8 @@ SUBDIR:= 	alarm\
 		Dynamic2DArray\
 		SymmetricEncryption\
 		LZ77\
-		RadixTree
+		RadixTree\
+		MatrixMultiplication
 
 all:
 	for dir in $(SUBDIR);\

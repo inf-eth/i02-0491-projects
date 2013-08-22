@@ -49,6 +49,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RadixTree", "examples\Radix
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HashMap", "examples\HashMap\HashMap.vcxproj", "{E814B15D-6651-4406-9346-B0B85BD90F14}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MatrixMultiplication", "examples\MatrixMultiplication\MatrixMultiplication.vcxproj", "{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -227,6 +229,14 @@ Global
 		{E814B15D-6651-4406-9346-B0B85BD90F14}.Release|Win32.Build.0 = Release|Win32
 		{E814B15D-6651-4406-9346-B0B85BD90F14}.Release|x64.ActiveCfg = Release|x64
 		{E814B15D-6651-4406-9346-B0B85BD90F14}.Release|x64.Build.0 = Release|x64
+		{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}.Debug|Win32.Build.0 = Debug|Win32
+		{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}.Debug|x64.ActiveCfg = Debug|x64
+		{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}.Debug|x64.Build.0 = Debug|x64
+		{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}.Release|Win32.ActiveCfg = Release|Win32
+		{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}.Release|Win32.Build.0 = Release|Win32
+		{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}.Release|x64.ActiveCfg = Release|x64
+		{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
