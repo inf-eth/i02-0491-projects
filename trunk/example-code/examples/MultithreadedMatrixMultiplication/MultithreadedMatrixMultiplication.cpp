@@ -14,7 +14,6 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
-//#include <sys/types.h>
 using namespace std;
 
 #define DataType double
@@ -85,7 +84,7 @@ void Multiply(DataType* MatrixA_, DataType* MatrixB_, DataType* MatrixC_)
 		for (int j=0; j<Cols; j++)
 		{
 			for (int k=0; k<Cols; k++)
-				MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,j) * MatrixB(i,j);
+				MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixB(k,j);
 		}
 	}
 }
@@ -155,6 +154,9 @@ int main()
 	tEnd = GetTimeus64();
 	std::cout << "Time taken = " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << std::endl;
 
+	//cout << "Matrix C is :" << endl;
+	//Display(MatrixC_);
+
 	// Single threaded implementation.
 	Initialise(MatrixC_);
 
@@ -164,7 +166,7 @@ int main()
 	std::cout << "Time taken (single-threaded) = " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << std::endl;
 
 	//cout << "Matrix C is :" << endl;
-	//Display(MatrixC);
+	//Display(MatrixC_);
 
 	delete[] MatrixA_;
 	delete[] MatrixB_;
@@ -194,7 +196,7 @@ TRET_TYPE MultiplicationThread (void *args)
 		for (int j=0; j<Cols; j++)
 		{
 			for (int k=0; k<Cols; k++)
-				MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,j) * MatrixB(i,j);
+				MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixB(k,j);
 		}
 	}
 #ifndef WIN32
