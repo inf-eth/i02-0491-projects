@@ -6,8 +6,8 @@
 using namespace std;
 
 #define DataType double
-const int Rows = 3;
-const int Cols = 3;
+const int Rows = 512;
+const int Cols = 512;
 
 void Input(DataType Matrix[][Cols])
 {
@@ -66,19 +66,27 @@ int main()
 	DataType MatrixB[Rows][Cols];
 	DataType MatrixC[Rows][Cols];
 
+	cout << "here " << endl;
+
 	InputRandom(MatrixA);
 	InputRandom(MatrixB);
 	Initialise(MatrixC);
 
-	cout << "Matrix A is :" << endl;
-	Display(MatrixA);
-	cout << "Matrix B is :" << endl;
-	Display(MatrixB);
+	//cout << "Matrix A is :" << endl;
+	//Display(MatrixA);
+	//cout << "Matrix B is :" << endl;
+	//Display(MatrixB);
+
+	__int64 tStart, tEnd;
+	tStart = GetTimeus64();
 
 	Multiply(MatrixA, MatrixB, MatrixC);
 
-	cout << "Matrix C is :" << endl;
-	Display(MatrixC);
+	tEnd = GetTimeus64();
+	std::cout << "Time taken = " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << std::endl;
+
+	//cout << "Matrix C is :" << endl;
+	//Display(MatrixC);
 
 	return 0;
 }
