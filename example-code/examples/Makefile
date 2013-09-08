@@ -18,7 +18,8 @@ SUBDIR:= 	alarm\
 		SymmetricEncryption\
 		LZ77\
 		RadixTree\
-		MatrixMultiplication
+		MatrixMultiplication\
+		MultithreadedMatrixMultiplication
 
 all:
 	for dir in $(SUBDIR);\

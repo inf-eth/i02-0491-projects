@@ -51,6 +51,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HashMap", "examples\HashMap
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MatrixMultiplication", "examples\MatrixMultiplication\MatrixMultiplication.vcxproj", "{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultithreadedMatrixMultiplication", "examples\MultithreadedMatrixMultiplication\MultithreadedMatrixMultiplication.vcxproj", "{9844BDA5-4878-4D92-9AA9-4AA09E70F85E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -237,6 +239,12 @@ Global
 		{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}.Release|Win32.Build.0 = Release|Win32
 		{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}.Release|x64.ActiveCfg = Release|x64
 		{A36D5456-20F3-4A82-9546-F8D51FBA0D5D}.Release|x64.Build.0 = Release|x64
+		{9844BDA5-4878-4D92-9AA9-4AA09E70F85E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9844BDA5-4878-4D92-9AA9-4AA09E70F85E}.Debug|Win32.Build.0 = Debug|Win32
+		{9844BDA5-4878-4D92-9AA9-4AA09E70F85E}.Debug|x64.ActiveCfg = Debug|Win32
+		{9844BDA5-4878-4D92-9AA9-4AA09E70F85E}.Release|Win32.ActiveCfg = Release|x64
+		{9844BDA5-4878-4D92-9AA9-4AA09E70F85E}.Release|Win32.Build.0 = Release|x64
+		{9844BDA5-4878-4D92-9AA9-4AA09E70F85E}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
