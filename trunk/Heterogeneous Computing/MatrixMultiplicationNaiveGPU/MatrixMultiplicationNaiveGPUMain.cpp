@@ -1,0 +1,16 @@
+#include <MatrixMultiplicationNaiveGPU.hpp>
+#include <iostream>
+using namespace std;
+
+int main(int argc, char * argv[])
+{
+	CMatrixMultiplicationNaiveGPU MatrixMultiplicationNaiveGPUSim(/*Rows=*/1024U, /*Cols=*/1024U);
+
+	// ================== Simulation ================
+	MatrixMultiplicationNaiveGPUSim.StartTimer();
+	MatrixMultiplicationNaiveGPUSim.CompleteRun(); // Complete GPU run.
+	MatrixMultiplicationNaiveGPUSim.StopTimer();
+	cout << "Total time taken = " << MatrixMultiplicationNaiveGPUSim.GetElapsedTime() << " seconds." << endl;
+
+	return 0;
+}
