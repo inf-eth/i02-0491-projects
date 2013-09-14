@@ -9,7 +9,6 @@
 #define Matrix(i,j) Matrix_[Cols*(i)+(j)]
 #define MatrixA(i,j) MatrixA_[Cols*(i)+(j)]
 #define MatrixB(i,j) MatrixB_[Cols*(i)+(j)]
-#define MatrixBt(i,j) MatrixBt_[Cols*(i)+(j)]
 #define MatrixC(i,j) MatrixC_[Cols*(i)+(j)]
 
 // Kernel function.
@@ -17,7 +16,6 @@ __kernel void MatrixMultiplicationNaiveGPUKernel(__global PRECISION* MatrixA_, _
 {
 	unsigned int i = get_global_id(0);
 	unsigned int j = get_global_id(1);
-	unsigned int k = get_global_id(2);
-
-	MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixB(k,j);
+	for (unsigned int k=0; k<Cols; k++)
+		MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixB(k,j);
 }

@@ -59,6 +59,7 @@ public:
 	void InputRandom(PRECISION*);
 	void Display(PRECISION*);
 	void Initialise(PRECISION*);
+	void DisplayMatrices();
 
 	// Timing.
 	void StartTimer();
