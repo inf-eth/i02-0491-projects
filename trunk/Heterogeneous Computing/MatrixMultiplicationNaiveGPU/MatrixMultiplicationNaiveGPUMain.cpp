@@ -4,6 +4,7 @@ using namespace std;
 
 int main(int argc, char * argv[])
 {
+	srand(0);
 	CMatrixMultiplicationNaiveGPU MatrixMultiplicationNaiveGPUSim(/*Rows=*/1024U, /*Cols=*/1024U);
 
 	// ================== Simulation ================
