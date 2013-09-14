@@ -10,8 +10,8 @@ include openclsdkdefs.mk
 
 OPENCL			= 1
 SAMPLE_EXE		= 1
-EXE_TARGET 		= OpenCLTemplate
-EXE_TARGET_INSTALL   	= OpenCLTemplate
+EXE_TARGET 		= MatrixMultiplicationNaiveGPU
+EXE_TARGET_INSTALL   	= MatrixMultiplicationNaiveGPU
 
 ####
 #
@@ -19,8 +19,8 @@ EXE_TARGET_INSTALL   	= OpenCLTemplate
 #
 ####
 
-FILES 	= OpenCLTemplateMain OpenCLTemplate Timer
-CLFILES	= OpenCLTemplate_Kernels.cl
+FILES 	= MatrixMultiplicationNaiveGPUMain MatrixMultiplicationNaiveGPU Timer
+CLFILES	= MatrixMultiplicationNaiveGPU_Kernels.cl
 
 include openclsdkrules.mk 
 
