@@ -260,8 +260,8 @@ int CMatrixMultiplicationNaiveGPU::RunCLKernels()
 	cl_int status;
 	cl_uint maxDims;
 	cl_event events[2];
-	size_t globalThreads[2];
-	size_t localThreads[2];
+	size_t globalThreads[3];
+	size_t localThreads[3];
 	size_t maxWorkGroupSize;
 	size_t maxWorkItemSizes[3];
 
@@ -272,8 +272,10 @@ int CMatrixMultiplicationNaiveGPU::RunCLKernels()
 
 	globalThreads[0] = Rows;
 	globalThreads[1] = Cols;
-	localThreads[0]  = 32;
-	localThreads[1]  = 32;
+	globalThreads[2] = Cols;
+	localThreads[0]  = 8;
+	localThreads[1]  = 8;
+	localThreads[2]  = 4;
 
 	cout << "Max dimensions: " << maxDims << endl;
 	cout << "Device maxWorkGroupSize = " << maxWorkGroupSize << endl;
@@ -290,11 +292,11 @@ int CMatrixMultiplicationNaiveGPU::RunCLKernels()
 	cl_ulong kernelExecTimeNsT = 0;
 
 	cout << "Launching CL Kernel..." << endl;
-	cout << "Global threads: " << globalThreads[0] << "x" << globalThreads[1] << endl;
-	cout << "Local threads: " << localThreads[0] << "x" << localThreads[1] << endl;
+	cout << "Global threads: " << globalThreads[0] << "x" << globalThreads[1] << "x" << globalThreads[2] << endl;
+	cout << "Local threads: " << localThreads[0] << "x" << localThreads[1] << "x" << localThreads[2] << endl;
 
 	// Enqueue a kernel call.
-	status = clEnqueueNDRangeKernel(commandQueue, kernel, 2, NULL, globalThreads, localThreads, 0, NULL, &events[0]);
+	status = clEnqueueNDRangeKernel(commandQueue, kernel, 3, NULL, globalThreads, localThreads, 0, NULL, &events[0]);
 	if(status != CL_SUCCESS) 
 	{ 
 		cout << "Error: Enqueueing kernel onto command queue (clEnqueueNDRangeKernel)" << endl;
@@ -459,7 +461,7 @@ int CMatrixMultiplicationNaiveGPU::CleanupCPU()
 {
 	DeleteArray(MatrixA_);
 	DeleteArray(MatrixB_);
-	DeleteArray(MatrixBt_);
+	//DeleteArray(MatrixBt_);
 	DeleteArray(MatrixC_);
 
 	return 0;
@@ -486,6 +488,6 @@ CMatrixMultiplicationNaiveGPU::~CMatrixMultiplicationNaiveGPU ()
 {
 	DeleteArray(MatrixA_);
 	DeleteArray(MatrixB_);
-	DeleteArray(MatrixBt_);
+	//DeleteArray(MatrixBt_);
 	DeleteArray(MatrixC_);
 }
