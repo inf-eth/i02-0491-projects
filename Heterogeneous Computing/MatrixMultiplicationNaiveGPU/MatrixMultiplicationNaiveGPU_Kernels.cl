@@ -17,7 +17,7 @@ __kernel void MatrixMultiplicationNaiveGPUKernel(__global PRECISION* MatrixA_, _
 {
 	unsigned int i = get_global_id(0);
 	unsigned int j = get_global_id(1);
+	unsigned int k = get_global_id(2);
 
-	for (unsigned int k=0; k<Cols; k++)
-		MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixB(k,j);
+	MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixB(k,j);
 }
