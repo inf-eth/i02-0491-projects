@@ -15,7 +15,7 @@ DEPS=-I.
 SRCDIR=.
 CPPFILES=MultithreadedMatrixMultiplication Timer
 TARGET=MultithreadedMatrixMultiplication
-LIBS=
+LIBS=-lpthread
 CFLAGS=
 
 include ../rules.mk
