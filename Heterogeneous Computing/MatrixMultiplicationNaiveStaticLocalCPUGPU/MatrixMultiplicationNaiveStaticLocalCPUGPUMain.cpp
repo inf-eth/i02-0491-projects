@@ -10,6 +10,7 @@
 #endif
 
 #include <MatrixMultiplicationNaiveGPU.hpp>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 using namespace std;
@@ -116,7 +117,7 @@ int main(int argc, char * argv[])
 		#endif
 	}
 	#if defined __linux__ || defined __CYGWIN__
-	for (int i=0; i<NoOfThreads; i++)
+	for (int i=0; i<NumberOfDevices; i++)
 		pthread_join (threads[i], NULL);
 	#else
 	WaitForMultipleObjects (NumberOfDevices, th, NULL, INFINITE);
