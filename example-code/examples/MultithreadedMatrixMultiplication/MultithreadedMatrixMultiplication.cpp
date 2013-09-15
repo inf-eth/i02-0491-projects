@@ -201,8 +201,7 @@ int main()
 	// ============== Multithreaded Transposed ==============
 	tStart = GetTimeus64();
 
-	#if defined __linux__ || defined __CYGWIN__
-	for (int i=0; i<NoOfThreads; i++)
+		for (int i=0; i<NoOfThreads; i++)
 	{
 		Args[i].GlobalThreads = NoOfThreads;
 		Args[i].Rows = Rows;
@@ -211,22 +210,16 @@ int main()
 		Args[i].MatB_ = MatrixBt_;
 		Args[i].MatC_ = MatrixC_;
 		Args[i].ThreadID = i;
+		#if defined __linux__ || defined __CYGWIN__
 		pthread_create (&threads[i], NULL, MultiplicationTransposedThread, (void*)&Args[i]);
+		#else
+		th[i] = (HANDLE)_beginthread (MultiplicationTransposedThread, 0, (void*)&Args[i]);
+		#endif
 	}
+	#if defined __linux__ || defined __CYGWIN__
 	for (int i=0; i<NoOfThreads; i++)
 		pthread_join (threads[i], NULL);
 	#else
-	for (int i=0; i<NoOfThreads; i++)
-	{
-		Args[i].GlobalThreads = NoOfThreads;
-		Args[i].Rows = Rows;
-		Args[i].Cols = Cols;
-		Args[i].MatA_ = MatrixA_;
-		Args[i].MatB_ = MatrixBt_;
-		Args[i].MatC_ = MatrixC_;
-		Args[i].ThreadID = i;
-		th[i] = (HANDLE)_beginthread (MultiplicationTransposedThread, 0, (void*)&Args[i]);
-	}
 	WaitForMultipleObjects (NoOfThreads, th, NULL, INFINITE);
 	#endif
 
@@ -239,6 +232,13 @@ int main()
 	delete[] MatrixA_;
 	delete[] MatrixB_;
 	delete[] MatrixC_;
+
+	// Thread cleanup.
+	#if defined __linux__ || defined __CYGWIN__
+	delete[] threads;
+	#else
+	delete[] th;
+	#endif
 
 	return 0;
 }
