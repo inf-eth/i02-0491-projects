@@ -273,8 +273,16 @@ int CMatrixMultiplicationNaiveGPU::RunCLKernels()
 	globalThreads[0] = Rows;
 	globalThreads[1] = Cols;
 
-	localThreads[0]  = 32;
-	localThreads[1]  = 32;
+	if (maxWorkGroupSize == 256)
+	{
+		localThreads[0]  = 16;
+		localThreads[1]  = 16;
+	}
+	else
+	{
+		localThreads[0]  = 32;
+		localThreads[1]  = 32;
+	}
 
 	cout << "Max dimensions: " << maxDims << endl;
 	cout << "Device maxWorkGroupSize = " << maxWorkGroupSize << endl;
