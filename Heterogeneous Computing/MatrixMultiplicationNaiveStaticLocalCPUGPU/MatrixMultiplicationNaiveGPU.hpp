@@ -63,7 +63,7 @@ public:
 
 	// Complete run encapsulating all the sub-functions.
 	int CompleteRun();
-	int CompleteRunHeterogeneous(unsigned int, unsigned int);
+	int CompleteRunHeterogeneous();
 
 	// Matrix input/output and initialisation.
 	void InputRandom(PRECISION*);

@@ -1,3 +1,14 @@
+#if defined __linux__ || defined __CYGWIN__
+#include <pthread.h>
+#define TRET_TYPE void*
+#include <sys/time.h>
+#else
+#include <process.h>
+#include <Windows.h>
+#include <Timer.h>
+#define TRET_TYPE void
+#endif
+
 #include <MatrixMultiplicationNaiveGPU.hpp>
 #include <iomanip>
 #include <iostream>
@@ -6,12 +17,34 @@ using namespace std;
 const unsigned int Rows = 1024U;
 const unsigned int Cols = 1024U;
 
+TRET_TYPE DeviceMultiplicationThread (void *);
+#if defined __linux__ || defined __CYGWIN__
+pthread_mutex_t PlatformMutexLock = PTHREAD_MUTEX_INITIALIZER;
+#else
+HANDLE PlatformMutexLock = CreateMutex (NULL, FALSE, NULL);
+#endif
+
+class DeviceArgument
+{
+	public:
+	unsigned int Rows;
+	unsigned int Cols;
+	PRECISION* MatA_;
+	PRECISION* MatB_;
+	PRECISION* MatC_;
+	unsigned int ThreadStart;
+	unsigned int ThreadEnd;
+	unsigned int Platform;
+	unsigned int Emulation;
+	unsigned int DeviceID;
+	char DeviceType[4];
+};
+
 void InputRandom(PRECISION* Matrix_, unsigned int, unsigned int);
 void Display(PRECISION* Matrix_, unsigned int, unsigned int);
 void Initialise(PRECISION* Matrix_, unsigned int, unsigned int);
 void Multiply(PRECISION*, PRECISION*, PRECISION*, unsigned int, unsigned int);
 void Compare(PRECISION*, PRECISION*, unsigned int, unsigned int, unsigned int, unsigned int);
-
 
 int main(int argc, char * argv[])
 {
@@ -35,19 +68,61 @@ int main(int argc, char * argv[])
 	Initialise(MatrixC_, Rows, Cols);
 	Initialise(MatrixCStandard_, Rows, Cols);
 
-	// ========================= GPU ======================
-	CMatrixMultiplicationNaiveGPU HeterogeneousSimGPU(Rows, Cols, MatrixA_, MatrixB_, MatrixC_, 48U, 1024U);
-	HeterogeneousSimGPU.StartTimer();
-	HeterogeneousSimGPU.CompleteRunHeterogeneous(2U, 2U); // Complete GPU run.
-	HeterogeneousSimGPU.StopTimer();
-	cout << "Total time taken = " << HeterogeneousSimGPU.GetElapsedTime() << " seconds." << endl;
+	unsigned int NumberOfDevices = 2U;
+	#if defined __linux__ || defined __CYGWIN__
+	std::cout << "Running on linux..." << std::endl;
+	pthread_t* threads = new pthread_t[NumberOfDevices];
+	#else
+	std::cout << "Running on windows..." << std::endl;
+	HANDLE* th = new HANDLE[NumberOfDevices];
+	#endif
 
+	DeviceArgument* Device = new DeviceArgument[NumberOfDevices];
+
+	// ========================= GPU ======================
+	Device[0].Rows = Rows;
+	Device[0].Cols = Cols;
+	Device[0].MatA_ = MatrixA_;
+	Device[0].MatB_ = MatrixB_;
+	Device[0].MatC_ = MatrixC_;
+	Device[0].ThreadStart = 48U;
+	Device[0].ThreadEnd = 1024U;
+	Device[0].Platform = 2U;
+	Device[0].Emulation = 2U;
+	Device[0].DeviceID = 0U;
+	strcpy(Device[0].DeviceType, "GPU");
 	// ========================= CPU ======================
-	CMatrixMultiplicationNaiveGPU HeterogeneousSimCPU(Rows, Cols, MatrixA_, MatrixB_, MatrixC_, 0U, 48U);
-	HeterogeneousSimCPU.StartTimer();
-	HeterogeneousSimCPU.CompleteRunHeterogeneous(1U, 1U); // Complete GPU run.
-	HeterogeneousSimCPU.StopTimer();
-	cout << "Total time taken = " << HeterogeneousSimCPU.GetElapsedTime() << " seconds." << endl;
+	Device[1].Rows = Rows;
+	Device[1].Cols = Cols;
+	Device[1].MatA_ = MatrixA_;
+	Device[1].MatB_ = MatrixB_;
+	Device[1].MatC_ = MatrixC_;
+	Device[1].ThreadStart = 0U;
+	Device[1].ThreadEnd = 48U;
+	Device[1].Platform = 1U;
+	Device[1].Emulation = 1U;
+	Device[1].DeviceID = 1U;
+	strcpy(Device[1].DeviceType, "CPU");
+
+	__int64 tStart, tEnd;
+	cout << "Dispatching workload to devices..." << endl;
+	tStart = GetTimeus64();
+	for (unsigned int i=0; i<NumberOfDevices; i++)
+	{
+		#if defined __linux__ || defined __CYGWIN__
+		pthread_create (&threads[i], NULL, DeviceMultiplicationThread, (void*)&Device[i]);
+		#else
+		th[i] = (HANDLE)_beginthread (DeviceMultiplicationThread, 0, (void*)&Device[i]);
+		#endif
+	}
+	#if defined __linux__ || defined __CYGWIN__
+	for (int i=0; i<NoOfThreads; i++)
+		pthread_join (threads[i], NULL);
+	#else
+	WaitForMultipleObjects (NumberOfDevices, th, NULL, INFINITE);
+	#endif
+	tEnd = GetTimeus64();
+	cout << "Time taken by all devices = " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
 
 	cout << "Performing standard multiplication..." << endl;
 	Multiply(MatrixA_, MatrixB_, MatrixCStandard_, Rows, Cols);
@@ -61,6 +136,13 @@ int main(int argc, char * argv[])
 	delete[] MatrixB_;
 	delete[] MatrixC_;
 	delete[] MatrixCStandard_;
+
+	// Thread cleanup.
+	#if defined __linux__ || defined __CYGWIN__
+	delete[] threads;
+	#else
+	delete[] th;
+	#endif
 
 	return 0;
 }
@@ -126,4 +208,38 @@ void Compare(PRECISION* MatrixA_, PRECISION* MatrixB_, unsigned int Rows, unsign
 		}
 	}
 	cout << "Results verified!" << endl;
+}
+
+TRET_TYPE DeviceMultiplicationThread (void *DeviceArgs)
+{
+	cout << "Rows: " << ((DeviceArgument*)DeviceArgs)->Rows;
+	cout << "Cols: " << ((DeviceArgument*)DeviceArgs)->Cols;
+	cout << "Thread Start: " << ((DeviceArgument*)DeviceArgs)->ThreadStart;
+	cout << "Thread End: " << ((DeviceArgument*)DeviceArgs)->ThreadEnd;
+	cout << "Platform: " << ((DeviceArgument*)DeviceArgs)->Platform;
+	cout << "Emulation: " << ((DeviceArgument*)DeviceArgs)->Emulation;
+
+	CMatrixMultiplicationNaiveGPU HeterogeneousSim(((DeviceArgument*)DeviceArgs)->Rows, ((DeviceArgument*)DeviceArgs)->Cols, ((DeviceArgument*)DeviceArgs)->MatA_, ((DeviceArgument*)DeviceArgs)->MatB_, ((DeviceArgument*)DeviceArgs)->MatC_, ((DeviceArgument*)DeviceArgs)->ThreadStart, ((DeviceArgument*)DeviceArgs)->ThreadEnd);
+	HeterogeneousSim.StartTimer();
+
+	#if defined __linux__ || defined __CYGWIN__
+	pthread_mutex_lock (&PlatformMutexLock);
+	#else
+	WaitForSingleObject (PlatformMutexLock, INFINITE);
+	#endif
+	// CL initialisation must be atomic.
+	HeterogeneousSim.InitialiseCL(((DeviceArgument*)DeviceArgs)->Platform, ((DeviceArgument*)DeviceArgs)->Emulation);
+	#if defined __linux__ || defined __CYGWIN__
+	pthread_mutex_unlock (&PlatformMutexLock);
+	#else
+	ReleaseMutex (PlatformMutexLock);
+	#endif
+
+	HeterogeneousSim.CompleteRunHeterogeneous(); // Complete heterogeneous run.
+	HeterogeneousSim.StopTimer();
+	cout << "Total time taken by " << ((DeviceArgument*)DeviceArgs)->DeviceType << " with device ID " << ((DeviceArgument*)DeviceArgs)->DeviceID << " = " << HeterogeneousSim.GetElapsedTime() << " seconds." << endl;
+
+#ifndef WIN32
+	return NULL;
+#endif
 }

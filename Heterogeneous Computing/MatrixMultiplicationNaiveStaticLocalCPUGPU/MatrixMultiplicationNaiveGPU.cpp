@@ -499,9 +499,9 @@ int CMatrixMultiplicationNaiveGPU::CompleteRun()
 
 	return 0;
 }
-int CMatrixMultiplicationNaiveGPU::CompleteRunHeterogeneous(unsigned int Platform, unsigned int Emulation)
+int CMatrixMultiplicationNaiveGPU::CompleteRunHeterogeneous()
 {
-	SafeCall(InitialiseCL(Platform, Emulation), "Error: Initialiasing CL.");
+	//SafeCall(InitialiseCL(Platform, Emulation), "Error: Initialiasing CL.");
 	SafeCall(AllocateMemoryGPU(), "Error: Allocating memory on GPU.");
 	SafeCall(InitialiseCLKernelsGPU(), "Error: Copying data from CPU to GPU.");
 	SafeCall(RunHeterogeneousKernels(), "Error: Running kernels (GPU).");
