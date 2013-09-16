@@ -55,15 +55,15 @@ public:
 	int AllocateMemoryCPU();
 	int InitialiseCPU();
 	// Search and allocate a device. Platform (0. User choice, 1. AMD, 2. nVidia), Emulation (0. User choice, 1. CPU, 2. GPU).
-	int InitialiseCL(unsigned int=0, unsigned int=0);
+	int InitialiseCL(unsigned int=0U, unsigned int=0U);
 	int AllocateMemoryGPU();
 	int InitialiseCLKernelsGPU(); // Build/attach kernels to respective kernel functions and set arguments.
 	int RunCLKernels();
-	int RunHeterogeneousKernels(unsigned int=1);
+	int RunHeterogeneousKernels(unsigned int=1U);
 
 	// Complete run encapsulating all the sub-functions.
 	int CompleteRun();
-	int CompleteRunHeterogeneous(unsigned int=1);
+	int CompleteRunHeterogeneous(unsigned int=1U);
 
 	// Matrix input/output and initialisation.
 	void InputRandom(PRECISION*);
