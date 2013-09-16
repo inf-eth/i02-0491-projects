@@ -59,11 +59,11 @@ public:
 	int AllocateMemoryGPU();
 	int InitialiseCLKernelsGPU(); // Build/attach kernels to respective kernel functions and set arguments.
 	int RunCLKernels();
-	int RunHeterogeneousKernels();
+	int RunHeterogeneousKernels(unsigned int=1);
 
 	// Complete run encapsulating all the sub-functions.
 	int CompleteRun();
-	int CompleteRunHeterogeneous();
+	int CompleteRunHeterogeneous(unsigned int=1);
 
 	// Matrix input/output and initialisation.
 	void InputRandom(PRECISION*);

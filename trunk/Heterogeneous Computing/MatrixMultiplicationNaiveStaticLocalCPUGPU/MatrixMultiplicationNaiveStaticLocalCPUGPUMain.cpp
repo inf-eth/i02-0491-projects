@@ -17,6 +17,7 @@ using namespace std;
 
 const unsigned int Rows = 1024U;
 const unsigned int Cols = 1024U;
+const unsigned int Iterations = 5U;
 
 TRET_TYPE DeviceMultiplicationThread (void *);
 #if defined __linux__ || defined __CYGWIN__
@@ -38,6 +39,7 @@ class DeviceArgument
 	unsigned int Platform;
 	unsigned int Emulation;
 	unsigned int DeviceID;
+	unsigned int Iterations;
 	char DeviceType[4];
 };
 
@@ -45,7 +47,7 @@ void InputRandom(PRECISION* Matrix_, unsigned int, unsigned int);
 void Display(PRECISION* Matrix_, unsigned int, unsigned int);
 void Initialise(PRECISION* Matrix_, unsigned int, unsigned int);
 void Multiply(PRECISION*, PRECISION*, PRECISION*, unsigned int, unsigned int);
-void Compare(PRECISION*, PRECISION*, unsigned int, unsigned int, unsigned int, unsigned int);
+void Compare(PRECISION*, PRECISION*, unsigned int, unsigned int, unsigned int, unsigned int, PRECISION Multiplier);
 
 int main(int argc, char * argv[])
 {
@@ -91,6 +93,7 @@ int main(int argc, char * argv[])
 	Device[0].Platform = 2U;
 	Device[0].Emulation = 2U;
 	Device[0].DeviceID = 0U;
+	Device[0].Iterations = Iterations;
 	strcpy(Device[0].DeviceType, "GPU");
 	// ========================= CPU ======================
 	Device[1].Rows = Rows;
@@ -103,6 +106,7 @@ int main(int argc, char * argv[])
 	Device[1].Platform = 1U;
 	Device[1].Emulation = 1U;
 	Device[1].DeviceID = 1U;
+	Device[1].Iterations = Iterations;
 	strcpy(Device[1].DeviceType, "CPU");
 
 	__int64 tStart, tEnd;
@@ -116,19 +120,21 @@ int main(int argc, char * argv[])
 		th[i] = (HANDLE)_beginthread (DeviceMultiplicationThread, 0, (void*)&Device[i]);
 		#endif
 	}
-	#if defined __linux__ || defined __CYGWIN__
-	for (int i=0; i<NumberOfDevices; i++)
+	for (unsigned int i=0; i<NumberOfDevices; i++)
+	{
+		#if defined __linux__ || defined __CYGWIN__
 		pthread_join (threads[i], NULL);
-	#else
-	WaitForMultipleObjects (NumberOfDevices, th, NULL, INFINITE);
-	#endif
+		#else
+		WaitForSingleObject(th[i], INFINITE);
+		#endif
+	}
 	tEnd = GetTimeus64();
 	cout << "Time taken by all devices = " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
 
 	cout << "Performing standard multiplication..." << endl;
 	Multiply(MatrixA_, MatrixB_, MatrixCStandard_, Rows, Cols);
 	cout << "Comparing results..." << endl;
-	Compare(MatrixCStandard_, MatrixC_, Rows, Cols, 0U, 1024U);
+	Compare(MatrixCStandard_, MatrixC_, Rows, Cols, 0U, 1024U, (PRECISION)Iterations);
 
 	//Display(MatrixC_, Rows, Cols);
 	//Display(MatrixCStandard_, Rows, Cols);
@@ -193,13 +199,13 @@ void Multiply(PRECISION* MatrixA_, PRECISION* MatrixB_, PRECISION* MatrixC_, uns
 	}
 }
 
-void Compare(PRECISION* MatrixA_, PRECISION* MatrixB_, unsigned int Rows, unsigned int Cols, unsigned int ThreadStart, unsigned int ThreadEnd)
+void Compare(PRECISION* MatrixA_, PRECISION* MatrixB_, unsigned int Rows, unsigned int Cols, unsigned int ThreadStart, unsigned int ThreadEnd, PRECISION Multiplier)
 {
 	for (unsigned int i=ThreadStart; i<ThreadEnd; i++)
 	{
 		for (unsigned int j=0; j<Cols; j++)
 		{
-			const PRECISION Difference = MatrixA(i,j) - MatrixB(i,j);
+			const PRECISION Difference = MatrixA(i,j) - MatrixB(i,j)/Multiplier;
 			if (Difference < (PRECISION)-0.05 || Difference > (PRECISION)0.05)
 			{
 				cout << "Results don't match!" << endl;
@@ -219,6 +225,7 @@ TRET_TYPE DeviceMultiplicationThread (void *DeviceArgs)
 	cout << "Thread End: " << ((DeviceArgument*)DeviceArgs)->ThreadEnd;
 	cout << "Platform: " << ((DeviceArgument*)DeviceArgs)->Platform;
 	cout << "Emulation: " << ((DeviceArgument*)DeviceArgs)->Emulation;
+	cout << "Iterations: " << ((DeviceArgument*)DeviceArgs)->Iterations;
 
 	CMatrixMultiplicationNaiveGPU HeterogeneousSim(((DeviceArgument*)DeviceArgs)->Rows, ((DeviceArgument*)DeviceArgs)->Cols, ((DeviceArgument*)DeviceArgs)->MatA_, ((DeviceArgument*)DeviceArgs)->MatB_, ((DeviceArgument*)DeviceArgs)->MatC_, ((DeviceArgument*)DeviceArgs)->ThreadStart, ((DeviceArgument*)DeviceArgs)->ThreadEnd);
 	HeterogeneousSim.StartTimer();
@@ -236,7 +243,7 @@ TRET_TYPE DeviceMultiplicationThread (void *DeviceArgs)
 	ReleaseMutex (PlatformMutexLock);
 	#endif
 
-	HeterogeneousSim.CompleteRunHeterogeneous(); // Complete heterogeneous run.
+	HeterogeneousSim.CompleteRunHeterogeneous(Iterations); // Complete heterogeneous run.
 	HeterogeneousSim.StopTimer();
 	cout << "Total time taken by " << ((DeviceArgument*)DeviceArgs)->DeviceType << " with device ID " << ((DeviceArgument*)DeviceArgs)->DeviceID << " = " << HeterogeneousSim.GetElapsedTime() << " seconds." << endl;
 
