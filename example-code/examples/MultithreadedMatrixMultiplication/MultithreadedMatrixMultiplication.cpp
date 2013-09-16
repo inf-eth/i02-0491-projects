@@ -163,7 +163,6 @@ int main()
 	// ============== Multithreaded ==============
 	tStart = GetTimeus64();
 
-	#if defined __linux__ || defined __CYGWIN__
 	for (int i=0; i<NoOfThreads; i++)
 	{
 		Args[i].GlobalThreads = NoOfThreads;
@@ -173,24 +172,20 @@ int main()
 		Args[i].MatB_ = MatrixB_;
 		Args[i].MatC_ = MatrixC_;
 		Args[i].ThreadID = i;
+		#if defined __linux__ || defined __CYGWIN__
 		pthread_create (&threads[i], NULL, MultiplicationThread, (void*)&Args[i]);
+		#else
+		th[i] = (HANDLE)_beginthread (MultiplicationThread, 0, (void*)&Args[i]);
+		#endif
 	}
-	for (int i=0; i<NoOfThreads; i++)
-		pthread_join (threads[i], NULL);
-	#else
 	for (int i=0; i<NoOfThreads; i++)
 	{
-		Args[i].GlobalThreads = NoOfThreads;
-		Args[i].Rows = Rows;
-		Args[i].Cols = Cols;
-		Args[i].MatA_ = MatrixA_;
-		Args[i].MatB_ = MatrixB_;
-		Args[i].MatC_ = MatrixC_;
-		Args[i].ThreadID = i;
-		th[i] = (HANDLE)_beginthread (MultiplicationThread, 0, (void*)&Args[i]);
+		#if defined __linux__ || defined __CYGWIN__
+		pthread_join (threads[i], NULL);
+		#else
+		WaitForSingleObject(th[i], INFINITE);
+		#endif
 	}
-	WaitForMultipleObjects (NoOfThreads, th, NULL, INFINITE);
-	#endif
 
 	tEnd = GetTimeus64();
 	std::cout << "Time taken (multi-threaded) = " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << std::endl;
@@ -216,12 +211,14 @@ int main()
 		th[i] = (HANDLE)_beginthread (MultiplicationTransposedThread, 0, (void*)&Args[i]);
 		#endif
 	}
-	#if defined __linux__ || defined __CYGWIN__
 	for (int i=0; i<NoOfThreads; i++)
+	{
+		#if defined __linux__ || defined __CYGWIN__
 		pthread_join (threads[i], NULL);
-	#else
-	WaitForMultipleObjects (NoOfThreads, th, NULL, INFINITE);
-	#endif
+		#else
+		WaitForSingleObject(th[i], INFINITE);
+		#endif
+	}
 
 	tEnd = GetTimeus64();
 	std::cout << "Time taken (multi-threaded transposed) = " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << std::endl;
