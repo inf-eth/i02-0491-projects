@@ -9,7 +9,7 @@ int main(int argc, char * argv[])
 
 	// ================== Simulation ================
 	MatrixMultiplicationNaiveGPUSim.StartTimer();
-	MatrixMultiplicationNaiveGPUSim.CompleteRun(); // Complete GPU run.
+	MatrixMultiplicationNaiveGPUSim.CompleteRun(/*Iterations*/5U); // Complete GPU run.
 	MatrixMultiplicationNaiveGPUSim.StopTimer();
 	cout << "Total time taken = " << MatrixMultiplicationNaiveGPUSim.GetElapsedTime() << " seconds." << endl;
 

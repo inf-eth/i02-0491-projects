@@ -50,10 +50,10 @@ public:
 	int InitialiseCL();			// Search and allocate a device.
 	int AllocateMemoryGPU();
 	int InitialiseCLKernelsGPU(); // Build/attach kernels to respective kernel functions and set arguments.
-	int RunCLKernels();
+	int RunCLKernels(unsigned int=1U);
 
 	// Complete run encapsulating all the sub-functions.
-	int CompleteRun();
+	int CompleteRun(unsigned int=1U);
 
 	// Matrix input/output and initialisation.
 	void InputRandom(PRECISION*);
