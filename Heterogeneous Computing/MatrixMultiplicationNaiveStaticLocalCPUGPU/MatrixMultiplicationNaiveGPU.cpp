@@ -415,7 +415,7 @@ int CMatrixMultiplicationNaiveGPU::RunCLKernels()
 
 	return 0;
 }
-int CMatrixMultiplicationNaiveGPU::RunHeterogeneousKernels()
+int CMatrixMultiplicationNaiveGPU::RunHeterogeneousKernels(unsigned int Iterations)
 {
 	cl_int status;
 	cl_uint maxDims;
@@ -462,41 +462,43 @@ int CMatrixMultiplicationNaiveGPU::RunHeterogeneousKernels()
 	cout << "Global threads: " << globalThreads[0] << "x" << globalThreads[1] << endl;
 	cout << "Local threads: " << localThreads[0] << "x" << localThreads[1] << endl;
 
-	// Enqueue a kernel call.
-	status = clEnqueueNDRangeKernel(commandQueue, Heterogenouskernel, 2, NULL, globalThreads, localThreads, 0, NULL, &events[0]);
-	if(status != CL_SUCCESS) 
-	{ 
-		cout << "Error: Enqueueing kernel onto command queue (clEnqueueNDRangeKernel)" << endl;
-		if ( status == CL_INVALID_COMMAND_QUEUE ) cout << "CL_INVALID_COMMAND_QUEUE." << endl;
-		if ( status == CL_INVALID_PROGRAM_EXECUTABLE ) cout << "CL_INVALID_PROGRAM_EXECUTABLE." << endl;
-		if ( status == CL_INVALID_KERNEL ) cout << "CL_INVALID_KERNEL." << endl;
-		if ( status == CL_INVALID_WORK_DIMENSION ) cout << "CL_INVALID_WORK_DIMENSION." << endl;
-		if ( status == CL_INVALID_CONTEXT ) cout << "CL_INVALID_CONTEXT." << endl;
-		if ( status == CL_INVALID_KERNEL_ARGS ) cout << "CL_INVALID_KERNEL_ARGS." << endl;
-		if ( status == CL_INVALID_WORK_GROUP_SIZE ) cout << "CL_INVALID_WORK_GROUP_SIZE." << endl;
-		if ( status == CL_INVALID_WORK_ITEM_SIZE ) cout << "CL_INVALID_WORK_ITEM_SIZE." << endl;
-		if ( status == CL_INVALID_GLOBAL_OFFSET ) cout << "CL_INVALID_GLOBAL_OFFSET." << endl;
-		return 1;
+	for (unsigned int n=0; n<Iterations; n++)
+	{
+		// Enqueue a kernel call.
+		status = clEnqueueNDRangeKernel(commandQueue, Heterogenouskernel, 2, NULL, globalThreads, localThreads, 0, NULL, &events[0]);
+		if(status != CL_SUCCESS) 
+		{ 
+			cout << "Error: Enqueueing kernel onto command queue (clEnqueueNDRangeKernel)" << endl;
+			if ( status == CL_INVALID_COMMAND_QUEUE ) cout << "CL_INVALID_COMMAND_QUEUE." << endl;
+			if ( status == CL_INVALID_PROGRAM_EXECUTABLE ) cout << "CL_INVALID_PROGRAM_EXECUTABLE." << endl;
+			if ( status == CL_INVALID_KERNEL ) cout << "CL_INVALID_KERNEL." << endl;
+			if ( status == CL_INVALID_WORK_DIMENSION ) cout << "CL_INVALID_WORK_DIMENSION." << endl;
+			if ( status == CL_INVALID_CONTEXT ) cout << "CL_INVALID_CONTEXT." << endl;
+			if ( status == CL_INVALID_KERNEL_ARGS ) cout << "CL_INVALID_KERNEL_ARGS." << endl;
+			if ( status == CL_INVALID_WORK_GROUP_SIZE ) cout << "CL_INVALID_WORK_GROUP_SIZE." << endl;
+			if ( status == CL_INVALID_WORK_ITEM_SIZE ) cout << "CL_INVALID_WORK_ITEM_SIZE." << endl;
+			if ( status == CL_INVALID_GLOBAL_OFFSET ) cout << "CL_INVALID_GLOBAL_OFFSET." << endl;
+			return 1;
+		}
+
+		// Wait for the kernel call to finish execution.
+		SafeCall(clWaitForEvents(1, &events[0]), "Error: Waiting for kernel run to finish. (clWaitForEvents)");
+
+		clGetEventProfilingInfo(events[0], CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &startTime, NULL);
+		clGetEventProfilingInfo(events[0], CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &endTime, NULL);
+		kernelExecTimeNs = (cl_ulong)(1e-3*(endTime-startTime));
+		kernelExecTimeNsT = kernelExecTimeNsT + kernelExecTimeNs;
+
+		// Enqueue read buffer.
+		SafeCall(clEnqueueReadBuffer(commandQueue, d_MatrixC_, CL_TRUE, sizeof(PRECISION)*ThreadStart*Cols, sizeof(PRECISION)*(ThreadEnd-ThreadStart)*Cols, MatrixC_+ThreadStart*Cols, 0, NULL, &events[1]), "Error: clEnqueueReadBuffer failed. (clEnqueueReadBuffer)");
+		// Wait for the read buffer to finish execution
+		SafeCall(clWaitForEvents(1, &events[1]), "Error: Waiting for read buffer call to finish. (clWaitForEvents)");
+
+		SafeCall(clReleaseEvent(events[0]), "Error: Release event object. (clReleaseEvent)\n");
+		SafeCall(clReleaseEvent(events[1]), "Error: Release event object. (clReleaseEvent)\n");
 	}
-
-	// Wait for the kernel call to finish execution.
-	SafeCall(clWaitForEvents(1, &events[0]), "Error: Waiting for kernel run to finish. (clWaitForEvents)");
-
-	clGetEventProfilingInfo(events[0], CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &startTime, NULL);
-	clGetEventProfilingInfo(events[0], CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &endTime, NULL);
-	kernelExecTimeNs = (cl_ulong)(1e-3*(endTime-startTime));
-	kernelExecTimeNsT = kernelExecTimeNsT + kernelExecTimeNs;
-
 	cout << "Kernel run complete!" << endl;
 	cout << "Kernel execution time = " << kernelExecTimeNsT/1e6 << "sec (" << kernelExecTimeNsT/1e3 << "ms or " << kernelExecTimeNsT << "us)" << endl;
-
-	// Enqueue read buffer.
-	SafeCall(clEnqueueReadBuffer(commandQueue, d_MatrixC_, CL_TRUE, sizeof(PRECISION)*ThreadStart*Cols, sizeof(PRECISION)*(ThreadEnd-ThreadStart)*Cols, MatrixC_+ThreadStart*Cols, 0, NULL, &events[1]), "Error: clEnqueueReadBuffer failed. (clEnqueueReadBuffer)");
-	// Wait for the read buffer to finish execution
-	SafeCall(clWaitForEvents(1, &events[1]), "Error: Waiting for read buffer call to finish. (clWaitForEvents)");
-
-	SafeCall(clReleaseEvent(events[0]), "Error: Release event object. (clReleaseEvent)\n");
-	SafeCall(clReleaseEvent(events[1]), "Error: Release event object. (clReleaseEvent)\n");
 
 	return 0;
 }
@@ -514,12 +516,12 @@ int CMatrixMultiplicationNaiveGPU::CompleteRun()
 
 	return 0;
 }
-int CMatrixMultiplicationNaiveGPU::CompleteRunHeterogeneous()
+int CMatrixMultiplicationNaiveGPU::CompleteRunHeterogeneous(unsigned int Iterations)
 {
 	//SafeCall(InitialiseCL(Platform, Emulation), "Error: Initialiasing CL.");
 	SafeCall(AllocateMemoryGPU(), "Error: Allocating memory on GPU.");
 	SafeCall(InitialiseCLKernelsGPU(), "Error: Copying data from CPU to GPU.");
-	SafeCall(RunHeterogeneousKernels(), "Error: Running kernels (GPU).");
+	SafeCall(RunHeterogeneousKernels(Iterations), "Error: Running kernels (GPU).");
 	SafeCall(CleanupCL(), "Error: Cleaning up CL.");
 	SafeCall(CleanupGPU(), "Error: Cleaning up GPU.");
 
