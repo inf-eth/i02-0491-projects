@@ -33,7 +33,7 @@ int main (int argc, char **argv)
 
 	// Send and receive.
 	char ClientMessage[] = "Hello from client.";
-	ClientObj.Send ((void *)ClientMessage, strlen (ClientMessage));
+	ClientObj.Send ((void *)ClientMessage, (unsigned int)strlen (ClientMessage));
 
 	ClientObj.Receive ();
 	cout << "Server says: " << ClientObj.GetBuffer () << endl;
@@ -47,7 +47,7 @@ int main (int argc, char **argv)
 	ClientObj.Bind ();
 
 	char UDPmessage[] = "UDP message from client.";
-	ClientObj.SendTo ((void *)UDPmessage, strlen (UDPmessage), "localhost", 6000);
+	ClientObj.SendTo ((void *)UDPmessage, (unsigned int)strlen (UDPmessage), "localhost", 6000);
 
 	cout << "Client recv'in from() packets..." << endl;
 	ClientObj.RecvFrom ();

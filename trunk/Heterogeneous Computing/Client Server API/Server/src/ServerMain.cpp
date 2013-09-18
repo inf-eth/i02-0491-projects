@@ -32,7 +32,7 @@ int main (int argc, char *argv[])
 	cout << "Client says: " << ServerObj.GetBuffer() << endl;
 
 	char message[] = "Hello from server.";
-	ServerObj.Send ((void *)message, strlen (message));
+	ServerObj.Send ((void *)message, (unsigned int)strlen (message));
 
 	// Close sockets.
 	ServerObj.CloseClientSocket ();
@@ -50,7 +50,7 @@ int main (int argc, char *argv[])
 	ServerObj.DisplayTheirInfo ();
 
 	char UDPmessage[] = "UDP echo message from server.";
-	ServerObj.SendTo ((void *)UDPmessage, strlen (UDPmessage)); // If sending a reply packet most recent received address is used.
+	ServerObj.SendTo ((void *)UDPmessage, (unsigned int)strlen (UDPmessage)); // If sending a reply packet most recent received address is used.
 	//ServerObj.SendTo ((void *)UDPmessage, strlen (UDPmessage), "localhost", 6001);	// Need to explicitly mention receiver address if not a reply.
 
 	ServerObj.CloseServerSocket ();
