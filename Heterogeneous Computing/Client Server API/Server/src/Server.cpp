@@ -24,12 +24,12 @@ int CServer::CreateSocket (int pType)			// 0 = TCP, 1 = UDP; default is to creat
 	if (pType == TCPSOCKET)
 	{
 		Type = TCPSOCKET;
-		errorcheck = ServerSocketFD = socket (AF_INET, SOCK_STREAM, 0);
+		errorcheck = ServerSocketFD = (int)socket (AF_INET, SOCK_STREAM, 0);
 	}
 	else
 	{
 		Type = UDPSOCKET;
-		errorcheck = ServerSocketFD = socket (AF_INET, SOCK_DGRAM, 0);
+		errorcheck = ServerSocketFD = (int)socket (AF_INET, SOCK_DGRAM, 0);
 	}
 	if (errorcheck == -1)
 	{
@@ -83,7 +83,7 @@ int CServer::Listen ()								// Listen for incoming connections; for TCP Server
 int CServer::Accept ()								// Accept incoming connections.
 {
 	socklen_t ClientAddressLength = sizeof (ClientAddress);
-	errorcheck = ClientSocketFD = accept (ServerSocketFD, (sockaddr *)&ClientAddress, &ClientAddressLength);
+	errorcheck = ClientSocketFD = (int)accept (ServerSocketFD, (sockaddr *)&ClientAddress, &ClientAddressLength);
 	if (errorcheck == -1)
 	{
 		cerr << "ERROR005: Accepting." << endl;
@@ -105,7 +105,7 @@ int CServer::Receive ()
 	return errorcheck;
 }
 
-int CServer::Send (void *Data, int DataSize)
+int CServer::Send (void *Data, unsigned int DataSize)
 {
 	errorcheck = NumOfBytesSent = send (ClientSocketFD, (char *)Data, DataSize, 0);
 	if (errorcheck == -1)
@@ -117,7 +117,7 @@ int CServer::Send (void *Data, int DataSize)
 }
 
 // UDP, sendto (data, datasize, IP/name, port);
-int CServer::SendTo (void *Data, int DataSize)
+int CServer::SendTo (void *Data, unsigned int DataSize)
 {
 	errorcheck = NumOfBytesSent = sendto (ServerSocketFD, (char *)Data, DataSize, 0, (sockaddr *)&TheirAddress, sizeof (TheirAddress));
 	if (errorcheck == -1)
@@ -126,7 +126,7 @@ int CServer::SendTo (void *Data, int DataSize)
 	}
 	return errorcheck;
 }
-int CServer::SendTo (void *Data, int DataSize, char * pTheirIP, int pTheirPort)
+int CServer::SendTo (void *Data, unsigned int DataSize, char * pTheirIP, int pTheirPort)
 {
 	struct hostent* TheirIP;		// Server name/IP.
 	if ((TheirIP = gethostbyname (pTheirIP)) == NULL)

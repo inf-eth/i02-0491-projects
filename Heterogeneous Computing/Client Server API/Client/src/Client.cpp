@@ -27,12 +27,12 @@ int CClient::CreateSocket (int pType)			// 0 = TCP, 1 = UDP; default is to creat
 	if (pType == TCPSOCKET)
 	{
 		Type = TCPSOCKET;
-		errorcheck = ClientSocketFD = socket (AF_INET, SOCK_STREAM, 0);
+		errorcheck = ClientSocketFD = (int)socket (AF_INET, SOCK_STREAM, 0);
 	}
 	else
 	{
 		Type = UDPSOCKET;
-		errorcheck = ClientSocketFD = socket (AF_INET, SOCK_DGRAM, 0);
+		errorcheck = ClientSocketFD = (int)socket (AF_INET, SOCK_DGRAM, 0);
 	}
 	if (errorcheck == -1)
 	{
@@ -108,7 +108,7 @@ int CClient::Receive ()
 	return errorcheck;
 }
 
-int CClient::Send (void *Data, int DataSize)
+int CClient::Send (void *Data, unsigned int DataSize)
 {
 	errorcheck = NumOfBytesSent = send (ClientSocketFD, (char *)Data, DataSize, 0);
 	if (errorcheck == -1)
@@ -119,7 +119,7 @@ int CClient::Send (void *Data, int DataSize)
 }
 
 // UDP, sendto (data, datasize, IP/name, port);
-int CClient::SendTo (void *Data, int DataSize)
+int CClient::SendTo (void *Data, unsigned int DataSize)
 {
 	errorcheck = NumOfBytesSent = sendto (ClientSocketFD, (char *)Data, DataSize, 0, (sockaddr *)&TheirAddress, sizeof (TheirAddress));
 	if (errorcheck == -1)
@@ -128,7 +128,7 @@ int CClient::SendTo (void *Data, int DataSize)
 	}
 	return errorcheck;
 }
-int CClient::SendTo (void *Data, int DataSize, char * pTheirIP, int pTheirPort)
+int CClient::SendTo (void *Data, unsigned int DataSize, char * pTheirIP, int pTheirPort)
 {
 	struct hostent* TheirIP;		// Client name/IP.
 	if ((TheirIP = gethostbyname (pTheirIP)) == NULL)

@@ -48,12 +48,12 @@ public:
 	int Accept ();								// Accept incoming connections.
 
 	// TCP send() and recv()
-	int Send (void *, int);
+	int Send (void *, unsigned int);
 	int Receive ();
 
 	// UDP, sendto (data, datasize, IP/name, port);
-	int SendTo (void *, int);
-	int SendTo (void *, int, char *, int);
+	int SendTo (void *, unsigned int);
+	int SendTo (void *, unsigned int, char *, int);
 	// recvfrom ();
 	int RecvFrom ();
 	
