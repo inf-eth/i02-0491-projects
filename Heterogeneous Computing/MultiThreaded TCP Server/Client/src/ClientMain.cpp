@@ -34,11 +34,18 @@ int main (int argc, char **argv)
 	ClientObj.Connect (argv[1], atoi (argv[2]));
 
 	double Computation = 1.f/2.4f;
+	const char ID[] = "C2D E8400 @3.00 GHz";
 	// Send and receive.
 	ClientObj.Send ((void *)&Computation, sizeof(double));
 
 	ClientObj.Receive ();
-	cout << "Server says: " << ClientObj.GetBuffer () << endl;
+	if (strncmp("ACK", ClientObj.GetBuffer(), 3U) != 0)
+	{
+		cout << "Error receiving acknowledgement from server." << endl;
+		return -1;
+	}
+
+	ClientObj.Send ((void *)ID, sizeof(ID));
 
 	ClientObj.CloseClientSocket ();
 

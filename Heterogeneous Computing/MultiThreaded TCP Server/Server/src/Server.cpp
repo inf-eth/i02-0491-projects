@@ -267,6 +267,7 @@ int CServer::DisplayClientInfo (int ClientIndex)
 	cout << "Client Address: " << inet_ntoa (ClientAddress[ClientIndex].sin_addr) << endl;
 	cout << "Client Port   : " << ntohs (ClientAddress[ClientIndex].sin_port) << endl;
 	cout << "Client Socket : " << ClientSocketFD[ClientIndex] << endl;
+	cout << "Client ID     : " << ClientsInfo[ClientIndex].ID << endl;
 	cout << "Computation   : " << ClientsInfo[ClientIndex].ComputationPower << endl;
 	return 0;
 }
@@ -281,6 +282,7 @@ int CServer::DisplayAllClientsInfo ()
 			cout << "Client Address: " << inet_ntoa (ClientAddress[i].sin_addr) << endl;
 			cout << "Client Port   : " << ntohs (ClientAddress[i].sin_port) << endl;
 			cout << "Client Socket : " << ClientSocketFD[i] << endl;
+			cout << "Client ID     : " << ClientsInfo[i].ID << endl;
 			cout << "Computation   : " << ClientsInfo[i].ComputationPower << endl;
 		}
 	}
@@ -296,10 +298,13 @@ int CServer::DisplayTheirInfo ()
 int CServer::AcceptClient()
 {
 	int ClientIndex = Accept ();
-	Receive(ClientIndex);
+	Receive(ClientIndex); // Receive computation power of client.
 	double* Computation;
 	Computation = (double*)GetBuffer(ClientIndex);
 	ClientsInfo[ClientIndex].ComputationPower = *Computation;
+	Send((void *)&"ACK", 3U, ClientIndex);
+	Receive(ClientIndex); // Receive client ID.
+	strncpy(ClientsInfo[ClientIndex].ID, GetBuffer(ClientIndex), NumOfBytesReceived[ClientIndex]);
 	DisplayClientInfo (ClientIndex);
 
 	return ClientIndex;
