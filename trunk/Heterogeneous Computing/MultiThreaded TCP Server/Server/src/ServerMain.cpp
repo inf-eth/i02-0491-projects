@@ -7,12 +7,31 @@
 #define TRET_TYPE void
 #endif
 
+#define PRECISION double
+
 #include <Server.h>
+#include <iomanip>
 #include <cstring>
 #include <iostream>
-using std::cin;
-using std::cout;
-using std::endl;
+using namespace std;
+
+const unsigned int Rows = 1024U;
+const unsigned int Cols = 1024U;
+const unsigned int Iterations = 10U;
+
+class SimulationParameters
+{
+	public:
+	unsigned int Rows;
+	unsigned int Cols;
+	unsigned int ThreadStart;
+	unsigned int ThreadEnd;
+	unsigned int Platform;
+	unsigned int Emulation;
+	unsigned int DeviceID;
+	unsigned int Iterations;
+	char DeviceType[4];
+};
 
 TRET_TYPE AcceptorThread (void *);
 TRET_TYPE ClientHandlerThread (void *);
@@ -22,6 +41,12 @@ pthread_mutex_t PlatformMutexLock = PTHREAD_MUTEX_INITIALIZER;
 #else
 HANDLE PlatformMutexLock = CreateMutex (NULL, FALSE, NULL);
 #endif
+
+void InputRandom(PRECISION* Matrix_, unsigned int, unsigned int);
+void Display(PRECISION* Matrix_, unsigned int, unsigned int);
+void Initialise(PRECISION* Matrix_, unsigned int, unsigned int);
+void Multiply(PRECISION*, PRECISION*, PRECISION*, unsigned int, unsigned int);
+void Compare(PRECISION*, PRECISION*, unsigned int, unsigned int, unsigned int, unsigned int, PRECISION Multiplier);
 
 int main (int argc, char *argv[])
 {
@@ -61,6 +86,7 @@ int main (int argc, char *argv[])
 		cout << "2. Display client info of all connections." << endl;
 		cout << "3. Display client info (by index)." << endl;
 		cout << "4. Start computation on all connected clients." << endl;
+		cout << "5. Start computation on client (by index)." << endl;
 		cout << "E. Exit." << endl;
 		cout << ">>";
 		cin >> choice;
@@ -87,6 +113,64 @@ int main (int argc, char *argv[])
 			}
 			case '4':
 			{
+				break;
+			}
+			case '5':
+			{
+				int Index;
+				cout << "Enter index: ";
+				cin >> Index;
+				ServerObj.DisplayClientInfo(Index);
+
+				SimulationParameters Sim;
+				Sim.Rows = Rows;
+				Sim.Cols = Cols;
+				Sim.ThreadStart = 0U;
+				Sim.ThreadEnd = Rows;
+				Sim.Platform = 1U;
+				Sim.Emulation = 1U;
+				Sim.DeviceID = Index;
+				Sim.Iterations = 5U;
+				strcpy(Sim.DeviceType, "CPU");
+
+				ServerObj.Send((void*)&"X00S", 4U, Index);
+				ServerObj.Receive(Index);
+				ServerObj.Send((void*)&Sim, sizeof(Sim), Index);
+				ServerObj.Receive(Index);
+
+				cout << "Sending A info" << endl;
+
+				ServerObj.Send((void*)&"X00A", 4U, Index);
+				ServerObj.Receive(Index);
+
+				srand(0);
+				PRECISION* MatrixA_ = new PRECISION[Rows*Cols];
+				InputRandom(MatrixA_, Rows, Cols);
+				//Display(MatrixA_, Sim.Rows, Sim.Cols);
+				ServerObj.SendData((void*)MatrixA_, Rows*Cols*sizeof(PRECISION), Index);
+
+				/*
+				unsigned int DataSize = Sim.Rows*Sim.Cols*sizeof(PRECISION);
+				ServerObj.Send((void*)&DataSize, sizeof(DataSize), Index);
+				ServerObj.Receive(Index);
+
+				cout << "Data size: " << DataSize << endl;
+
+				srand(0);
+				PRECISION* MatrixA_ = new PRECISION[Rows*Cols];
+				InputRandom(MatrixA_, Rows, Cols);
+				//Display(MatrixA_, Sim.Rows, Sim.Cols);
+
+				cout << "Sending A" << endl;
+
+				unsigned int BytesSent = 0;
+				while (BytesSent != DataSize)
+					BytesSent += (unsigned int)ServerObj.Send((void*)((char*)MatrixA_+BytesSent), DataSize-BytesSent, Index);
+
+				cout << "Matrix A Sent." << endl;
+				ServerObj.Receive(Index);
+				cout << "Client ACK received." << endl;
+				*/
 				break;
 			}
 			case 'E':
@@ -135,4 +219,49 @@ TRET_TYPE ClientHandlerThread (void *ServerPTR)
 #ifndef WIN32
 	return NULL;
 #endif
+}
+
+#define Matrix(i,j) Matrix_[Cols*(i)+(j)]
+#define MatrixA(i,j) MatrixA_[Cols*(i)+(j)]
+#define MatrixB(i,j) MatrixB_[Cols*(i)+(j)]
+#define MatrixC(i,j) MatrixC_[Cols*(i)+(j)]
+
+void InputRandom(PRECISION* Matrix_, unsigned int Rows, unsigned int Cols)
+{
+	for (unsigned int i=0; i<Rows; i++)
+	{
+		for (unsigned int j=0; j<Cols; j++)
+			Matrix(i,j) = (PRECISION)rand()/rand();
+	}
+}
+
+void Display(PRECISION* Matrix_, unsigned int Rows, unsigned int Cols)
+{
+	for (unsigned int i=0; i<Rows; i++)
+	{
+		for (unsigned int j=0; j<Cols; j++)
+			cout << setprecision(3) << setw(5) << Matrix(i,j) << "\t";
+		cout << endl;
+	}
+}
+
+void Initialise(PRECISION* Matrix_, unsigned int Rows, unsigned int Cols)
+{
+	for (unsigned int i=0; i<Rows; i++)
+	{
+		for (unsigned int j=0; j<Cols; j++)
+			Matrix(i,j) = (PRECISION)0;
+	}
+}
+
+void Multiply(PRECISION* MatrixA_, PRECISION* MatrixB_, PRECISION* MatrixC_, unsigned int Rows, unsigned int Cols)
+{
+	for (unsigned int i=0; i<Rows; i++)
+	{
+		for (unsigned int j=0; j<Cols; j++)
+		{
+			for (unsigned int k=0; k<Cols; k++)
+				MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixB(k,j);
+		}
+	}
 }

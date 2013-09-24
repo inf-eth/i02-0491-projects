@@ -15,6 +15,13 @@
 #define UDPSOCKET		1
 #define DEFAULTSERVERPORT		6000
 
+// Server Codes.
+// X00A: Get ready to receive matrix A with this size.
+// X00B: Get ready to receive matrix B with this size.
+// X00S: Get ready to receive simulation information.
+// X00X: Start simulation.
+// X00C: Send simulation data back.
+
 class ClientInfo
 {
 public:
@@ -59,6 +66,9 @@ public:
 	// TCP send() and recv()
 	int Send (void *, unsigned int, int=0);
 	int Receive (int=0);
+	int Receive(void*, unsigned int, int=0);
+	int SendData(void *, unsigned int, int=0);
+	int ReceiveData(void *, int=0);
 
 	// UDP, sendto (data, datasize, IP/name, port);
 	int SendTo (void *, unsigned int);
