@@ -136,6 +136,16 @@ int CServer::Receive (int ClientIndex)
 	return errorcheck[ClientIndex];
 }
 
+int CServer::Receive (void* DataBuffer, unsigned DataSize, int ClientIndex)
+{
+	int errorcheck = NumOfBytesReceived[ClientIndex] = recv (ClientSocketFD[ClientIndex], (char*)DataBuffer, DataSize, 0);
+	if (errorcheck == -1)
+	{
+		cerr << "ERROR005 Receiveing" << endl;
+	}
+	return errorcheck;
+}
+
 int CServer::Send (void *Data, unsigned int DataSize, int ClientIndex)
 {
 	if (ClientIndex < 0 || ClientIndex >= MAXCLIENTS)
@@ -156,6 +166,44 @@ int CServer::Send (void *Data, unsigned int DataSize, int ClientIndex)
 		return errorcheck[ClientIndex];
 	}
 	return errorcheck[ClientIndex];
+}
+
+int CServer::SendData(void* Data, unsigned int DataSize, int ClientIndex)
+{
+	Send((void*)&DataSize, sizeof(DataSize), ClientIndex);
+	Receive(ClientIndex);
+
+	cout << "Data size: " << DataSize << endl;
+
+	unsigned int BytesSent = 0;
+	while (BytesSent != DataSize)
+		BytesSent += (unsigned int)Send((void*)((char*)Data+BytesSent), DataSize-BytesSent, ClientIndex);
+
+	cout << "Data Sent." << endl;
+	Receive(ClientIndex);
+	if (!strncmp("ACK", GetBuffer(ClientIndex), 3U))
+		cout << "ACK received." << endl;
+
+	return BytesSent;
+}
+
+int CServer::ReceiveData(void* Data, int ClientIndex)
+{
+	unsigned int DataSize;
+	Receive((void*)&DataSize, sizeof(DataSize), ClientIndex);
+	Send((void *)&"ACK", 3U, ClientIndex);
+
+	cout << "Data size: " << DataSize << endl;
+
+	// Transfer Loop.
+	unsigned int BytesReceived = 0;
+	while (BytesReceived != DataSize)
+		BytesReceived += (unsigned int)Receive((void*)((char*)Data+BytesReceived), DataSize-BytesReceived, ClientIndex);
+
+	cout << "Matrix A received." << endl;
+	Send((void *)&"ACK", 3U, ClientIndex);
+
+	return BytesReceived;
 }
 
 // UDP, sendto (data, datasize, IP/name, port);
@@ -304,6 +352,7 @@ int CServer::AcceptClient()
 	ClientsInfo[ClientIndex].ComputationPower = *Computation;
 	Send((void *)&"ACK", 3U, ClientIndex);
 	Receive(ClientIndex); // Receive client ID.
+	Send((void *)&"ACK", 3U, ClientIndex);
 	strncpy(ClientsInfo[ClientIndex].ID, GetBuffer(ClientIndex), NumOfBytesReceived[ClientIndex]);
 	DisplayClientInfo (ClientIndex);
 
