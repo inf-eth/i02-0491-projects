@@ -26,7 +26,9 @@ class ClientInfo
 {
 public:
 	double ComputationPower;
-	char ID[32];
+	char ID[64];
+	unsigned int Platform;
+	unsigned int Emulation;
 };
 class CServer
 {

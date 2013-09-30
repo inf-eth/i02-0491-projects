@@ -49,11 +49,8 @@ class SimulationParameters
 	unsigned int Cols;
 	unsigned int ThreadStart;
 	unsigned int ThreadEnd;
-	unsigned int Platform;
-	unsigned int Emulation;
 	unsigned int DeviceID;
 	unsigned int Iterations;
-	char DeviceType[4];
 };
 
 void InputRandom(PRECISION* Matrix_, unsigned int, unsigned int);
@@ -65,12 +62,14 @@ void Compare(PRECISION*, PRECISION*, unsigned int, unsigned int, unsigned int, u
 int main(int argc, char * argv[])
 {
 	// Standard error checking. Must provide server name/IP and port to connect.
-	if ( argc < 4 )
+	if ( argc != 8 )
 	{
 		cout << "ERROR000: Incorrect input arguments." << endl;
-		cout << "Usage: './Client [server name or IP] [server port] [client port]'" << endl;
+		cout << "Usage: './Client [server name or IP] [server port] [client port] [Computation Rating] [\"ID\"] [Platform] [Emulation]'" << endl;
 		cout << "OR" << endl;
-		cout << "if using Makefile: 'make runC ARG=\"[server name or IP] [server port] [client port]\"'" << endl;
+		cout << "if using Makefile: 'make runC ARG=\"[server name or IP] [server port] [client port] [Computation Rating] [\"ID\"] [Platform] [Emulation]\"'" << endl;
+		cout << "Platform: 1:AMD 2:nVidia." << endl;
+		cout << "Emulation: 1:CPU, 2:GPU." << endl;
 		exit (-1);
 	}
 
@@ -90,16 +89,26 @@ int main(int argc, char * argv[])
 	// Connect to Server. Server name/IP and port are provided as arguments.
 	ClientObj.Connect (argv[1], atoi (argv[2]));
 
-	double Computation = 1.f/2.4f;
+	ClientInfo CInfo;
+	CInfo.ComputationPower = atof(argv[4]);
+	strncpy(CInfo.ID, argv[5], strlen(argv[5])+1);
+	CInfo.Platform = (unsigned int)atoi(argv[6]);
+	CInfo.Emulation = (unsigned int)atoi(argv[7]);
+	/*
+	const double Computation = 1.f/2.4f;
 	const char ID[] = "C2D E8400 @3.00 GHz";
-
-	// Send and receive.
+	const unsigned int Platform = 1U;
+	const unsigned int Emulation = 1U;
+	*/
+	// Send Client info.
+	ClientObj.SendData((void*)&CInfo, sizeof(CInfo));
+	/*
 	ClientObj.Send ((void *)&Computation, sizeof(double));
-
 	ClientObj.Receive();
 	ClientObj.CheckServerACK();
-
 	ClientObj.Send ((void *)ID, sizeof(ID));
+	*/
+	ClientObj.Receive();
 	ClientObj.CheckServerACK();
 
 	while (true)
@@ -117,40 +126,54 @@ int main(int argc, char * argv[])
 			PRECISION* MatrixA_ = new PRECISION[Sim.Rows*Sim.Cols];
 			PRECISION* MatrixB_ = new PRECISION[Sim.Rows*Sim.Cols];
 			PRECISION* MatrixC_ = new PRECISION[Sim.Rows*Sim.Cols];
-			PRECISION* MatrixCStandard_ = new PRECISION[Sim.Rows*Sim.Cols];
-			InputRandom(MatrixB_, Sim.Rows, Sim.Cols);
 
 			// Matrix A transfer
-			ClientObj.Receive();
-			if (!strncmp(ClientObj.GetBuffer(), "X00A", 4U))
-			{
-				ClientObj.Send((void *)&"ACK", 3U);
-				ClientObj.ReceiveData((void*)MatrixA_);
-				/*
-				unsigned int DataSize;
-				ClientObj.Receive((void*)&DataSize, sizeof(DataSize));
-				ClientObj.Send((void *)&"ACK", 3U);
+			ClientObj.ReceiveData((void*)MatrixA_);
+			cout << "Matrix A received." << endl;
+			// Matrix B transfer
+			ClientObj.ReceiveData((void*)MatrixB_);
+			cout << "Matrix B received." << endl;
+			ClientObj.Send((void *)&"ACK", 3U); // ACK for simulation startup.
 
-				cout << "Data size: " << DataSize << endl;
+			// Initialising Matrix C for simulation.
+			Initialise(MatrixC_, Rows, Cols);
 
-				// Transfer Loop.
-				unsigned int BytesReceived = 0;
-				while (BytesReceived != DataSize)
-					BytesReceived += (unsigned int)ClientObj.Receive((void*)((char*)MatrixA_+BytesReceived), DataSize-BytesReceived);
+			CMatrixMultiplicationNaiveGPU HeterogeneousSim(Sim.Rows, Sim.Cols, MatrixA_, MatrixB_, MatrixC_, Sim.ThreadStart, Sim.ThreadEnd);
+			HeterogeneousSim.StartTimer();
 
-				cout << "Matrix A received." << endl;
-				ClientObj.Send((void *)&"ACK", 3U);
+			// CL initialisation .
+			HeterogeneousSim.InitialiseCL(CInfo.Platform, CInfo.Emulation);
+			// Simulation.
+			HeterogeneousSim.CompleteRunHeterogeneous(Sim.Iterations); // Complete heterogeneous run.
 
-				//Display(MatrixA_, Sim.Rows, Sim.Cols);
-				*/
-				Compare(MatrixB_, MatrixA_, Sim.Rows, Sim.Cols, 0U, Sim.Rows, (PRECISION)1U);
-			}
-			else
-				break;
+			HeterogeneousSim.StopTimer();
+			double SimTime = HeterogeneousSim.GetElapsedTime();
+			ClientObj.SendData((void*)&SimTime, sizeof(double));
+			cout << "Total time taken by device " << CInfo.ID << " with client ID " << Sim.DeviceID << " = " << SimTime << " seconds." << endl;
+
+			ClientObj.SendData((void*)MatrixC_, Sim.Rows*Sim.Cols*sizeof(PRECISION));
+			/*
+			unsigned int DataSize;
+			ClientObj.Receive((void*)&DataSize, sizeof(DataSize));
+			ClientObj.Send((void *)&"ACK", 3U);
+
+			cout << "Data size: " << DataSize << endl;
+
+			// Transfer Loop.
+			unsigned int BytesReceived = 0;
+			while (BytesReceived != DataSize)
+				BytesReceived += (unsigned int)ClientObj.Receive((void*)((char*)MatrixA_+BytesReceived), DataSize-BytesReceived);
+
+			cout << "Matrix A received." << endl;
+			ClientObj.Send((void *)&"ACK", 3U);
+
+			//Display(MatrixA_, Sim.Rows, Sim.Cols);
+			*/
+			//Compare(MatrixB_, MatrixA_, Sim.Rows, Sim.Cols, 0U, Sim.Rows, (PRECISION)1U);
 		}
 
 	}
-
+	
 	srand((unsigned int)time(NULL));
 	srand(0);
 	PRECISION* MatrixA_ = new PRECISION[Rows*Cols];
@@ -160,6 +183,7 @@ int main(int argc, char * argv[])
 
 	InputRandom(MatrixA_, Rows, Cols);
 	InputRandom(MatrixB_, Rows, Cols);
+	
 	Initialise(MatrixC_, Rows, Cols);
 	Initialise(MatrixCStandard_, Rows, Cols);
 
