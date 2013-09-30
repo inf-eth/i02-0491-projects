@@ -200,7 +200,6 @@ int CServer::ReceiveData(void* Data, int ClientIndex)
 	while (BytesReceived != DataSize)
 		BytesReceived += (unsigned int)Receive((void*)((char*)Data+BytesReceived), DataSize-BytesReceived, ClientIndex);
 
-	cout << "Matrix A received." << endl;
 	Send((void *)&"ACK", 3U, ClientIndex);
 
 	return BytesReceived;
@@ -317,6 +316,8 @@ int CServer::DisplayClientInfo (int ClientIndex)
 	cout << "Client Socket : " << ClientSocketFD[ClientIndex] << endl;
 	cout << "Client ID     : " << ClientsInfo[ClientIndex].ID << endl;
 	cout << "Computation   : " << ClientsInfo[ClientIndex].ComputationPower << endl;
+	cout << "Platform      : " << ClientsInfo[ClientIndex].Platform << endl;
+	cout << "Emulation     : " << ClientsInfo[ClientIndex].Emulation << endl;
 	return 0;
 }
 
@@ -326,12 +327,14 @@ int CServer::DisplayAllClientsInfo ()
 	{
 		if (ClientSocketFD[i] != -1)
 		{
-			cout << "Client index  : " << endl;
+			cout << "Client index  : " << i << endl;
 			cout << "Client Address: " << inet_ntoa (ClientAddress[i].sin_addr) << endl;
 			cout << "Client Port   : " << ntohs (ClientAddress[i].sin_port) << endl;
 			cout << "Client Socket : " << ClientSocketFD[i] << endl;
 			cout << "Client ID     : " << ClientsInfo[i].ID << endl;
 			cout << "Computation   : " << ClientsInfo[i].ComputationPower << endl;
+			cout << "Platform      : " << ClientsInfo[i].Platform << endl;
+			cout << "Emulation     : " << ClientsInfo[i].Emulation << endl;
 		}
 	}
 	return 0;
@@ -346,6 +349,9 @@ int CServer::DisplayTheirInfo ()
 int CServer::AcceptClient()
 {
 	int ClientIndex = Accept ();
+	ReceiveData((void*)&ClientsInfo[ClientIndex]);
+	Send((void *)&"ACK", 3U, ClientIndex);
+	/*
 	Receive(ClientIndex); // Receive computation power of client.
 	double* Computation;
 	Computation = (double*)GetBuffer(ClientIndex);
@@ -354,6 +360,7 @@ int CServer::AcceptClient()
 	Receive(ClientIndex); // Receive client ID.
 	Send((void *)&"ACK", 3U, ClientIndex);
 	strncpy(ClientsInfo[ClientIndex].ID, GetBuffer(ClientIndex), NumOfBytesReceived[ClientIndex]);
+	*/
 	DisplayClientInfo (ClientIndex);
 
 	return ClientIndex;

@@ -17,6 +17,15 @@
 #define UDPSOCKET		1
 #define DEFAULTCLIENTPORT		6001
 
+class ClientInfo
+{
+public:
+	double ComputationPower;
+	char ID[64];
+	unsigned int Platform;
+	unsigned int Emulation;
+};
+
 class CClient
 {
 private:

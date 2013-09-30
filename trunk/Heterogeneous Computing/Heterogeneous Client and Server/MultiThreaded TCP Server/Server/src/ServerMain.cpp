@@ -26,11 +26,8 @@ class SimulationParameters
 	unsigned int Cols;
 	unsigned int ThreadStart;
 	unsigned int ThreadEnd;
-	unsigned int Platform;
-	unsigned int Emulation;
 	unsigned int DeviceID;
 	unsigned int Iterations;
-	char DeviceType[4];
 };
 
 TRET_TYPE AcceptorThread (void *);
@@ -127,28 +124,47 @@ int main (int argc, char *argv[])
 				Sim.Cols = Cols;
 				Sim.ThreadStart = 0U;
 				Sim.ThreadEnd = Rows;
-				Sim.Platform = 1U;
-				Sim.Emulation = 1U;
 				Sim.DeviceID = Index;
 				Sim.Iterations = 5U;
-				strcpy(Sim.DeviceType, "CPU");
 
 				ServerObj.Send((void*)&"X00S", 4U, Index);
 				ServerObj.Receive(Index);
 				ServerObj.Send((void*)&Sim, sizeof(Sim), Index);
 				ServerObj.Receive(Index);
 
+				/*
 				cout << "Sending A info" << endl;
 
 				ServerObj.Send((void*)&"X00A", 4U, Index);
 				ServerObj.Receive(Index);
-
+				*/
 				srand(0);
 				PRECISION* MatrixA_ = new PRECISION[Rows*Cols];
+				PRECISION* MatrixB_ = new PRECISION[Sim.Rows*Sim.Cols];
+				PRECISION* MatrixC_ = new PRECISION[Sim.Rows*Sim.Cols];
+
 				InputRandom(MatrixA_, Rows, Cols);
+				InputRandom(MatrixB_, Rows, Cols);
+
 				//Display(MatrixA_, Sim.Rows, Sim.Cols);
 				ServerObj.SendData((void*)MatrixA_, Rows*Cols*sizeof(PRECISION), Index);
+				ServerObj.SendData((void*)MatrixB_, Rows*Cols*sizeof(PRECISION), Index);
+				ServerObj.Receive(Index);
+				cout << "Simulation started..." << endl;
+				double SimTime;
+				ServerObj.ReceiveData((void*)&SimTime, Index);
+				cout << "Total time taken by device " << ServerObj.ClientsInfo[Index].ID << " with client ID " << Sim.DeviceID << " = " << SimTime << " seconds." << endl;
 
+				// Results verification.
+				ServerObj.ReceiveData((void*)MatrixC_, Index);
+				cout << "Matrix C received." << endl;
+				cout << "Verifiying results..." << endl;
+				PRECISION* MatrixCStandard_ = new PRECISION[Sim.Rows*Sim.Cols];
+				Initialise(MatrixCStandard_, Rows, Cols);
+				cout << "Performing standard multiplication..." << endl;
+				Multiply(MatrixA_, MatrixB_, MatrixCStandard_, Rows, Cols);
+				cout << "Comparing results..." << endl;
+				Compare(MatrixCStandard_, MatrixC_, Sim.Rows, Sim.Cols, Sim.ThreadStart, Sim.ThreadEnd, (PRECISION)Sim.Iterations);
 				/*
 				unsigned int DataSize = Sim.Rows*Sim.Cols*sizeof(PRECISION);
 				ServerObj.Send((void*)&DataSize, sizeof(DataSize), Index);
@@ -264,4 +280,22 @@ void Multiply(PRECISION* MatrixA_, PRECISION* MatrixB_, PRECISION* MatrixC_, uns
 				MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixB(k,j);
 		}
 	}
+}
+
+void Compare(PRECISION* MatrixA_, PRECISION* MatrixB_, unsigned int Rows, unsigned int Cols, unsigned int ThreadStart, unsigned int ThreadEnd, PRECISION Multiplier)
+{
+	for (unsigned int i=ThreadStart; i<ThreadEnd; i++)
+	{
+		for (unsigned int j=0; j<Cols; j++)
+		{
+			const PRECISION Difference = MatrixA(i,j) - MatrixB(i,j)/Multiplier;
+			if (Difference < (PRECISION)-0.05 || Difference > (PRECISION)0.05)
+			{
+				cout << "Results don't match!" << endl;
+				cout << "i = " << i << ", j = " << j << endl;
+				return;
+			}
+		}
+	}
+	cout << "Results verified!" << endl;
 }

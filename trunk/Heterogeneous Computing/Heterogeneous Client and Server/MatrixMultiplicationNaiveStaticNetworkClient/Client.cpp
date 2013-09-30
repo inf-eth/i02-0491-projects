@@ -160,7 +160,6 @@ int CClient::ReceiveData(void* Data)
 	while (BytesReceived != DataSize)
 		BytesReceived += (unsigned int)Receive((void*)((char*)Data+BytesReceived), DataSize-BytesReceived);
 
-	cout << "Matrix A received." << endl;
 	Send((void *)&"ACK", 3U);
 
 	return BytesReceived;
