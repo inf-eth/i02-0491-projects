@@ -108,8 +108,8 @@ int main(int argc, char * argv[])
 	ClientObj.CheckServerACK();
 	ClientObj.Send ((void *)ID, sizeof(ID));
 	*/
-	ClientObj.Receive();
-	ClientObj.CheckServerACK();
+	//ClientObj.Receive();
+	//ClientObj.CheckServerACK();
 
 	while (true)
 	{
@@ -151,7 +151,7 @@ int main(int argc, char * argv[])
 			ClientObj.SendData((void*)&SimTime, sizeof(double));
 			cout << "Total time taken by device " << CInfo.ID << " with client ID " << Sim.DeviceID << " = " << SimTime << " seconds." << endl;
 
-			ClientObj.SendData((void*)MatrixC_, Sim.Rows*Sim.Cols*sizeof(PRECISION));
+			ClientObj.SendData((void*)(MatrixC_+Sim.ThreadStart*Cols), (Sim.ThreadEnd-Sim.ThreadStart)*Sim.Cols*sizeof(PRECISION));
 			/*
 			unsigned int DataSize;
 			ClientObj.Receive((void*)&DataSize, sizeof(DataSize));
@@ -170,6 +170,10 @@ int main(int argc, char * argv[])
 			//Display(MatrixA_, Sim.Rows, Sim.Cols);
 			*/
 			//Compare(MatrixB_, MatrixA_, Sim.Rows, Sim.Cols, 0U, Sim.Rows, (PRECISION)1U);
+		}
+		if (!strncmp(ClientObj.GetBuffer(), "X00B", 4U))
+		{
+
 		}
 
 	}

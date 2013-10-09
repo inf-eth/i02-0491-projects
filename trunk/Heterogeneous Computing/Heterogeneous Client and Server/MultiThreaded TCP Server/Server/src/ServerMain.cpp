@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <cstring>
 #include <iostream>
+#include <vector>
 using namespace std;
 
 const unsigned int Rows = 1024U;
@@ -110,6 +111,39 @@ int main (int argc, char *argv[])
 			}
 			case '4':
 			{
+				// Making list of clients connected.
+				int ClientsConnected = ServerObj.GetConnections();
+				int QuantisedWorkItems = Rows/4;
+				double TotalComputingPower = 0.;
+				vector<int> Workload(ClientsConnected);
+				vector<ClientInfo> ClientInfoList(ClientsConnected);
+				vector<SimulationParameters> SimData(ClientsConnected);
+
+				for (int i=0; i<ClientsConnected; i++)
+				{
+					if (ServerObj.ClientsInfo[i].ComputationPower > 0.)
+					{
+						ClientInfoList[i] = ServerObj.ClientsInfo[i];
+						TotalComputingPower = TotalComputingPower + ClientInfoList[i].ComputationPower;
+					}
+				}
+
+				for (int i=0; i<ClientsConnected; i++)
+					Workload[i] = 4*(int)(QuantisedWorkItems*(ClientInfoList[i].ComputationPower/TotalComputingPower));
+
+				// Simulation information.
+				cout << "Total connected clients: " << ClientsConnected << endl;
+				cout << "Total Computing power:   ";
+				for (int i=0; i<ClientsConnected; i++)
+					cout << ClientInfoList[i].ComputationPower << " ";
+				cout << "= " << TotalComputingPower << endl;
+				cout << "Total work items:        " << Rows << endl;
+				cout << "Client workload share:   ";
+
+				for (int i=0; i<ClientsConnected; i++)
+					cout << Workload[i] << " ";
+				cout << endl;
+
 				break;
 			}
 			case '5':
@@ -156,7 +190,8 @@ int main (int argc, char *argv[])
 				cout << "Total time taken by device " << ServerObj.ClientsInfo[Index].ID << " with client ID " << Sim.DeviceID << " = " << SimTime << " seconds." << endl;
 
 				// Results verification.
-				ServerObj.ReceiveData((void*)MatrixC_, Index);
+				ServerObj.ReceiveData((void*)(MatrixC_+Sim.ThreadStart*Sim.Cols), Index);
+
 				cout << "Matrix C received." << endl;
 				cout << "Verifiying results..." << endl;
 				PRECISION* MatrixCStandard_ = new PRECISION[Sim.Rows*Sim.Cols];

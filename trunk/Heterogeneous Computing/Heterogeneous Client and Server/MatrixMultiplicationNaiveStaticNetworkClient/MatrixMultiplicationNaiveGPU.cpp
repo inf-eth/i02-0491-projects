@@ -349,13 +349,13 @@ int CMatrixMultiplicationNaiveGPU::RunCLKernels()
 
 	if (maxWorkGroupSize == 256)
 	{
-		localThreads[0]  = 16;
-		localThreads[1]  = 16;
+		localThreads[0]  = 4;
+		localThreads[1]  = 64;
 	}
 	else
 	{
-		localThreads[0]  = 32;
-		localThreads[1]  = 32;
+		localThreads[0]  = 4;
+		localThreads[1]  = 256;
 	}
 
 
