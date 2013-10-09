@@ -53,6 +53,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MatrixMultiplication", "exa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultithreadedMatrixMultiplication", "examples\MultithreadedMatrixMultiplication\MultithreadedMatrixMultiplication.vcxproj", "{9844BDA5-4878-4D92-9AA9-4AA09E70F85E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicThreadingWindows", "examples\BasicThreadingWindows\BasicThreadingWindows.vcxproj", "{C3E02F7C-254D-4CAA-8842-722E1D14FBBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -245,6 +247,14 @@ Global
 		{9844BDA5-4878-4D92-9AA9-4AA09E70F85E}.Release|Win32.Build.0 = Release|Win32
 		{9844BDA5-4878-4D92-9AA9-4AA09E70F85E}.Release|x64.ActiveCfg = Release|x64
 		{9844BDA5-4878-4D92-9AA9-4AA09E70F85E}.Release|x64.Build.0 = Release|x64
+		{C3E02F7C-254D-4CAA-8842-722E1D14FBBC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C3E02F7C-254D-4CAA-8842-722E1D14FBBC}.Debug|Win32.Build.0 = Debug|Win32
+		{C3E02F7C-254D-4CAA-8842-722E1D14FBBC}.Debug|x64.ActiveCfg = Debug|x64
+		{C3E02F7C-254D-4CAA-8842-722E1D14FBBC}.Debug|x64.Build.0 = Debug|x64
+		{C3E02F7C-254D-4CAA-8842-722E1D14FBBC}.Release|Win32.ActiveCfg = Release|Win32
+		{C3E02F7C-254D-4CAA-8842-722E1D14FBBC}.Release|Win32.Build.0 = Release|Win32
+		{C3E02F7C-254D-4CAA-8842-722E1D14FBBC}.Release|x64.ActiveCfg = Release|x64
+		{C3E02F7C-254D-4CAA-8842-722E1D14FBBC}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

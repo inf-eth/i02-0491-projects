@@ -18,7 +18,10 @@ CServer::CServer (int pType, int pServerPort): Type (pType), ServerPort (pServer
 	#endif
 	cout << "Server object created with type " << (Type == TCPSOCKET ? "TCP" : "UDP") << " and port " << ServerPort << endl;
 	for (int i=0; i<MAXCLIENTS; i++)
+	{
 		ClientSocketFD[i] = -1;
+		ClientsInfo[i].ComputationPower = -1;
+	}
 	Connections = 0;
 }
 
@@ -348,8 +351,8 @@ int CServer::DisplayTheirInfo ()
 
 int CServer::AcceptClient()
 {
-	int ClientIndex = Accept ();
-	ReceiveData((void*)&ClientsInfo[ClientIndex]);
+	int ClientIndex = Accept();
+	ReceiveData((void*)&ClientsInfo[ClientIndex], ClientIndex);
 	Send((void *)&"ACK", 3U, ClientIndex);
 	/*
 	Receive(ClientIndex); // Receive computation power of client.
@@ -361,6 +364,7 @@ int CServer::AcceptClient()
 	Send((void *)&"ACK", 3U, ClientIndex);
 	strncpy(ClientsInfo[ClientIndex].ID, GetBuffer(ClientIndex), NumOfBytesReceived[ClientIndex]);
 	*/
+	Connections++;
 	DisplayClientInfo (ClientIndex);
 
 	return ClientIndex;

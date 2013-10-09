@@ -86,6 +86,7 @@ public:
 	int GetType () { return Type; }
 	int GetPort () { return ServerPort; }
 	int GetErrorCheck (int ClientIndex=0) { return errorcheck[ClientIndex]; }
+	int GetConnections() {return Connections;}
 
 	int DisplayServerInfo ();
 	int DisplayClientInfo (int=0);
