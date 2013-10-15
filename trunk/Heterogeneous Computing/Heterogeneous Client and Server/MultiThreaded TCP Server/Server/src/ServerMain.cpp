@@ -250,7 +250,7 @@ int main (int argc, char *argv[])
 				SimulationParameters Sim;
 				Sim.Rows = Rows;
 				Sim.Cols = Cols;
-				Sim.ThreadStart = 512U;
+				Sim.ThreadStart = 0U;
 				Sim.ThreadEnd = Rows;
 				Sim.DeviceID = Index;
 				Sim.Iterations = Iterations;
@@ -294,6 +294,9 @@ int main (int argc, char *argv[])
 				Multiply(MatrixA_, MatrixB_, MatrixCStandard_, Rows, Cols);
 				cout << "Comparing results..." << endl;
 				Compare(MatrixCStandard_, MatrixC_, Sim.Rows, Sim.Cols, Sim.ThreadStart, Sim.ThreadEnd, (PRECISION)Sim.Iterations);
+
+				//Display(MatrixC_, Sim.Rows, Sim.Cols);
+				//Display(MatrixCStandard_, Sim.Rows, Sim.Cols);
 				/*
 				unsigned int DataSize = Sim.Rows*Sim.Cols*sizeof(PRECISION);
 				ServerObj.Send((void*)&DataSize, sizeof(DataSize), Index);
