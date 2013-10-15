@@ -151,7 +151,8 @@ int main(int argc, char * argv[])
 			ClientObj.SendData((void*)&SimTime, sizeof(double));
 			cout << "Total time taken by device " << CInfo.ID << " with client ID " << Sim.DeviceID << " = " << SimTime << " seconds." << endl;
 
-			ClientObj.SendData((void*)(MatrixC_+Sim.ThreadStart*Cols), (Sim.ThreadEnd-Sim.ThreadStart)*Sim.Cols*sizeof(PRECISION));
+			ClientObj.SendData((void*)(MatrixC_+Sim.ThreadStart*Sim.Cols), (Sim.ThreadEnd-Sim.ThreadStart)*Sim.Cols*sizeof(PRECISION));
+			//Display(MatrixC_, Sim.Rows, Sim.Cols);
 			/*
 			unsigned int DataSize;
 			ClientObj.Receive((void*)&DataSize, sizeof(DataSize));
