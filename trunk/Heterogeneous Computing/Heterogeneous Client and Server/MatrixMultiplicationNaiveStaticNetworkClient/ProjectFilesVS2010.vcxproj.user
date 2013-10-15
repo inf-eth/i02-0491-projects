@@ -9,11 +9,11 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>localhost 6000 60001 0.015 "C2D E8400 @3.00 GHz" 1 1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>localhost 6000 60002 0.090 "GTX550 Ti" 2 2</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>localhost 6000 60001 0.015 "C2D E8400 @3.00 GHz" 1 1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>localhost 6000 60002 0.32 "GTX550 Ti" 2 2</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
