@@ -14,6 +14,7 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
+#include <Timer.h>
 using namespace std;
 
 const unsigned int Rows = 1024U;
@@ -31,8 +32,20 @@ class SimulationParameters
 	unsigned int Iterations;
 };
 
+class WorkerArgs
+{
+	public:
+	CServer* ServerObj;
+	SimulationParameters* Sim;
+	PRECISION* MatrixA_;
+	PRECISION* MatrixB_;
+	PRECISION* MatrixC_;
+	int Index;
+};
+
 TRET_TYPE AcceptorThread (void *);
 TRET_TYPE ClientHandlerThread (void *);
+TRET_TYPE ClientWorkerThread (void *);
 
 #if defined __linux__ || defined __CYGWIN__
 pthread_mutex_t PlatformMutexLock = PTHREAD_MUTEX_INITIALIZER;
@@ -128,8 +141,23 @@ int main (int argc, char *argv[])
 					}
 				}
 
+				unsigned int ThreadStart = 0U;
 				for (int i=0; i<ClientsConnected; i++)
-					Workload[i] = 4*(int)(QuantisedWorkItems*(ClientInfoList[i].ComputationPower/TotalComputingPower));
+				{
+					if (i==ClientsConnected-1)
+						Workload[i] = 4*(int)((QuantisedWorkItems*(ClientInfoList[i].ComputationPower/TotalComputingPower))+1);
+					else
+						Workload[i] = 4*(int)(QuantisedWorkItems*(ClientInfoList[i].ComputationPower/TotalComputingPower));
+
+					SimData[i].Rows = Rows;
+					SimData[i].Cols = Cols;
+					SimData[i].ThreadStart = ThreadStart;
+					SimData[i].ThreadEnd = ThreadStart+(unsigned int)Workload[i];
+					SimData[i].DeviceID = i;
+					SimData[i].Iterations = Iterations;
+
+					ThreadStart = ThreadStart+(unsigned int)Workload[i];
+				}
 
 				// Simulation information.
 				cout << "Total connected clients: " << ClientsConnected << endl;
@@ -141,8 +169,74 @@ int main (int argc, char *argv[])
 				cout << "Client workload share:   ";
 
 				for (int i=0; i<ClientsConnected; i++)
-					cout << Workload[i] << " ";
-				cout << endl;
+				{
+					cout << "Client Index: " << i << endl;
+					cout << "Workload:     " << Workload[i] << endl;
+					cout << "Thread start: " << SimData[i].ThreadStart << endl;
+					cout << "Thread end:   " << SimData[i].ThreadEnd << endl;
+				}
+
+				srand(0);
+				PRECISION* MatrixA_ = new PRECISION[Rows*Cols];
+				PRECISION* MatrixB_ = new PRECISION[Rows*Cols];
+				PRECISION* MatrixC_ = new PRECISION[Rows*Cols];
+
+				InputRandom(MatrixA_, Rows, Cols);
+				InputRandom(MatrixB_, Rows, Cols);
+
+				// Threads.
+				#if defined __linux__ || defined __CYGWIN__
+				pthread_t* Clientth = new pthread_t[ClientsConnected];
+				#else
+				HANDLE* Clientth = new HANDLE[ClientsConnected];
+				#endif
+
+				__int64 tStart, tEnd;
+				cout << "Dispatching workload to devices..." << endl;
+				tStart = GetTimeus64();
+
+				WorkerArgs* Args = new WorkerArgs[ClientsConnected];
+				for (int i=0; i<ClientsConnected; i++)
+				{
+					Args[i].ServerObj = &ServerObj;
+					Args[i].Sim = &SimData[i];
+					Args[i].MatrixA_ = MatrixA_;
+					Args[i].MatrixB_ = MatrixB_;
+					Args[i].MatrixC_ = MatrixC_;
+					Args[i].Index = i;
+
+					#if defined __linux__ || defined __CYGWIN__
+					pthread_create (Clientth[i], NULL, ClientWorkerThread, (void*)&Args[i]);
+					#else
+					Clientth[i] = (HANDLE)_beginthread (ClientWorkerThread, 0, (void*)&Args[i]);
+					#endif
+				}
+				for (unsigned int i=0; i<(unsigned int)ClientsConnected; i++)
+				{
+					#if defined __linux__ || defined __CYGWIN__
+					pthread_join (Clientth[i], NULL);
+					#else
+					WaitForSingleObject(Clientth[i], INFINITE);
+					#endif
+				}
+
+				tEnd = GetTimeus64();
+				cout << "Matrix C received." << endl;
+				cout << "* Time taken by all devices = " << ((double)(tEnd-tStart))/(1000000.) << " seconds." << endl;
+				cout << "Verifiying results..." << endl;
+				PRECISION* MatrixCStandard_ = new PRECISION[Rows*Cols];
+				Initialise(MatrixCStandard_, Rows, Cols);
+				cout << "Performing standard multiplication..." << endl;
+				Multiply(MatrixA_, MatrixB_, MatrixCStandard_, Rows, Cols);
+				cout << "Comparing results..." << endl;
+				Compare(MatrixCStandard_, MatrixC_, Rows, Cols, 0U, Rows, (PRECISION)Iterations);
+
+				delete[] Args;
+				delete[] Clientth;
+				delete[] MatrixA_;
+				delete[] MatrixB_;
+				delete[] MatrixC_;
+				delete[] MatrixCStandard_;
 
 				break;
 			}
@@ -156,10 +250,10 @@ int main (int argc, char *argv[])
 				SimulationParameters Sim;
 				Sim.Rows = Rows;
 				Sim.Cols = Cols;
-				Sim.ThreadStart = 0U;
+				Sim.ThreadStart = 512U;
 				Sim.ThreadEnd = Rows;
 				Sim.DeviceID = Index;
-				Sim.Iterations = 5U;
+				Sim.Iterations = Iterations;
 
 				ServerObj.Send((void*)&"X00S", 4U, Index);
 				ServerObj.Receive(Index);
@@ -174,8 +268,8 @@ int main (int argc, char *argv[])
 				*/
 				srand(0);
 				PRECISION* MatrixA_ = new PRECISION[Rows*Cols];
-				PRECISION* MatrixB_ = new PRECISION[Sim.Rows*Sim.Cols];
-				PRECISION* MatrixC_ = new PRECISION[Sim.Rows*Sim.Cols];
+				PRECISION* MatrixB_ = new PRECISION[Rows*Cols];
+				PRECISION* MatrixC_ = new PRECISION[Rows*Cols];
 
 				InputRandom(MatrixA_, Rows, Cols);
 				InputRandom(MatrixB_, Rows, Cols);
@@ -266,6 +360,36 @@ TRET_TYPE ClientHandlerThread (void *ServerPTR)
 		int ClientIndex = ((CServer*)ServerPTR)->Accept ();
 		((CServer*)ServerPTR)->DisplayClientInfo (ClientIndex);
 	}
+
+#ifndef WIN32
+	return NULL;
+#endif
+}
+
+TRET_TYPE ClientWorkerThread (void *arg)
+{
+	CServer* ServerObj = ((WorkerArgs*)arg)->ServerObj;
+	SimulationParameters* Sim = ((WorkerArgs*)arg)->Sim;
+	PRECISION* MatrixA_ = ((WorkerArgs*)arg)->MatrixA_;
+	PRECISION* MatrixB_ = ((WorkerArgs*)arg)->MatrixB_;
+	PRECISION* MatrixC_ = ((WorkerArgs*)arg)->MatrixC_;
+	int Index = ((WorkerArgs*)arg)->Index;
+
+	ServerObj->Send((void*)&"X00S", 4U, Index);
+	ServerObj->Receive(Index);
+	ServerObj->Send((void*)&(*Sim), sizeof(*Sim), Index);
+	ServerObj->Receive(Index);
+
+	ServerObj->SendData((void*)MatrixA_, Rows*Cols*sizeof(PRECISION), Index);
+	ServerObj->SendData((void*)MatrixB_, Rows*Cols*sizeof(PRECISION), Index);
+	ServerObj->Receive(Index);
+	cout << "Simulation started..." << endl;
+	double SimTime;
+	ServerObj->ReceiveData((void*)&SimTime, Index);
+	cout << "Total time taken by device " << ServerObj->ClientsInfo[Index].ID << " with client ID " << Sim->DeviceID << " = " << SimTime << " seconds." << endl;
+
+	// Results verification.
+	ServerObj->ReceiveData((void*)(MatrixC_+Sim->ThreadStart*Sim->Cols), Index);
 
 #ifndef WIN32
 	return NULL;

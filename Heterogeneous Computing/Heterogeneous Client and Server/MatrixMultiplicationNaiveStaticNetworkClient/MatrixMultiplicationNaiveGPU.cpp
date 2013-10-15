@@ -435,13 +435,13 @@ int CMatrixMultiplicationNaiveGPU::RunHeterogeneousKernels(unsigned int Iteratio
 
 	if (maxWorkGroupSize == 256)
 	{
-		localThreads[0]  = 8;
-		localThreads[1]  = 32;
+		localThreads[0]  = 4;
+		localThreads[1]  = 64;
 	}
 	else
 	{
-		localThreads[0]  = 16;
-		localThreads[1]  = 64;
+		localThreads[0]  = 4;
+		localThreads[1]  = 256;
 	}
 
 	cout << "Max dimensions: " << maxDims << endl;
