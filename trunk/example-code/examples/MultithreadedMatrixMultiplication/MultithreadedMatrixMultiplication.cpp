@@ -85,8 +85,10 @@ void Multiply(DataType* MatrixA_, DataType* MatrixB_, DataType* MatrixC_)
 	{
 		for (int j=0; j<Cols; j++)
 		{
+			DataType Sum=0;
 			for (int k=0; k<Cols; k++)
-				MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixB(k,j);
+				Sum = Sum + MatrixA(i,k) * MatrixB(k,j);
+			MatrixC(i,j) = Sum;
 		}
 	}
 }
@@ -97,8 +99,10 @@ void MultiplyTransposed(DataType* MatrixA_, DataType* MatrixBt_, DataType* Matri
 	{
 		for (int j=0; j<Cols; j++)
 		{
+			DataType Sum = 0;
 			for (int k=0; k<Cols; k++)
-				MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixBt(j,k);
+				Sum = Sum + MatrixA(i,k) * MatrixBt(j,k);
+			MatrixC(i,j) = Sum;
 		}
 	}
 }
@@ -260,8 +264,10 @@ TRET_TYPE MultiplicationThread (void *args)
 	{
 		for (int j=0; j<Cols; j++)
 		{
+			DataType Sum=0;
 			for (int k=0; k<Cols; k++)
-				MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixB(k,j);
+				Sum = Sum + MatrixA(i,k) * MatrixB(k,j);
+			MatrixC(i,j) = Sum;
 		}
 	}
 #ifndef WIN32
@@ -289,8 +295,10 @@ TRET_TYPE MultiplicationTransposedThread (void *args)
 	{
 		for (int j=0; j<Cols; j++)
 		{
+			DataType Sum = 0;
 			for (int k=0; k<Cols; k++)
-				MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixBt(j,k);
+				Sum = Sum + MatrixA(i,k) * MatrixBt(j,k);
+			MatrixC(i,j) = Sum;
 		}
 	}
 #ifndef WIN32
