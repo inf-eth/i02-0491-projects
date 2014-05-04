@@ -15,9 +15,12 @@
 #include <iostream>
 using namespace std;
 
-const unsigned int Rows = 1024U;
-const unsigned int Cols = 1024U;
-const unsigned int Iterations = 5U;
+const unsigned int Rows = 1U*1024U;
+const unsigned int Cols = 1U*1024U;
+const unsigned int Iterations = 10U;
+const double CPUGPURatio = 0.2;
+const unsigned int PartitionDimension = Rows;
+const unsigned int PartitionThread = (unsigned int)(CPUGPURatio*(double)(PartitionDimension/16U))*16U;
 
 TRET_TYPE DeviceMultiplicationThread (void *);
 #if defined __linux__ || defined __CYGWIN__
@@ -88,9 +91,9 @@ int main(int argc, char * argv[])
 	Device[0].MatA_ = MatrixA_;
 	Device[0].MatB_ = MatrixB_;
 	Device[0].MatC_ = MatrixC_;
-	Device[0].ThreadStart = 48U;
-	Device[0].ThreadEnd = 1024U;
-	Device[0].Platform = 2U;
+	Device[0].ThreadStart = PartitionThread;//176U;
+	Device[0].ThreadEnd = PartitionDimension;
+	Device[0].Platform = 1U;
 	Device[0].Emulation = 2U;
 	Device[0].DeviceID = 0U;
 	Device[0].Iterations = Iterations;
@@ -102,7 +105,7 @@ int main(int argc, char * argv[])
 	Device[1].MatB_ = MatrixB_;
 	Device[1].MatC_ = MatrixC_;
 	Device[1].ThreadStart = 0U;
-	Device[1].ThreadEnd = 48U;
+	Device[1].ThreadEnd = PartitionThread;//176U;
 	Device[1].Platform = 1U;
 	Device[1].Emulation = 1U;
 	Device[1].DeviceID = 1U;
