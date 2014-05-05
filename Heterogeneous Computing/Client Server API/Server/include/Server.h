@@ -14,7 +14,7 @@
 #define UDPSOCKET		1
 #define DEFAULTSERVERPORT		6000
 
-class CServer
+class Server
 {
 private:
 	int Type;		// TCP or UDP.
@@ -37,39 +37,39 @@ private:
 	int errorcheck;
 
 public:
-	CServer (int = TCPSOCKET, int = DEFAULTSERVERPORT);
+	Server(int = TCPSOCKET, int = DEFAULTSERVERPORT);
 	// Socket function wrappers.
-	int CreateSocket (int = TCPSOCKET);			// 0 = TCP, 1 = UDP; default is to create TCP socket.
-	int SetSocketOptions ();					// Set socket options to reuse address.
-	int InitializeAddress (int = DEFAULTSERVERPORT);	// Default Server port is 5000.
+	int CreateSocket(int = TCPSOCKET);			// 0 = TCP, 1 = UDP; default is to create TCP socket.
+	int SetSocketOptions();					// Set socket options to reuse address.
+	int InitialiseAddress(int = DEFAULTSERVERPORT);	// Default Server port is 5000.
 
-	int Bind ();								// Bind Server socket with address.
-	int Listen ();								// Listen for incoming connections; for TCP Server.
-	int Accept ();								// Accept incoming connections.
+	int Bind();								// Bind Server socket with address.
+	int Listen();								// Listen for incoming connections; for TCP Server.
+	int Accept();								// Accept incoming connections.
 
 	// TCP send() and recv()
-	int Send (void *, unsigned int);
-	int Receive ();
+	int Send (void*, unsigned int);
+	int Receive();
 
 	// UDP, sendto (data, datasize, IP/name, port);
-	int SendTo (void *, unsigned int);
-	int SendTo (void *, unsigned int, char *, int);
-	// recvfrom ();
-	int RecvFrom ();
+	int SendTo(void*, unsigned int);
+	int SendTo(void*, unsigned int, char*, int);
+	// recvfrom();
+	int RecvFrom();
 	
-	int CloseServerSocket ();
-	int CloseClientSocket ();
+	int CloseServerSocket();
+	int CloseClientSocket();
 
 	// Additional functions.
-	int GetType () { return Type; }
-	int GetPort () { return ServerPort; }
-	int GetErrorCheck () { return errorcheck; }
+	int GetType() { return Type; }
+	int GetPort() { return ServerPort; }
+	int GetErrorCheck() { return errorcheck; }
 
-	int DisplayServerInfo ();
-	int DisplayClientInfo ();
-	int DisplayTheirInfo ();
+	int DisplayServerInfo();
+	int DisplayClientInfo();
+	int DisplayTheirInfo();
 
-	char* GetBuffer ();
-	int GetNumOfBytesSent ();
-	int GetNumOfBytesReceived ();
+	char* GetBuffer();
+	int GetNumOfBytesSent();
+	int GetNumOfBytesReceived();
 };

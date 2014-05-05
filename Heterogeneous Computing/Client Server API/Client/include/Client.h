@@ -14,7 +14,7 @@
 #define UDPSOCKET		1
 #define DEFAULTCLIENTPORT		6001
 
-class CClient
+class Client
 {
 private:
 	int Type;		// TCP or UDP.
@@ -36,36 +36,36 @@ private:
 	int errorcheck;
 
 public:
-	CClient (int = TCPSOCKET, int = DEFAULTCLIENTPORT);
+	Client(int = TCPSOCKET, int = DEFAULTCLIENTPORT);
 	// Socket function wrappers.
-	int CreateSocket (int = TCPSOCKET);			// 0 = TCP, 1 = UDP; default is to create TCP socket.
-	int InitializeAddress (int = DEFAULTCLIENTPORT);	// Default Client port is 6001.
-	int SetSocketOptions ();					// Set socket options to reuse address.
-	int Bind ();								// Bind Client socket with address.
-	int Connect (char *, int);
+	int CreateSocket(int = TCPSOCKET);			// 0 = TCP, 1 = UDP; default is to create TCP socket.
+	int InitialiseAddress(int = DEFAULTCLIENTPORT);	// Default Client port is 6001.
+	int SetSocketOptions();					// Set socket options to reuse address.
+	int Bind();								// Bind Client socket with address.
+	int Connect(char*, int);
 
 	// TCP send() and receive().
-	int Send (void *, unsigned int);
-	int Receive ();
+	int Send(void*, unsigned int);
+	int Receive();
 
 	// UDP, sendto (data, datasize, IP/name, port);
-	int SendTo (void *, unsigned int);
-	int SendTo (void *, unsigned int, char *, int);
-	// recvfrom ();
-	int RecvFrom ();
+	int SendTo(void*, unsigned int);
+	int SendTo(void*, unsigned int, char*, int);
+	// recvfrom();
+	int RecvFrom();
 
-	int CloseClientSocket ();
+	int CloseClientSocket();
 
 	// Additional functions.
-	int GetType () { return Type; }
-	int GetPort () { return ClientPort; }
-	int GetErrorCheck () { return errorcheck; }
+	int GetType() { return Type; }
+	int GetPort() { return ClientPort; }
+	int GetErrorCheck() { return errorcheck; }
 
-	int DisplayServerInfo ();
-	int DisplayClientInfo ();
-	int DisplayTheirInfo ();
+	int DisplayServerInfo();
+	int DisplayClientInfo();
+	int DisplayTheirInfo();
 
-	char* GetBuffer ();
-	int GetNumOfBytesSent ();
-	int GetNumOfBytesReceived ();
+	char* GetBuffer();
+	int GetNumOfBytesSent();
+	int GetNumOfBytesReceived();
 };
