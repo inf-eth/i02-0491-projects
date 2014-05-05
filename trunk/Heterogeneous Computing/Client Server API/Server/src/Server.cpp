@@ -6,7 +6,7 @@ using std::cerr;
 using std::endl;
 using std::fill;
 
-CServer::CServer (int pType, int pServerPort): Type (pType), ServerPort (pServerPort)
+Server::Server(int pType, int pServerPort): Type(pType), ServerPort(pServerPort)
 {
 	#ifdef WIN32
 	WSADATA wsaData;
@@ -19,17 +19,17 @@ CServer::CServer (int pType, int pServerPort): Type (pType), ServerPort (pServer
 	cout << "Server object created with type " << (Type == TCPSOCKET ? "TCP" : "UDP") << " and port " << ServerPort << endl;
 }
 
-int CServer::CreateSocket (int pType)			// 0 = TCP, 1 = UDP; default is to create TCP socket.
+int Server::CreateSocket(int pType)			// 0 = TCP, 1 = UDP; default is to create TCP socket.
 {
 	if (pType == TCPSOCKET)
 	{
 		Type = TCPSOCKET;
-		errorcheck = ServerSocketFD = (int)socket (AF_INET, SOCK_STREAM, 0);
+		errorcheck = ServerSocketFD = (int)socket(AF_INET, SOCK_STREAM, 0);
 	}
 	else
 	{
 		Type = UDPSOCKET;
-		errorcheck = ServerSocketFD = (int)socket (AF_INET, SOCK_DGRAM, 0);
+		errorcheck = ServerSocketFD = (int)socket(AF_INET, SOCK_DGRAM, 0);
 	}
 	if (errorcheck == -1)
 	{
@@ -38,10 +38,10 @@ int CServer::CreateSocket (int pType)			// 0 = TCP, 1 = UDP; default is to creat
 	return errorcheck;
 }
 
-int CServer::SetSocketOptions ()					// Set socket options to reuse address.
+int Server::SetSocketOptions()					// Set socket options to reuse address.
 {
 	int Yes = 1;
-	errorcheck = setsockopt (ServerSocketFD, SOL_SOCKET, SO_REUSEADDR, (char *)&Yes, sizeof (int));
+	errorcheck = setsockopt(ServerSocketFD, SOL_SOCKET, SO_REUSEADDR, (char*)&Yes, sizeof(int));
 	if (errorcheck == -1)
 	{
 		cerr << "ERROR002: Setting socket options. " << endl;
@@ -49,20 +49,20 @@ int CServer::SetSocketOptions ()					// Set socket options to reuse address.
 	return errorcheck;
 }
 
-int CServer::InitializeAddress (int pPort)	// Default Server port is 5000.
+int Server::InitialiseAddress(int pPort)	// Default Server port is 5000.
 {
 	ServerPort = pPort;
-	// Server address initialization for binding.
+	// Server address initialisation for binding.
 	ServerAddress.sin_family = AF_INET;				// Socekt family.
 	ServerAddress.sin_addr.s_addr = INADDR_ANY;		// Setting server IP. INADDR_ANY blank IP.
-	ServerAddress.sin_port = htons (ServerPort);	// Setting server port.
-	fill ((char*)&(ServerAddress.sin_zero), (char*)&(ServerAddress.sin_zero)+8, '\0');
+	ServerAddress.sin_port = htons(ServerPort);	// Setting server port.
+	fill((char*)&(ServerAddress.sin_zero), (char*)&(ServerAddress.sin_zero)+8, '\0');
 	return 0;
 }
 
-int CServer::Bind ()								// Bind Server socket with address.
+int Server::Bind()								// Bind Server socket with address.
 {
-	errorcheck = bind (ServerSocketFD, (sockaddr *)&ServerAddress, sizeof (ServerAddress));
+	errorcheck = bind(ServerSocketFD, (sockaddr *)&ServerAddress, sizeof(ServerAddress));
 	if (errorcheck == -1)
 	{
 		cerr << "ERROR003: Binding." << endl;
@@ -70,9 +70,9 @@ int CServer::Bind ()								// Bind Server socket with address.
 	return errorcheck;
 }
 
-int CServer::Listen ()								// Listen for incoming connections; for TCP Server.
+int Server::Listen()								// Listen for incoming connections; for TCP Server.
 {
-	errorcheck = listen (ServerSocketFD, 0);
+	errorcheck = listen(ServerSocketFD, 0);
 	if (errorcheck == -1)
 	{
 		cerr << "ERROR004: Listening." << endl;
@@ -80,22 +80,22 @@ int CServer::Listen ()								// Listen for incoming connections; for TCP Server
 	return errorcheck;
 }
 
-int CServer::Accept ()								// Accept incoming connections.
+int Server::Accept()								// Accept incoming connections.
 {
-	socklen_t ClientAddressLength = sizeof (ClientAddress);
-	errorcheck = ClientSocketFD = (int)accept (ServerSocketFD, (sockaddr *)&ClientAddress, &ClientAddressLength);
+	socklen_t ClientAddressLength = sizeof(ClientAddress);
+	errorcheck = ClientSocketFD = (int)accept(ServerSocketFD, (sockaddr*)&ClientAddress, &ClientAddressLength);
 	if (errorcheck == -1)
 	{
 		cerr << "ERROR005: Accepting." << endl;
 		return errorcheck;
 	}
-	cout << "*** Server got connection from " << inet_ntoa (ClientAddress.sin_addr) << " on socket '" << ClientSocketFD << "' ***" << endl;
+	cout << "*** Server got connection from " << inet_ntoa(ClientAddress.sin_addr) << " on socket '" << ClientSocketFD << "' ***" << endl;
 	return errorcheck;
 }
 
-int CServer::Receive ()
+int Server::Receive()
 {
-	errorcheck = NumOfBytesReceived = recv (ClientSocketFD, Buffer, MAXBUFFERSIZE-1, 0);
+	errorcheck = NumOfBytesReceived = recv(ClientSocketFD, Buffer, MAXBUFFERSIZE-1, 0);
 	if (errorcheck == -1)
 	{
 		cerr << "ERROR006 Receiving" << endl;
@@ -105,9 +105,9 @@ int CServer::Receive ()
 	return errorcheck;
 }
 
-int CServer::Send (void *Data, unsigned int DataSize)
+int Server::Send(void* Data, unsigned int DataSize)
 {
-	errorcheck = NumOfBytesSent = send (ClientSocketFD, (char *)Data, DataSize, 0);
+	errorcheck = NumOfBytesSent = send(ClientSocketFD, (char*)Data, DataSize, 0);
 	if (errorcheck == -1)
 	{
 		cerr << "ERROR007: Server Sending. " << endl;
@@ -116,31 +116,31 @@ int CServer::Send (void *Data, unsigned int DataSize)
 	return errorcheck;
 }
 
-// UDP, sendto (data, datasize, IP/name, port);
-int CServer::SendTo (void *Data, unsigned int DataSize)
+// UDP, sendto(data, datasize, IP/name, port);
+int Server::SendTo(void* Data, unsigned int DataSize)
 {
-	errorcheck = NumOfBytesSent = sendto (ServerSocketFD, (char *)Data, DataSize, 0, (sockaddr *)&TheirAddress, sizeof (TheirAddress));
+	errorcheck = NumOfBytesSent = sendto(ServerSocketFD, (char*)Data, DataSize, 0, (sockaddr*)&TheirAddress, sizeof(TheirAddress));
 	if (errorcheck == -1)
 	{
 		cerr << "ERROR008: Server Sending to. " << endl;
 	}
 	return errorcheck;
 }
-int CServer::SendTo (void *Data, unsigned int DataSize, char * pTheirIP, int pTheirPort)
+int Server::SendTo(void* Data, unsigned int DataSize, char* pTheirIP, int pTheirPort)
 {
 	struct hostent* TheirIP;		// Server name/IP.
-	if ((TheirIP = gethostbyname (pTheirIP)) == NULL)
+	if ((TheirIP = gethostbyname(pTheirIP)) == NULL)
 	{
 		cerr << "ERROR009: Getting Their name/IP" << endl;
 		return -1;
 	}
 	// Initializing Their address to send to.
 	TheirAddress.sin_family = AF_INET;							// Socket family.
-	TheirAddress.sin_addr = *((in_addr *)(*TheirIP).h_addr);		// Their name/IP.
-	TheirAddress.sin_port = htons (pTheirPort);			// Their port provided as argument.
-	fill ((char*)&(TheirAddress.sin_zero), (char*)&(TheirAddress.sin_zero)+8, '\0');
+	TheirAddress.sin_addr = *((in_addr*)(*TheirIP).h_addr);		// Their name/IP.
+	TheirAddress.sin_port = htons(pTheirPort);			// Their port provided as argument.
+	fill((char*)&(TheirAddress.sin_zero), (char*)&(TheirAddress.sin_zero)+8, '\0');
 
-	errorcheck = NumOfBytesSent = sendto (ServerSocketFD, (char *)Data, DataSize, 0, (sockaddr *)&TheirAddress, sizeof (TheirAddress));
+	errorcheck = NumOfBytesSent = sendto(ServerSocketFD, (char*)Data, DataSize, 0, (sockaddr*)&TheirAddress, sizeof(TheirAddress));
 	if (errorcheck == -1)
 	{
 		cerr << "ERROR010: Server Sending to. " << endl;
@@ -148,67 +148,67 @@ int CServer::SendTo (void *Data, unsigned int DataSize, char * pTheirIP, int pTh
 	return errorcheck;
 }
 // recvfrom ();
-int CServer::RecvFrom ()
+int Server::RecvFrom()
 {
-	socklen_t TheirAddressSize = sizeof (TheirAddress);
-	errorcheck = NumOfBytesReceived = recvfrom (ServerSocketFD, Buffer, MAXBUFFERSIZE-1, 0, (sockaddr *)&TheirAddress, &TheirAddressSize);
+	socklen_t TheirAddressSize = sizeof(TheirAddress);
+	errorcheck = NumOfBytesReceived = recvfrom(ServerSocketFD, Buffer, MAXBUFFERSIZE-1, 0, (sockaddr*)&TheirAddress, &TheirAddressSize);
 	if (errorcheck == -1)
 	{
 		cerr << "ERROR011 Receiveing" << endl;
 		return errorcheck;
 	}
 	Buffer[NumOfBytesReceived] = '\0';
-	cout << "Server got packet from " << inet_ntoa (TheirAddress.sin_addr) << " on socket " << ServerSocketFD << endl;
+	cout << "Server got packet from " << inet_ntoa(TheirAddress.sin_addr) << " on socket " << ServerSocketFD << endl;
 	return errorcheck;
 }
 
-int CServer::CloseServerSocket ()
+int Server::CloseServerSocket()
 {
-	errorcheck = close (ServerSocketFD);
+	errorcheck = close(ServerSocketFD);
 	return errorcheck;
 }
 
-int CServer::CloseClientSocket ()
+int Server::CloseClientSocket()
 {
-	errorcheck = close (ClientSocketFD);
+	errorcheck = close(ClientSocketFD);
 	return errorcheck;
 }
 
 // Additional Functions.
-int CServer::DisplayServerInfo ()
+int Server::DisplayServerInfo()
 {
-	cout << "Server Address: " << inet_ntoa (ServerAddress.sin_addr) << endl;
-	cout << "Server Port   : " << ntohs (ServerAddress.sin_port) << endl;
+	cout << "Server Address: " << inet_ntoa(ServerAddress.sin_addr) << endl;
+	cout << "Server Port   : " << ntohs(ServerAddress.sin_port) << endl;
 	cout << "Server Socket : " << ServerSocketFD << endl;
 	return 0;
 }
 
-int CServer::DisplayClientInfo ()
+int Server::DisplayClientInfo()
 {
-	cout << "Client Address: " << inet_ntoa (ClientAddress.sin_addr) << endl;
-	cout << "Client Port   : " << ntohs (ClientAddress.sin_port) << endl;
+	cout << "Client Address: " << inet_ntoa(ClientAddress.sin_addr) << endl;
+	cout << "Client Port   : " << ntohs(ClientAddress.sin_port) << endl;
 	cout << "Client Socket : " << ClientSocketFD << endl;
 	return 0;
 }
 
-int CServer::DisplayTheirInfo ()
+int Server::DisplayTheirInfo()
 {
-	cout << "Their Address: " << inet_ntoa (TheirAddress.sin_addr) << endl;
-	cout << "Their Port   : " << ntohs (TheirAddress.sin_port) << endl;
+	cout << "Their Address: " << inet_ntoa(TheirAddress.sin_addr) << endl;
+	cout << "Their Port   : " << ntohs(TheirAddress.sin_port) << endl;
 	return 0;
 }
 
-int CServer::GetNumOfBytesSent ()
+int Server::GetNumOfBytesSent()
 {
 	return NumOfBytesSent;
 }
 
-int CServer::GetNumOfBytesReceived ()
+int Server::GetNumOfBytesReceived()
 {
 	return NumOfBytesReceived;
 }
 
-char* CServer::GetBuffer ()
+char* Server::GetBuffer()
 {
 	return Buffer;
 }
