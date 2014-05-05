@@ -18,14 +18,14 @@ int main (int argc, char **argv)
 	}
 
 	// Create Client object.
-	CClient ClientObj (TCPSOCKET, DEFAULTCLIENTPORT);			// Can create an object without arguments. Defaults are TCPSOCKET and DEFAULTPORT (6001).
+	Client ClientObj (TCPSOCKET, DEFAULTCLIENTPORT);			// Can create an object without arguments. Defaults are TCPSOCKET and DEFAULTPORT (6001).
 
 	// Create Client Socket.
 	ClientObj.CreateSocket (TCPSOCKET);
 	ClientObj.SetSocketOptions ();
 
-	// Initialize and bind Client address.
-	ClientObj.InitializeAddress (DEFAULTCLIENTPORT);	// Without any argument default port will be chosen.
+	// Initialise and bind Client address.
+	ClientObj.InitialiseAddress (DEFAULTCLIENTPORT);	// Without any argument default port will be chosen.
 	ClientObj.Bind ();
 
 	// Connect to Server. Server name/IP and port are provided as arguments.
@@ -43,7 +43,7 @@ int main (int argc, char **argv)
 	// ********************* UDP Communication ***************************
 	cout << "TCP connection closed, now doing UDP communication." << endl;
 	ClientObj.CreateSocket (UDPSOCKET);
-	ClientObj.InitializeAddress (6001);
+	ClientObj.InitialiseAddress (6001);
 	ClientObj.Bind ();
 
 	char UDPmessage[] = "UDP message from client.";
