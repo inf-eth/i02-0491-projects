@@ -8,14 +8,14 @@ using std::endl;
 int main (int argc, char *argv[])
 {
 	// Create Server object.
-	CServer ServerObj (TCPSOCKET, DEFAULTSERVERPORT);			// Without any arguments Server will set defaults, TCPSOCKET as type and 6000 as port.
+	Server ServerObj (TCPSOCKET, DEFAULTSERVERPORT);			// Without any arguments Server will set defaults, TCPSOCKET as type and 6000 as port.
 
 	// Create Server socket and set socket options.
 	ServerObj.CreateSocket (TCPSOCKET);		// No argument means TCPSOCKET
 	ServerObj.SetSocketOptions ();
 
 	// Initial Server address struct and bind it with Server's socket.
-	ServerObj.InitializeAddress (6000);		// No argument here will take default port.
+	ServerObj.InitialiseAddress (6000);		// No argument here will take default port.
 	ServerObj.Bind ();
 
 	// Listen for incoming connections.
@@ -41,7 +41,7 @@ int main (int argc, char *argv[])
 	// ********************* UDP Communication ***************************
 	cout << "TCP connection closed, now doing UDP communication." << endl;
 	ServerObj.CreateSocket (UDPSOCKET);
-	ServerObj.InitializeAddress (6000);
+	ServerObj.InitialiseAddress (6000);
 	ServerObj.Bind ();
 
 	cout << "Server recv'in from() packets..." << endl;
