@@ -14,8 +14,8 @@
 #include <iostream>
 using namespace std;
 
-const unsigned int Rows = 4U;
-const unsigned int Cols = 4U;
+const unsigned int Rows = 1024U;
+const unsigned int Cols = 1024U;
 const unsigned int Iterations = 10U;
 
 TRET_TYPE DeviceMultiplicationThread (void *);
