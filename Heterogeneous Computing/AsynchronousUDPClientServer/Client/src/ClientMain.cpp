@@ -41,11 +41,11 @@ int main (int argc, char **argv)
 	#endif
 
 	// Create Client object.
-	CClient ClientObj (UDPSOCKET, DEFAULTCLIENTPORT);			// Can create an object without arguments. Defaults are TCPSOCKET and DEFAULTPORT (6001).
+	Client ClientObj (UDPSOCKET, DEFAULTCLIENTPORT);			// Can create an object without arguments. Defaults are TCPSOCKET and DEFAULTPORT (6001).
 
 	// Create Client Socket.
 	ClientObj.CreateSocket (UDPSOCKET);
-	ClientObj.InitializeAddress (DEFAULTCLIENTPORT);	// Without any argument default port will be chosen.
+	ClientObj.InitialiseAddress (DEFAULTCLIENTPORT);	// Without any argument default port will be chosen.
 	ClientObj.Bind ();
 
 	// Start Sender and receiver threads.
@@ -80,8 +80,8 @@ TRET_TYPE SenderThread (void *ClientPTR)
 		string ClientMessage;
 		cout << ">>";
 		getline(cin, ClientMessage);
-		//((CClient*)ClientPTR)->SendTo ((void *)ClientMessage.c_str(), (unsigned int)strlen (ClientMessage.c_str())); // If sending a reply packet most recent received address is used.
-		((CClient*)ClientPTR)->SendTo ((void *)ClientMessage.c_str(), (unsigned int)strlen (ClientMessage.c_str()), "localhost", 6000);	// Need to explicitly mention receiver address if not a reply.
+		//((Client*)ClientPTR)->SendTo ((void *)ClientMessage.c_str(), (unsigned int)strlen (ClientMessage.c_str())); // If sending a reply packet most recent received address is used.
+		((Client*)ClientPTR)->SendTo ((void *)ClientMessage.c_str(), (unsigned int)strlen (ClientMessage.c_str()), "localhost", 6000);	// Need to explicitly mention receiver address if not a reply.
 	}
 
 #ifndef WIN32
@@ -93,9 +93,9 @@ TRET_TYPE ReceiverThread (void *ClientPTR)
 {
 	while (true) // infinite loop.
 	{
-		((CClient*)ClientPTR)->RecvFrom (); // Blocking.
-		cout << "They say: " << ((CClient*)ClientPTR)->GetBuffer () << endl;
-		((CClient*)ClientPTR)->DisplayTheirInfo ();
+		((Client*)ClientPTR)->RecvFrom (); // Blocking.
+		cout << "They say: " << ((Client*)ClientPTR)->GetBuffer () << endl;
+		((Client*)ClientPTR)->DisplayTheirInfo ();
 	}
 
 #ifndef WIN32

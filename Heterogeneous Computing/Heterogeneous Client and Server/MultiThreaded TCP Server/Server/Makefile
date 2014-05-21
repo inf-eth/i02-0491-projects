@@ -2,7 +2,7 @@
 CC=g++
 DEPS=-I./include
 SRCDIR=src
-CPPFILES=ServerMain Server
+CPPFILES=ServerMain Server Timer
 TARGET=Server
 LIBS=-lpthread
 

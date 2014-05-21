@@ -20,10 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Server.h" />
+    <ClInclude Include="include\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Server.cpp" />
     <ClCompile Include="src\ServerMain.cpp" />
+    <ClCompile Include="src\Timer.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CDF67783-6265-4149-9F49-9E9E516AE92C}</ProjectGuid>

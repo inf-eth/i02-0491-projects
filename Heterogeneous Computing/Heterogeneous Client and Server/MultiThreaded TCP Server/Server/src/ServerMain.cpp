@@ -11,6 +11,7 @@
 
 #include <Server.h>
 #include <iomanip>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <vector>
@@ -206,7 +207,7 @@ int main (int argc, char *argv[])
 					Args[i].Index = i;
 
 					#if defined __linux__ || defined __CYGWIN__
-					pthread_create (Clientth[i], NULL, ClientWorkerThread, (void*)&Args[i]);
+					pthread_create (&Clientth[i], NULL, ClientWorkerThread, (void*)&Args[i]);
 					#else
 					Clientth[i] = (HANDLE)_beginthread (ClientWorkerThread, 0, (void*)&Args[i]);
 					#endif
