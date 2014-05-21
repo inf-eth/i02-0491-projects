@@ -30,10 +30,10 @@ int main (int argc, char *argv[])
 	#endif
 
 	// Create Server object.
-	CServer ServerObj (UDPSOCKET, DEFAULTSERVERPORT);			// Without any arguments Server will set defaults, TCPSOCKET as type and 6000 as port.
+	Server ServerObj (UDPSOCKET, DEFAULTSERVERPORT);			// Without any arguments Server will set defaults, TCPSOCKET as type and 6000 as port.
 
 	ServerObj.CreateSocket (UDPSOCKET);
-	ServerObj.InitializeAddress (6000);
+	ServerObj.InitialiseAddress (6000);
 	ServerObj.Bind ();
 
 	// Start Sender and receiver threads.
@@ -69,8 +69,8 @@ TRET_TYPE SenderThread (void *ServerPTR)
 		string ServerMessage;
 		cout << ">>";
 		getline(cin, ServerMessage);
-		//((CServer*)ServerPTR)->SendTo ((void *)ServerMessage.c_str(), (unsigned int)strlen (ServerMessage.c_str())); // If sending a reply packet most recent received address is used.
-		((CServer*)ServerPTR)->SendTo ((void *)ServerMessage.c_str(), (unsigned int)strlen (ServerMessage.c_str()), "localhost", 6001);	// Need to explicitly mention receiver address if not a reply.
+		//((Server*)ServerPTR)->SendTo ((void *)ServerMessage.c_str(), (unsigned int)strlen (ServerMessage.c_str())); // If sending a reply packet most recent received address is used.
+		((Server*)ServerPTR)->SendTo ((void *)ServerMessage.c_str(), (unsigned int)strlen (ServerMessage.c_str()), "localhost", 6001);	// Need to explicitly mention receiver address if not a reply.
 	}
 
 #ifndef WIN32
@@ -82,9 +82,9 @@ TRET_TYPE ReceiverThread (void *ServerPTR)
 {
 	while (true) // infinite loop.
 	{
-		((CServer*)ServerPTR)->RecvFrom (); // Blocking.
-		cout << "They say: " << ((CServer*)ServerPTR)->GetBuffer () << endl;
-		((CServer*)ServerPTR)->DisplayTheirInfo ();
+		((Server*)ServerPTR)->RecvFrom (); // Blocking.
+		cout << "They say: " << ((Server*)ServerPTR)->GetBuffer () << endl;
+		((Server*)ServerPTR)->DisplayTheirInfo ();
 	}
 
 #ifndef WIN32

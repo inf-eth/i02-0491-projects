@@ -30,14 +30,14 @@ int main (int argc, char *argv[])
 	#endif
 
 	// Create Server object.
-	CServer ServerObj (TCPSOCKET, DEFAULTSERVERPORT);			// Without any arguments Server will set defaults, TCPSOCKET as type and 6000 as port.
+	Server ServerObj (TCPSOCKET, DEFAULTSERVERPORT);			// Without any arguments Server will set defaults, TCPSOCKET as type and 6000 as port.
 
 	// Create Server socket and set socket options.
 	ServerObj.CreateSocket (TCPSOCKET);		// No argument means TCPSOCKET
 	ServerObj.SetSocketOptions ();
 
 	// Initial Server address struct and bind it with Server's socket.
-	ServerObj.InitializeAddress (6000);		// No argument here will take default port.
+	ServerObj.InitialiseAddress (6000);		// No argument here will take default port.
 	ServerObj.Bind ();
 
 	// Listen for incoming connections.
@@ -82,7 +82,7 @@ TRET_TYPE SenderThread (void *ServerPTR)
 		string ServerMessage;
 		cout << ">>";
 		getline(cin, ServerMessage);
-		((CServer*)ServerPTR)->Send ((void *)ServerMessage.c_str(), (unsigned int)strlen (ServerMessage.c_str()));
+		((Server*)ServerPTR)->Send ((void *)ServerMessage.c_str(), (unsigned int)strlen (ServerMessage.c_str()));
 	}
 
 #ifndef WIN32
@@ -94,9 +94,9 @@ TRET_TYPE ReceiverThread (void *ServerPTR)
 {
 	while (true) // infinite loop.
 	{
-		((CServer*)ServerPTR)->Receive (); // Blocking.
-		cout << "No. of bytes received: " << ((CServer*)ServerPTR)->GetNumOfBytesReceived () << endl;
-		cout << "Client says: " << ((CServer*)ServerPTR)->GetBuffer() << endl;
+		((Server*)ServerPTR)->Receive (); // Blocking.
+		cout << "No. of bytes received: " << ((Server*)ServerPTR)->GetNumOfBytesReceived () << endl;
+		cout << "Client says: " << ((Server*)ServerPTR)->GetBuffer() << endl;
 	}
 
 #ifndef WIN32
