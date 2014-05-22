@@ -57,16 +57,16 @@ public:
 	int Connect (char *, int);
 
 	// TCP send() and receive().
-	int Send (void *, unsigned int);
+	int Send (void *, int);
 	int Receive();
-	int Receive(void*, unsigned int);
+	int Receive(void*, int);
 	int CheckServerACK();
-	int SendData(void *, unsigned int);
+	int SendData(void *, int);
 	int ReceiveData(void *);
 
 	// UDP, sendto (data, datasize, IP/name, port);
-	int SendTo (void *, unsigned int);
-	int SendTo (void *, unsigned int, char *, int);
+	int SendTo (void *, int);
+	int SendTo (void *, int, char *, int);
 	// recvfrom ();
 	int RecvFrom ();
 
