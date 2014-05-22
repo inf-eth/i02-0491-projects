@@ -24,6 +24,8 @@ __kernel void MatrixMultiplicationNaiveGPUHeterogenousKernel(__global PRECISION*
 {
 	unsigned int i = get_global_id(0) + ThreadStart;
 	unsigned int j = get_global_id(1);
+	PRECISION Sum = MatrixC(i,j);
 	for (unsigned int k=0; k<Cols; k++)
-		MatrixC(i,j) = MatrixC(i,j) + MatrixA(i,k) * MatrixB(k,j);
+		Sum = Sum + MatrixA(i,k) * MatrixB(k,j);
+	MatrixC(i,j) = Sum;
 }

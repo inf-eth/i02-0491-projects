@@ -108,7 +108,7 @@ int CClient::Receive ()
 	return errorcheck;
 }
 
-int CClient::Receive (void* DataBuffer, unsigned DataSize)
+int CClient::Receive (void* DataBuffer, int DataSize)
 {
 	errorcheck = NumOfBytesReceived = recv (ClientSocketFD, (char*)DataBuffer, DataSize, 0);
 	if (errorcheck == -1)
@@ -128,16 +128,16 @@ int CClient::CheckServerACK()
 	return 0;
 }
 
-int CClient::SendData(void* Data, unsigned int DataSize)
+int CClient::SendData(void* Data, int DataSize)
 {
 	Send((void*)&DataSize, sizeof(DataSize));
 	Receive();
 
 	cout << "Data size: " << DataSize << endl;
 
-	unsigned int BytesSent = 0;
+	int BytesSent = 0;
 	while (BytesSent != DataSize)
-		BytesSent += (unsigned int)Send((void*)((char*)Data+BytesSent), DataSize-BytesSent);
+		BytesSent += Send((void*)((char*)Data+BytesSent), DataSize-BytesSent);
 
 	cout << "Data Sent." << endl;
 	Receive();
@@ -149,23 +149,23 @@ int CClient::SendData(void* Data, unsigned int DataSize)
 
 int CClient::ReceiveData(void* Data)
 {
-	unsigned int DataSize;
+	int DataSize;
 	Receive((void*)&DataSize, sizeof(DataSize));
 	Send((void *)&"ACK", 3U);
 
 	cout << "Data size: " << DataSize << endl;
 
 	// Transfer Loop.
-	unsigned int BytesReceived = 0;
+	int BytesReceived = 0;
 	while (BytesReceived != DataSize)
-		BytesReceived += (unsigned int)Receive((void*)((char*)Data+BytesReceived), DataSize-BytesReceived);
+		BytesReceived += Receive((void*)((char*)Data+BytesReceived), DataSize-BytesReceived);
 
 	Send((void *)&"ACK", 3U);
 
 	return BytesReceived;
 }
 
-int CClient::Send (void *Data, unsigned int DataSize)
+int CClient::Send (void *Data, int DataSize)
 {
 	errorcheck = NumOfBytesSent = send (ClientSocketFD, (char *)Data, DataSize, 0);
 	if (errorcheck == -1)
@@ -176,7 +176,7 @@ int CClient::Send (void *Data, unsigned int DataSize)
 }
 
 // UDP, sendto (data, datasize, IP/name, port);
-int CClient::SendTo (void *Data, unsigned int DataSize)
+int CClient::SendTo (void *Data, int DataSize)
 {
 	errorcheck = NumOfBytesSent = sendto (ClientSocketFD, (char *)Data, DataSize, 0, (sockaddr *)&TheirAddress, sizeof (TheirAddress));
 	if (errorcheck == -1)
@@ -185,7 +185,7 @@ int CClient::SendTo (void *Data, unsigned int DataSize)
 	}
 	return errorcheck;
 }
-int CClient::SendTo (void *Data, unsigned int DataSize, char * pTheirIP, int pTheirPort)
+int CClient::SendTo (void *Data, int DataSize, char * pTheirIP, int pTheirPort)
 {
 	struct hostent* TheirIP;		// Client name/IP.
 	if ((TheirIP = gethostbyname (pTheirIP)) == NULL)

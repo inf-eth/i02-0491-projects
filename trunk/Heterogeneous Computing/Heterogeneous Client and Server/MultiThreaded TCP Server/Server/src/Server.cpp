@@ -139,7 +139,7 @@ int CServer::Receive (int ClientIndex)
 	return errorcheck[ClientIndex];
 }
 
-int CServer::Receive (void* DataBuffer, unsigned DataSize, int ClientIndex)
+int CServer::Receive (void* DataBuffer, int DataSize, int ClientIndex)
 {
 	int errorcheck = NumOfBytesReceived[ClientIndex] = recv (ClientSocketFD[ClientIndex], (char*)DataBuffer, DataSize, 0);
 	if (errorcheck == -1)
@@ -149,7 +149,7 @@ int CServer::Receive (void* DataBuffer, unsigned DataSize, int ClientIndex)
 	return errorcheck;
 }
 
-int CServer::Send (void *Data, unsigned int DataSize, int ClientIndex)
+int CServer::Send (void *Data, int DataSize, int ClientIndex)
 {
 	if (ClientIndex < 0 || ClientIndex >= MAXCLIENTS)
 	{
@@ -171,16 +171,16 @@ int CServer::Send (void *Data, unsigned int DataSize, int ClientIndex)
 	return errorcheck[ClientIndex];
 }
 
-int CServer::SendData(void* Data, unsigned int DataSize, int ClientIndex)
+int CServer::SendData(void* Data, int DataSize, int ClientIndex)
 {
 	Send((void*)&DataSize, sizeof(DataSize), ClientIndex);
 	Receive(ClientIndex);
 
 	cout << "Data size: " << DataSize << endl;
 
-	unsigned int BytesSent = 0;
+	int BytesSent = 0;
 	while (BytesSent != DataSize)
-		BytesSent += (unsigned int)Send((void*)((char*)Data+BytesSent), DataSize-BytesSent, ClientIndex);
+		BytesSent += Send((void*)((char*)Data+BytesSent), DataSize-BytesSent, ClientIndex);
 
 	cout << "Data Sent." << endl;
 	Receive(ClientIndex);
@@ -192,16 +192,16 @@ int CServer::SendData(void* Data, unsigned int DataSize, int ClientIndex)
 
 int CServer::ReceiveData(void* Data, int ClientIndex)
 {
-	unsigned int DataSize;
+	int DataSize;
 	Receive((void*)&DataSize, sizeof(DataSize), ClientIndex);
 	Send((void *)&"ACK", 3U, ClientIndex);
 
 	cout << "Data size: " << DataSize << endl;
 
 	// Transfer Loop.
-	unsigned int BytesReceived = 0;
+	int BytesReceived = 0;
 	while (BytesReceived != DataSize)
-		BytesReceived += (unsigned int)Receive((void*)((char*)Data+BytesReceived), DataSize-BytesReceived, ClientIndex);
+		BytesReceived += Receive((void*)((char*)Data+BytesReceived), DataSize-BytesReceived, ClientIndex);
 
 	Send((void *)&"ACK", 3U, ClientIndex);
 
@@ -209,7 +209,7 @@ int CServer::ReceiveData(void* Data, int ClientIndex)
 }
 
 // UDP, sendto (data, datasize, IP/name, port);
-int CServer::SendTo (void *Data, unsigned int DataSize)
+int CServer::SendTo (void *Data, int DataSize)
 {
 	errorcheck[0] = NumOfBytesSent[0] = sendto (ServerSocketFD, (char *)Data, DataSize, 0, (sockaddr *)&TheirAddress, sizeof (TheirAddress));
 	if (errorcheck[0] == -1)
@@ -218,7 +218,7 @@ int CServer::SendTo (void *Data, unsigned int DataSize)
 	}
 	return errorcheck[0];
 }
-int CServer::SendTo (void *Data, unsigned int DataSize, char * pTheirIP, int pTheirPort)
+int CServer::SendTo (void *Data, int DataSize, char * pTheirIP, int pTheirPort)
 {
 	struct hostent* TheirIP;		// Server name/IP.
 	if ((TheirIP = gethostbyname (pTheirIP)) == NULL)
