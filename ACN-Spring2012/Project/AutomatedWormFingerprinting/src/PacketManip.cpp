@@ -224,6 +224,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <bitset>
 #include <iomanip>
 #include <cctype>
