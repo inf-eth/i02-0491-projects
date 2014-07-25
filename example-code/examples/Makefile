@@ -19,7 +19,8 @@ SUBDIR:= 	alarm\
 		LZ77\
 		RadixTree\
 		MatrixMultiplication\
-		MultithreadedMatrixMultiplication
+		MultithreadedMatrixMultiplication\
+		SplitString
 
 all:
 	for dir in $(SUBDIR);\
