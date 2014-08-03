@@ -161,7 +161,7 @@ TRET_TYPE ReceiverThread(void* Args)
 	ClientObj.Connect((char*)recvArgs->ServerName.c_str(), ServerPort);
 
 	fstream File;
-	File.open(((ReceiverArgument*)Args)->FileName.c_str(), ios::out|ios::binary);
+	File.open(((ReceiverArgument*)Args)->FileName.c_str(), ios::in|ios::out|ios::binary);
 	//int Iterations = PartitionSize%RECVBUFFERSIZE == 0 ? PartitionSize/RECVBUFFERSIZE: PartitionSize/RECVBUFFERSIZE+1; // Number of times file needs to be written.
 
 	File.seekp(recvArgs->TID*Offset);
