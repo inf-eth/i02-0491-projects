@@ -1,0 +1,220 @@
+% Graph plotting commands for pgf/tikz.
+
+\def\LeftLimitX{0cm}
+\def\RightLimitX{10.5cm}
+\def\LowLimitY{0cm}
+\def\HighLimitY{10.5cm}
+
+\newcommand{\DrawAxes}[2]
+{
+	% x-axis.
+	\draw[->, >=stealth] (\LeftLimitX,\LowLimitY) -- (\RightLimitX,\LowLimitY);
+	\coordinate [label=right:{\tiny $#1$}] (x-axis) at (\RightLimitX-0.1cm,\LowLimitY);
+	% y-axis.
+	\draw[->, >=stealth] (\LeftLimitX,\LowLimitY) -- (\LeftLimitX,\HighLimitY);
+	\coordinate [label=above:{\tiny $#2$}] (y-axis) at (\LeftLimitX,\HighLimitY-0.1cm);
+}
+\newcommand{\GridOn}
+{
+	% Drawing vertical grid lines.
+	\foreach \x in {1cm,2cm,3cm,4cm,5cm,6cm,7cm,8cm,9cm,10cm}
+		\draw[dashed] (\x,\LowLimitY) -- (\x,\HighLimitY-0.25cm); % Solid lines at +1 intervals.
+	% Drawing horizontal grid lines.
+	\foreach \y in {1cm,2cm,3cm,4cm,5cm,6cm,7cm,8cm,9cm,10cm}
+		\draw[dashed] (\LeftLimitX,\y) -- (\RightLimitX-0.25cm,\y); % Solid lines at +1 intervals.
+}
+\newcommand{\TicksOn}
+{
+	% Drawing vertical ticks.
+	\foreach \x in {1cm,2cm,3cm,4cm,5cm,6cm,7cm,8cm,9cm,10cm}
+		\draw[line width=1.1pt] (\x,\LowLimitY-0.2cm) -- (\x,\LowLimitY+0.2cm); % Solid lines at +1 intervals.
+	% Drawing horizontal ticks.
+	\foreach \y in {1cm,2cm,3cm,4cm,5cm,6cm,7cm,8cm,9cm,10cm}
+		\draw[line width=1.1pt] (\LeftLimitX-0.2cm,\y) -- (\LeftLimitX+0.2cm,\y); % Solid lines at +1 intervals.
+}
+
+% Text placement is on even ticks. Seventh argument places text on middle tick.
+\newcommand{\XAxisTextEven}[6]
+{
+	% +1 Text for x-axis.
+	\foreach \x/\t in {0cm/#1,2cm/#2,4cm/#3,6cm/#4,8cm/#5,10cm/#6}
+		\coordinate [label=below:$\t$] (\t) at (\x,\LowLimitY-0.2cm);
+}
+\newcommand{\XAxisTextOdd}[5]
+{
+	% +1 Text for x-axis.
+	\foreach \x/\t in {1cm/#1,3cm/#2,5cm/#3,7cm/#4,9cm/#5}
+		\coordinate [label=below:$\t$] (\t) at (\x,\LowLimitY-0.2cm);
+}
+\newcommand{\YAxisTextEven}[6]
+{
+	% +1 Text for y-axis.
+	\foreach \y/\t in {0cm/#1,2cm/#2,4cm/#3,6cm/#4,8cm/#5,10cm/#6}
+		\coordinate [label=left:$\t$] (\t) at (\LeftLimitX-0.2cm,\y);
+}
+\newcommand{\YAxisTextOdd}[5]
+{
+	% +1 Text for y-axis.
+	\foreach \y/\t in {1cm/#1,3cm/#2,5cm/#3,7cm/#4,9cm/#5}
+		\coordinate [label=left:$\t$] (\t) at (\LeftLimitX-0.2cm,\y);
+}
+\newcommand{\XAxisText}[9]
+{
+	\foreach \x/\t in {#1,#2,#3,#4,#5,#6,#7,#8,#9}
+			\coordinate [label=below:{\tiny $\t$}] (\t) at (\x,\LowLimitY-0.2cm);
+	\foreach \x/\t in {#1,#2,#3,#4,#5,#6,#7,#8,#9}
+			\draw[dashed] (\x,\LowLimitY-0.1cm) -- (\x,\LowLimitY); % Ticks
+}
+\newcommand{\YAxisText}[9]
+{
+	\foreach \y/\t in {#1,#2,#3,#4,#5,#6,#7,#8,#9}
+		\coordinate [label=left:{\tiny $\t$}] (\t) at (\LeftLimitX-0.2cm,\y);
+	\foreach \y/\t in {#1,#2,#3,#4,#5,#6,#7,#8,#9}
+		\draw[dashed] (\LeftLimitX-0.1cm,\y) -- (\LeftLimitX,\y); % Ticks
+}
+\newcommand{\DrawLegend}
+{
+	\def\YDisp{1.5cm}
+	% Matlab
+	\node[fill=red!40!yellow,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:Matlab] (Mat) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% Cygwin gcc/g++
+	\node[fill=red!10!yellow,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:Cygwin gcc/g++] (Cygwin) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+	\def\YDisp{2cm}
+	% gcc/g++
+	\node[fill=blue,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:gcc/g++] (gcc) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% Visual C++
+	\node[fill=blue!30!white,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:Visual C++] (VC) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+	\def\YDisp{2.5cm}
+	% OpenCL emulated (linux) 
+	\node[fill=gray!70!white,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL emulated (linux)] (OCLnixemu) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% OpenCL emulated (windows)
+	\node[fill=pink,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL emulated (windows)] (OCLwinemu) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+	\def\YDisp{3cm}
+	% OpenCL (linux) 
+	\node[fill=red!70!black,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL (linux)] (OCLnix) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% OpenCL (windows)
+	\node[fill=red,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL (windows)] (OCLwin) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+	\def\YDisp{3.5cm}
+	% CUDA (linux) 
+	\node[fill=green!50!black,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:CUDA (linux)] (CUDAnix) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% CUDA (windows)
+	\node[fill=green,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:CUDA (windows)] (CUDAwin) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+}
+\newcommand{\DrawLegendNoMatlabandOpenCLEmu}
+{
+	\def\YDisp{1.5cm}
+	% gcc/g++
+	\node[fill=blue,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:gcc/g++] (gcc) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% Visual C++
+	\node[fill=blue!30!white,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:Visual C++] (VC) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+	\def\YDisp{2cm}
+	% OpenCL (linux) 
+	\node[fill=red!70!black,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL (linux)] (OCLnix) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% OpenCL (windows)
+	\node[fill=red,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL (windows)] (OCLwin) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+	\def\YDisp{2.5cm}
+	% CUDA (linux) 
+	\node[fill=green!50!black,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:CUDA (linux)] (CUDAnix) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% CUDA (windows)
+	\node[fill=green,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:CUDA (windows)] (CUDAwin) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+}
+\newcommand{\DrawLegendGPU}
+{
+	\def\YDisp{1.5cm}
+	% OpenCL (linux) 
+	\node[fill=red!70!black,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL (linux)] (OCLnix) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% OpenCL (windows)
+	\node[fill=red,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL (windows)] (OCLwin) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+	\def\YDisp{2cm}
+	% CUDA (linux) 
+	\node[fill=green!50!black,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:CUDA (linux)] (CUDAnix) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% CUDA (windows)
+	\node[fill=green,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:CUDA (windows)] (CUDAwin) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+}
+\newcommand{\DrawLegendNoMatlabandVCGCC}
+{
+	\def\YDisp{1.5cm}
+	% OpenCL emulated (linux) 
+	\node[fill=gray!70!white,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL emulated (linux)] (OCLnixemu) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% OpenCL emulated (windows)
+	\node[fill=pink,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL emulated (windows)] (OCLwinemu) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+	\def\YDisp{2cm}
+	% OpenCL (linux) 
+	\node[fill=red!70!black,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL (linux)] (OCLnix) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% OpenCL (windows)
+	\node[fill=red,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:OpenCL (windows)] (OCLwin) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+	\def\YDisp{2.5cm}
+	% CUDA (linux) 
+	\node[fill=green!50!black,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:CUDA (linux)] (CUDAnix) at (\LeftLimitX+0.2cm,\LowLimitY-\YDisp);
+	% CUDA (windows)
+	\node[fill=green,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\LeftLimitX+5cm,\LowLimitY-\YDisp) {};
+	\coordinate [label=right:CUDA (windows)] (CUDAwin) at (\LeftLimitX+5.2cm,\LowLimitY-\YDisp);
+}
+\newcommand{\DrawLegendRight}
+{
+	\def\YDisp{1.5cm}
+	% Matlab
+	\node[fill=red!40!yellow,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\RightLimitX+1cm,\HighLimitY-\YDisp) {};
+	\coordinate [label=right:{\tiny Matlab}] (Mat) at (\RightLimitX+1.2cm,\HighLimitY-\YDisp);
+	\def\YDisp{2cm}
+	% Cygwin gcc/g++
+	\node[fill=red!10!yellow,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\RightLimitX+1cm,\HighLimitY-\YDisp) {};
+	\coordinate [label=right:{\tiny Cygwin gcc/g++}] (Cygwin) at (\RightLimitX+1.2cm,\HighLimitY-\YDisp);
+	\def\YDisp{2.5cm}
+	% gcc/g++
+	\node[fill=blue,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\RightLimitX+1cm,\HighLimitY-\YDisp) {};
+	\coordinate [label=right:{\tiny gcc/g++}] (gcc) at (\RightLimitX+1cm+0.2cm,\HighLimitY-\YDisp);
+	\def\YDisp{3cm}
+	% Visual C++
+	\node[fill=blue!30!white,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\RightLimitX+1cm,\HighLimitY-\YDisp) {};
+	\coordinate [label=right:{\tiny Visual C++}] (VC) at (\RightLimitX+1.2cm,\HighLimitY-\YDisp);
+	\def\YDisp{3.5cm}
+	% OpenCL emulated (linux) 
+	\node[fill=gray!70!white,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\RightLimitX+1cm,\HighLimitY-\YDisp) {};
+	\coordinate [label=right:{\tiny OpenCL emulated (linux)}] (OCLnixemu) at (\RightLimitX+1cm+0.2cm,\HighLimitY-\YDisp);
+	\def\YDisp{4cm}
+	% OpenCL emulated (windows)
+	\node[fill=pink,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\RightLimitX+1cm,\HighLimitY-\YDisp) {};
+	\coordinate [label=right:{\tiny OpenCL emulated (windows)}] (OCLwinemu) at (\RightLimitX+1.2cm,\HighLimitY-\YDisp);
+	\def\YDisp{4.5cm}
+	% OpenCL (linux) 
+	\node[fill=red!70!black,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\RightLimitX+1cm,\HighLimitY-\YDisp) {};
+	\coordinate [label=right:{\tiny OpenCL (linux)}] (OCLnix) at (\RightLimitX+1cm+0.2cm,\HighLimitY-\YDisp);
+	\def\YDisp{5cm}
+	% OpenCL (windows)
+	\node[fill=red,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\RightLimitX+1cm,\HighLimitY-\YDisp) {};
+	\coordinate [label=right:{\tiny OpenCL (windows)}] (OCLwin) at (\RightLimitX+1.2cm,\HighLimitY-\YDisp);
+	\def\YDisp{5.5cm}
+	% CUDA (linux) 
+	\node[fill=green!50!black,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\RightLimitX+1cm,\HighLimitY-\YDisp) {};
+	\coordinate [label=right:{\tiny CUDA (linux)}] (CUDAnix) at (\RightLimitX+1cm+0.2cm,\HighLimitY-\YDisp);
+	\def\YDisp{6cm}
+	% CUDA (windows)
+	\node[fill=green,regular polygon, regular polygon sides=4,inner sep=0.06cm] at (\RightLimitX+1cm,\HighLimitY-\YDisp) {};
+	\coordinate [label=right:{\tiny CUDA (windows)}] (CUDAwin) at (\RightLimitX+1.2cm,\HighLimitY-\YDisp);
+}
