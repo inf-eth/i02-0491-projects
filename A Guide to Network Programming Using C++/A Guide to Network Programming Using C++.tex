@@ -63,14 +63,6 @@ TCP and UDP are two modes of communication in IP.
 \item TCP is like a phone call. A connection is established between a Server and Client. Client is the one calling and Server is the one accepting calls.
 \item Although Client and Server don't exist in UDP technically, the two computers communicating using UDP are commonly distinguished by calling one Server and the other Client. Normally Server is the one that starts in waiting (\verb|receivefrom()|) state.
 \end{itemize}
-\section{TCP and UDP}
-TCP and UDP are two modes of communication in IP.
-\begin{itemize}
-\item TCP uses \verb|send()| and \verb|receive()| while UDP uses \verb|sendto()| and \verb|receivefrom()|.
-\item UDP is like posting a letter. Any packet can be sent to or received from any IP address. 
-\item TCP is like a phone call. A connection is established between a Server and Client. Client is the one calling and Server is the one accepting calls.
-\item Although Client and Server don't exist in UDP technically, the two computers communicating using UDP are commonly distinguished by calling one Server and the other Client. Normally Server is the one that starts in waiting (\verb|receivefrom()|) state.
-\end{itemize}
 \section{TCP Model}
 \subsection{Server}
 \begin{itemize}
@@ -115,7 +107,7 @@ TCP and UDP are two modes of communication in IP.
     \end{enumerate}
 \end{itemize}
 \section{Using the Provided Code}
-The code provided has two examples, one for each TCP and UDP communication model. Extract the zip files and open the solution with the \verb|.sln| file if using Visual Studio 2010 on windows. Each solution contains two projects for Client and Server. On linux use the provided \verb|Makefile| to compile and run. From the root folder of solution either use \verb|make runS| or \verb|make runC| to run server or client, respectively. You should be making changes to \verb|ClientMain.cpp| and \verb|ServerMain.cpp| files.
+The code provided has two examples, one for each TCP and UDP communication model. Extract the zip files and open the solution with the \verb|.sln| file if using Visual Studio 2010 on windows. Each solution contains two projects for Client and Server. On linux use the provided \verb|Makefile| to compile and run. From the root folder of solution either use \verb|make runS| or \verb|make runC| to run server or client, respectively. You should make changes to \verb|ClientMain.cpp| and \verb|ServerMain.cpp| files.
 
 If \verb|winsock2.h| cannot be included from TCP/UDP examples then install the Microsoft SDK. Here's the link to Microsoft SDK  for Windows 7: \url{http://www.microsoft.com/en-us/download/details.aspx?id=8279}
 \section{Useful Functions}
@@ -148,20 +140,24 @@ Obj.Receive((void*)&structtemp, sizeof(s));
 \begin{lstlisting}
 const int SIZE = 20;
 int Data[SIZE];
-Obj.Send((void*)Data, sizeof(int)*SIZE);
+Obj.Send((void*)Data, sizeof(Data)); // sizeof(Data) = sizeof(int)*SIZE
 
 int RecData[SIZE];
-Obj.Receive((void*)RecData, sizeof(int)*SIZE);
+Obj.Receive((void*)RecData, sizeof(Data));
 \end{lstlisting}
-\subsection{Send/Receive Strings Using Built--in Receive() Without Arguments}
-Strings can be sent in a similar manner. However, note that receiver doesn't receive NULL. A convenient \verb|receive()| function is available that automatically appends NULL to received string and stores the received string in a built--in buffer. Maximum size of internal buffer is 512 bytes so maximum string length can be 511. Larger strings must be split and sent separately.
+\subsection{Send/Receive Strings}
+Strings can be sent in a similar manner, i.e., by sending whole arrays. However, note that length of a string is normally variable and we wouldn't want to send any extra characters after NULL. If sender sends NULL character along with string then receiver doesn't need to do any additional processing. If sender doesn't send NULL then receiver has to append a NULL to received string.
+
+A convenient \verb|receive()| function is available that automatically appends NULL to received string and stores the received string in a built--in buffer. Maximum size of internal buffer is 512 bytes so maximum string length can be 511. Larger strings must be split and sent separately.
+
+The essential point is that sender and receiver must agree on a communication scheme. That is whether whole arrays are to be sent, sender appends NULL or not, maximum size of buffers etc.
 \begin{lstlisting}
 char Message[30] = "Hello world!";
 Obj.Send((void*)Message, strlen(Message)+1); // Send string + NULL character.
 // Can also send const strings.
 Obj.Send((void*)"Hello", strlen("Hello")+1);
 
-// When receiving a string we can use the built-in Receive()/ReceiveFrom() functios without arguments. These automatically append a NULL to received string and stores in internal buffer.
+// When receiving a string we have the option to use the built-in Receive()/ReceiveFrom() functions without arguments. These automatically append a NULL to received string and stores in internal buffer.
 Obj.Receive(); // or Obj.ReceiveFrom(); for UDP.
 cout << Obj.GetBuffer() << endl; // Display received string from internal buffer.
 \end{lstlisting}
