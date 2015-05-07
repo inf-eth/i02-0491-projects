@@ -6,7 +6,7 @@ using std::cerr;
 using std::endl;
 using std::fill;
 
-Client::Client(int pType, int pPort): Type(pType), ClientPort(pPort)
+Client::Client()
 {
 	#ifdef WIN32
 	WSADATA wsaData;
@@ -16,7 +16,6 @@ Client::Client(int pType, int pPort): Type(pType), ClientPort(pPort)
 		exit(1);
 	}
 	#endif
-	cout << "Client object created with type " << (Type == TCPSOCKET ? "TCP" : "UDP") << " and port " << ClientPort << endl;
 }
 
 //Client (int = TCPSOCKET, int = DEFAULTPORT);
@@ -201,7 +200,6 @@ int Client::DisplayServerInfo()
 
 int Client::DisplayClientInfo()
 {
-	cout << "Client Address: " << inet_ntoa(ClientAddress.sin_addr) << endl;
 	cout << "Client Port   : " << ntohs(ClientAddress.sin_port) << endl;
 	cout << "Client Socket : " << ClientSocketFD << endl;
 	return 0;
