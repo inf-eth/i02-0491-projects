@@ -6,7 +6,7 @@ using std::cerr;
 using std::endl;
 using std::fill;
 
-Server::Server(int pType, int pServerPort): Type(pType), ServerPort(pServerPort)
+Server::Server()
 {
 	#ifdef WIN32
 	WSADATA wsaData;
@@ -16,7 +16,6 @@ Server::Server(int pType, int pServerPort): Type(pType), ServerPort(pServerPort)
 		exit(1);
 	}
 	#endif
-	cout << "Server object created with type " << (Type == TCPSOCKET ? "TCP" : "UDP") << " and port " << ServerPort << endl;
 }
 
 int Server::CreateSocket(int pType)			// 0 = TCP, 1 = UDP; default is to create TCP socket.
@@ -201,7 +200,6 @@ int Server::CloseClientSocket()
 // Additional Functions.
 int Server::DisplayServerInfo()
 {
-	cout << "Server Address: " << inet_ntoa(ServerAddress.sin_addr) << endl;
 	cout << "Server Port   : " << ntohs(ServerAddress.sin_port) << endl;
 	cout << "Server Socket : " << ServerSocketFD << endl;
 	return 0;
