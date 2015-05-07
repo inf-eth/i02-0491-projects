@@ -50,8 +50,8 @@ int main()
 		float img;
 	};
 	Complex C;
-	C.real = 3.1;
-	C.img = -1.4;
+	C.real = 3.1f;
+	C.img = -1.4f;
 	ServerObj.Send((void*)&C, sizeof(C));
 
 	// Close sockets.
