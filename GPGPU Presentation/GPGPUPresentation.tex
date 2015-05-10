@@ -7,6 +7,7 @@
 \usepackage{PGFTikzGraph}
 \usepackage{float}					% Floating figure placement.
 \usepackage{graphicx}
+\usepackage{multirow}
 
 \renewcommand\mathfamilydefault{\rmdefault}	% Math font for equations.
 \usetheme{Warsaw}
@@ -41,6 +42,9 @@
 
 \begin{frame}
 \titlepage
+\begin{figure}
+\includegraphics[scale=0.325]{Figures/logo-hpcri23.png}
+\end{figure}
 \end{frame}
 
 %\tableofcontents
@@ -52,7 +56,7 @@
 	\item Parallelism
 	\item Comparison of OpenCL and CUDA
 	\item Basics of GPU programming and how to get started
-	\item Simulation of a cylinderical cloak
+	\item Simulation of a cylindrical cloak
 	\item Conclusion
 	\end{itemize}
 \end{frame}
@@ -313,13 +317,13 @@ e^x = 1+\dfrac{x^1}{1!}+\dfrac{x^2}{2!}+\dfrac{x^3}{3!}+\dfrac{x^4}{4!}+\dfrac{x
 	\begin{itemize}
 	\item Sequence of execution:
 		\begin{itemize}
-		\item[1.] Allocate CPU (host) memory (RAM) for input and output data
-		\item[2.] Allocate GPU (device) memory for input and output data
-		\item[3.] Copy input data from host to device
-		\item[4.] Execute the `kernel' function that runs on device
-		\item[5.] Copy output data from device back to host
-		\item[6.] Display or save output
-		\item[7.] Cleanup
+		\item[1.] Allocate space for input data in CPU memory.
+		\item[2.] Initialise input data.
+		\item[3.] Allocate space for input data in GPU memory.
+		\item[4.] Copy input data to GPU memory.
+		\item[5.] Invoke kernel that runs on GPU and performs computations on input data.
+		\item[6.] Copy output data back from GPU to CPU memory.
+		\item[7.] Post--processing\index{post--processing} and analysis of output data on CPU.
 		\end{itemize}
 	\end{itemize}
 \end{frame}
@@ -335,6 +339,48 @@ e^x = 1+\dfrac{x^1}{1!}+\dfrac{x^2}{2!}+\dfrac{x^3}{3!}+\dfrac{x^4}{4!}+\dfrac{x
 \end{frame}
 
 \section{Performance Analysis}
+\subsection{Testing Configuration}
+\begin{frame}{Software Configuration}
+\begin{table}[H]
+\begin{center}
+\vspace{0.3cm}
+	\begin{tabular}{cccc}
+	\hline \hline
+		\rule{0pt}{2.6ex} & \multirow{2}{*}{\textbf{OS}} & \textbf{Platform/} & \textbf{Compiler/}\\
+		& & \textbf{Configuration} & \textbf{Toolchain}\\
+		\hline
+		Matlab \rule{0pt}{2.6ex} & win, linux & x64 & NA\\
+		C++ & win, cygwin, linux & x64/O3 & VC++, gcc/g++\\
+		OpenCL & win, linux & x64/O3 & VC++, gcc/g++\\
+		CUDA & win, linux & x64/O3 & nvcc for win/linux\\
+	\hline \hline
+	\end{tabular}
+\end{center}
+%\caption{Operating system, platform/configuration and compiler/toolchain used for performance testing}
+%\label{Tab:OS-Platform/Configuration-Compiler/Toolchain-for-Testing}
+\end{table}
+\end{frame}
+\begin{frame}{Hardware Configuration}
+\begin{table}[H]
+\begin{center}
+\vspace{0.3cm}
+%\SingleSpacing
+	\begin{tabular}{ll}
+	\hline \hline
+		\textbf{CPU} \rule{0pt}{2.6ex}& Intel Core 2 Duo E8400 @3.00 GHz\\
+		\textbf{RAM} & 4.00 GB DDR2\\
+		\textbf{GPU} & nVidia Geforce GTX 550 Ti 1 GB\\
+		\textbf{Matlab} & 2010a 64 bit\\
+		\textbf{Linux} & Fedora 14 64 bit\\
+		\textbf{Windows} & Win7 64 bit\\
+		\textbf{Cygwin} & 64 bit on Win7\\
+	\hline \hline
+	\end{tabular}
+\end{center}
+%\caption{Hardware and software used for performance testing}
+%\label{Tab:Hardware-Software-Configuration-for-Testing}
+\end{table}
+\end{frame}
 \subsection{1D Spatial}
 \begin{frame}{1D Spatial}
 \begin{figure}[H]
