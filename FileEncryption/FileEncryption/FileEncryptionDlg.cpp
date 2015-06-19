@@ -182,6 +182,10 @@ void CFileEncryptionDlg::OnBnClickedButtonEncrypt()
 	InputFileBrowseControl.GetWindowText(InputFilePath);
 	OutputFileBrowseControl.GetWindowText(OutputFilePath);
 
+	if (OutputFilePath == "")
+		OutputFilePath = InputFilePath + CString(".enc");
+
+
 	const size_t StringSize = 1024;
 	size_t CharactersConverted = 0;
 	char InFilename[StringSize];
@@ -259,6 +263,14 @@ void CFileEncryptionDlg::OnBnClickedButtonDecrypt()
 
 	InputFileBrowseControl.GetWindowText(InputFilePath);
 	OutputFileBrowseControl.GetWindowText(OutputFilePath);
+
+	if (OutputFilePath == "")
+	{
+		if (InputFilePath.Find(L".enc") == InputFilePath.GetLength()-4)
+			OutputFilePath = InputFilePath.Left(InputFilePath.GetLength()-4);
+		else
+			OutputFilePath = InputFilePath + CString(".dec");
+	}
 
 	const size_t StringSize = 1024;
 	size_t CharactersConverted = 0;
