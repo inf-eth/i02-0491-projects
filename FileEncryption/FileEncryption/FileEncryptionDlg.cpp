@@ -241,6 +241,8 @@ void CFileEncryptionDlg::OnBnClickedButtonEncrypt()
 		InFile.read(InBuffer, filesize%MAXBUFFERSIZE);
 		Encrypt(Key, InBuffer, OutBuffer, (int)(filesize%MAXBUFFERSIZE));
 		OutFile.write(OutBuffer, filesize%MAXBUFFERSIZE);
+		CString EncryptedMessage = L"File encrypted as " + OutputFilePath;
+		AfxMessageBox(EncryptedMessage, MB_ICONINFORMATION);
 		delete[] InBuffer;
 		delete[] OutBuffer;
 	}
@@ -327,6 +329,8 @@ void CFileEncryptionDlg::OnBnClickedButtonDecrypt()
 		InFile.read(InBuffer, filesize%MAXBUFFERSIZE);
 		Decrypt(Key, InBuffer, OutBuffer, (int)(filesize%MAXBUFFERSIZE));
 		OutFile.write(OutBuffer, filesize%MAXBUFFERSIZE);
+		CString DecryptedMessage = L"File decrypted as " + OutputFilePath;
+		AfxMessageBox(DecryptedMessage, MB_ICONINFORMATION);
 		delete[] InBuffer;
 		delete[] OutBuffer;
 	}
